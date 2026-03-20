@@ -1,0 +1,33 @@
+# Dependencies
+node_modules/
+**/node_modules/
+
+# Build outputs
+dist/
+build/
+**/dist/
+**/build/
+
+# Environment variables — NUNCA suba isso!
+.env
+**/.env
+.env.local
+.env.production
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Uploads (arquivos de usuários)
+server/uploads/*
+!server/uploads/.gitkeep
+
+# Prisma generated
+server/node_modules/
+
+# TypeScript cache
+*.tsbuildinfo

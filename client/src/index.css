@@ -1,0 +1,28 @@
+@import "tailwindcss";
+
+@theme {
+    --color-brand-purple: #b026ff;
+    --color-brand-dark: #120a1f;
+    --color-brand-darker: #0d0714;
+}
+
+body {
+    background-color: var(--color-brand-darker);
+    color: #ffffff;
+    font-family: system-ui, -apple-system, sans-serif;
+    overflow-x: hidden;
+}
+
+@layer utilities {
+    .glow-purple {
+        box-shadow: 0 0 20px rgba(176, 38, 255, 0.4);
+    }
+
+    .glow-purple-lg {
+        box-shadow: 0 0 40px rgba(176, 38, 255, 0.5);
+    }
+
+    .text-glow {
+        text-shadow: 0 0 10px rgba(176, 38, 255, 0.6);
+    }
+}

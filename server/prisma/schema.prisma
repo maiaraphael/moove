@@ -1,0 +1,310 @@
+generator client {
+  provider = "prisma-client-js"
+  engineType = "library"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id             String         @id @default(uuid())
+  email          String         @unique
+  username       String         @unique
+  passwordHash   String
+  role           Role           @default(USER)
+  level          Int            @default(1)
+  xp             Int            @default(0)
+  mmr            Int            @default(0)
+  rank           Rank           @default(IRON)
+  credits        Int            @default(0)
+  gems           Int            @default(0)
+  status         UserStatus     @default(ACTIVE)
+  avatarUrl      String?
+  isPremium      Boolean        @default(false)
+  vipExpiresAt   DateTime?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  lastLogin      DateTime?
+  loginStreak    Int       @default(0)
+
+  matchHistory   MatchHistory[] @relation("UserMatches")
+  inventory      Inventory[]
+  tournaments    TournamentParticipant[]
+  achievements   UserAchievement[]
+  dailyMissions  UserDailyMission[]
+  passwordResetTokens PasswordResetToken[]
+  sentRequests     Friendship[] @relation("FriendshipRequester")
+  receivedRequests Friendship[] @relation("FriendshipAddressee")
+  clanMember       ClanMember?
+}
+
+enum Role {
+  USER
+  MODERATOR
+  ADMIN
+}
+
+enum Rank {
+  IRON
+  BRONZE
+  SILVER
+  GOLD
+  PLATINUM
+  EMERALD
+  RUBY
+  DIAMOND
+  MASTER
+  GRANDMASTER
+}
+
+enum UserStatus {
+  ACTIVE
+  BANNED
+  SUSPENDED
+}
+
+model MatchHistory {
+  id             String    @id @default(uuid())
+  mode           String    // e.g "RANKED", "CASUAL"
+  players        User[]    @relation("UserMatches")
+  winnerId       String?
+  duration       Int?      // in seconds
+  createdAt      DateTime  @default(now())
+}
+
+model Tournament {
+  id             String    @id @default(uuid())
+  name           String
+  description    String?
+  imageUrl       String?
+  scope             String    @default("Global") // e.g "Global", "Regional"
+  startDate         DateTime
+  endDate           DateTime
+  entryFee          Int       @default(0)
+  prizePool         Int       @default(0)
+  maxPlayers        Int       @default(128)
+  status            TournamentStatus @default(UPCOMING)
+  bracketGenerated  Boolean   @default(false)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  participants      TournamentParticipant[]
+  matches           TournamentMatch[]
+}
+
+model TournamentParticipant {
+  id             String    @id @default(uuid())
+  userId         String
+  tournamentId   String
+  joinedAt       DateTime  @default(now())
+  
+  user           User       @relation(fields: [userId], references: [id])
+  tournament     Tournament @relation(fields: [tournamentId], references: [id])
+
+  @@unique([userId, tournamentId])
+}
+
+enum TournamentStatus {
+  UPCOMING
+  ONGOING
+  COMPLETED
+}
+
+model BattlePass {
+  id             String    @id @default(uuid())
+  season         Int       @unique
+  name           String
+  price          Int       @default(0)  // cost in Gems to unlock premium track
+  isActive       Boolean   @default(true)
+  tiers          BattlePassTier[]
+  createdAt      DateTime  @default(now())
+}
+
+model BattlePassTier {
+  id             String     @id @default(uuid())
+  level          Int
+  freeItemId     String?
+  freeItem       StoreItem? @relation("BPFreeReward", fields: [freeItemId], references: [id])
+  freeGems       Int        @default(0)  // gems rewarded on free track
+  premiumItemId  String?
+  premiumItem    StoreItem? @relation("BPPremiumReward", fields: [premiumItemId], references: [id])
+  premiumGems    Int        @default(0)  // gems rewarded on premium track
+  battlePassId   String
+  battlePass     BattlePass @relation(fields: [battlePassId], references: [id], onDelete: Cascade)
+
+  @@unique([battlePassId, level])
+}
+
+model Inventory {
+  id             String    @id @default(uuid())
+  userId         String
+  user           User      @relation(fields: [userId], references: [id])
+  itemType       String    // "AVATAR", "CARD_BACK", "FRAME", "TITLE"
+  itemId         String
+  isEquipped     Boolean   @default(false)
+  acquiredAt     DateTime  @default(now())
+
+  @@unique([userId, itemId, itemType])
+}
+
+model StoreItem {
+  id             String    @id @default(uuid())
+  name           String
+  type           String    // "AVATAR", "CARD_BACK", "FRAME", "TITLE", "EMOTE", "PET"
+  rarity         String    @default("Common") // "Common", "Rare", "Epic", "Legendary"
+  price          Int
+  currency       String    @default("Credits") // "Credits", "Gems"
+  imageUrl       String?
+  frameConfig    String?   // JSON: { color, secondaryColor, effect, intensity } — used for FRAME type items
+  petConfig      String?   // JSON: { modelUrl, animationType, effectType, effectValue } — used for PET type items
+  isActive       Boolean   @default(true)
+  isFeatured     Boolean   @default(false)
+  createdAt      DateTime  @default(now())
+
+  bpFreeRewardTiers    BattlePassTier[] @relation("BPFreeReward")
+  bpPremiumRewardTiers BattlePassTier[] @relation("BPPremiumReward")
+}
+
+model UserAchievement {
+  id             String    @id @default(uuid())
+  userId         String
+  user           User      @relation(fields: [userId], references: [id])
+  title          String
+  type           String    // e.g "GOLD", "SILVER", "ACHIEVEMENT" 
+  description    String
+  date           DateTime  @default(now())
+
+  @@unique([userId, title])
+}
+
+model RankingConfig {
+  id             String    @id @default(uuid())
+  name           String    @unique
+  color          String    @default("text-gray-400")
+  minMmr         Int
+  iconUrl        String?
+  mmrPenalty     Boolean   @default(false)
+  iconScale      Float     @default(1)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+}
+
+model VipConfig {
+  id            String   @id @default(uuid())
+  name          String
+  description   String?
+  imageUrl      String?
+  price         Int      @default(0)   // cost in Credits
+  durationDays  Int      @default(30)
+  gemsBonus     Int      @default(0)   // % extra gems per ranked game
+  xpBonus       Int      @default(0)   // % extra XP per ranked game
+  noMmrLoss     Boolean  @default(false)
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+}
+
+model DailyMission {
+  id          String             @id @default(uuid())
+  title       String
+  description String
+  type        String             // WIN_RANKED | WIN_ANY | PLAY_RANKED | PLAY_ANY | PLAY_COLOR | PLAY_SEQUENCE | PLAY_FOUR_OF_KIND | PLAY_JOKER | PLAY_CARDS_TOTAL
+  parameter   String?            // optional param: color name for PLAY_COLOR, min length for PLAY_SEQUENCE
+  requirement Int                @default(1)
+  xpReward    Int                @default(0)
+  gemsReward  Int                @default(0)
+  isActive    Boolean            @default(true)
+  createdAt   DateTime           @default(now())
+  userProgress UserDailyMission[]
+}
+
+model UserDailyMission {
+  id          String       @id @default(uuid())
+  userId      String
+  missionId   String
+  date        String       // "2024-01-15" (UTC date key)
+  progress    Int          @default(0)
+  completed   Boolean      @default(false)
+  claimed     Boolean      @default(false)
+  claimedAt   DateTime?
+  user        User         @relation(fields: [userId], references: [id])
+  mission     DailyMission @relation(fields: [missionId], references: [id])
+  @@unique([userId, missionId, date])
+}
+
+model PasswordResetToken {
+  id        String   @id @default(uuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Friendship {
+  id          String           @id @default(uuid())
+  requesterId String
+  addresseeId String
+  status      FriendshipStatus @default(PENDING)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  requester   User @relation("FriendshipRequester", fields: [requesterId], references: [id], onDelete: Cascade)
+  addressee   User @relation("FriendshipAddressee", fields: [addresseeId], references: [id], onDelete: Cascade)
+
+  @@unique([requesterId, addresseeId])
+}
+
+enum FriendshipStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+}
+
+model Clan {
+  id          String       @id @default(uuid())
+  name        String       @unique
+  tag         String       @unique
+  description String?
+  logoUrl     String?
+  totalMmr    Int          @default(0)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  members     ClanMember[]
+}
+
+model ClanMember {
+  id       String   @id @default(uuid())
+  userId   String   @unique
+  clanId   String
+  role     ClanRole @default(MEMBER)
+  joinedAt DateTime @default(now())
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  clan     Clan     @relation(fields: [clanId], references: [id], onDelete: Cascade)
+}
+
+enum ClanRole {
+  LEADER
+  OFFICER
+  MEMBER
+}
+
+model TournamentMatch {
+  id           String      @id @default(uuid())
+  tournamentId String
+  round        Int
+  matchIndex   Int
+  player1Id    String?
+  player2Id    String?
+  winnerId     String?
+  status       MatchStatus @default(PENDING)
+  createdAt    DateTime    @default(now())
+  tournament   Tournament  @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+}
+
+enum MatchStatus {
+  PENDING
+  COMPLETED
+  BYE
+}
