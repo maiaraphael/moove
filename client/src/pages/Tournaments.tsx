@@ -70,7 +70,7 @@ export default function Tournaments() {
         setBracketData(null);
         try {
             const token = localStorage.getItem('token');
-            const res = await fetch(`http://localhost:3000/api/tournaments/${tournamentId}/bracket`, {
+            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/tournaments/${tournamentId}/bracket`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             const data = await res.json();
@@ -84,7 +84,7 @@ export default function Tournaments() {
         setSettingWinner(matchId);
         try {
             const token = localStorage.getItem('token');
-            const res = await fetch(`http://localhost:3000/api/tournaments/${selectedTournament!.id}/matches/${matchId}/result`, {
+            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/tournaments/${selectedTournament!.id}/matches/${matchId}/result`, {
                 method: 'PUT',
                 headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
                 body: JSON.stringify({ winnerId }),
@@ -100,7 +100,7 @@ export default function Tournaments() {
     const fetchTournaments = () => {
         const token = localStorage.getItem('token');
         if (!token) { setTournamentsLoading(false); return; }
-        fetch('http://localhost:3000/api/tournaments', {
+        fetch(`${import.meta.env.VITE_API_URL}/api/tournaments`, {
             headers: { 'Authorization': `Bearer ${token}` }
         })
             .then(res => res.json())
@@ -131,7 +131,7 @@ export default function Tournaments() {
         setEnrolling(tournament.id);
         try {
             const token = localStorage.getItem('token');
-            const res = await fetch(`http://localhost:3000/api/tournaments/${tournament.id}/join`, {
+            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/tournaments/${tournament.id}/join`, {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${token}` }
             });
@@ -152,7 +152,7 @@ export default function Tournaments() {
         setEnrolling(tournament.id);
         try {
             const token = localStorage.getItem('token');
-            const res = await fetch(`http://localhost:3000/api/tournaments/${tournament.id}/leave`, {
+            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/tournaments/${tournament.id}/leave`, {
                 method: 'DELETE',
                 headers: { 'Authorization': `Bearer ${token}` }
             });
@@ -424,7 +424,7 @@ export default function Tournaments() {
                                                 <button
                                                     onClick={async () => {
                                                         const token = localStorage.getItem('token');
-                                                        await fetch(`http://localhost:3000/api/tournaments/${selectedTournament.id}/bracket/generate`, {
+                                                        await fetch(`${import.meta.env.VITE_API_URL}/api/tournaments/${selectedTournament.id}/bracket/generate`, {
                                                             method: 'POST', headers: { 'Authorization': `Bearer ${token}` }
                                                         });
                                                         loadBracket(selectedTournament.id);

@@ -53,7 +53,7 @@ export default function Collection() {
     const fetchCollection = async () => {
         try {
             const token = localStorage.getItem('token');
-            const invRes = await fetch('http://localhost:3000/api/collection', { headers: { 'Authorization': `Bearer ${token}` } });
+            const invRes = await fetch(`${import.meta.env.VITE_API_URL}/api/collection`, { headers: { 'Authorization': `Bearer ${token}` } });
 
             if (invRes.ok) {
                 const invData = await invRes.json();
@@ -112,7 +112,7 @@ export default function Collection() {
         }
         try {
             const token = localStorage.getItem('token');
-            const res = await fetch(`http://localhost:3000/api/collection/equip/${itemId}`, {
+            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/collection/equip/${itemId}`, {
                 method: 'PUT',
                 headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
                 body: JSON.stringify({ imageUrl: itemImage })

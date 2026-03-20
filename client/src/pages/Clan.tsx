@@ -10,7 +10,7 @@ import TopHeader from '../components/ui/TopHeader';
 import { useUser } from '../hooks/useUser';
 import { useNotify } from '../components/ui/NotificationProvider';
 
-const API = 'http://localhost:3000/api/clans';
+const API = `${import.meta.env.VITE_API_URL}/api/clans`;
 
 interface ClanSummary {
     id: string; name: string; tag: string; description?: string | null;

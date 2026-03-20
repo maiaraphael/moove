@@ -43,7 +43,7 @@ export default function BattlePass() {
         const fetchBP = async () => {
             try {
                 const token = localStorage.getItem('token');
-                const res = await fetch('http://localhost:3000/api/battlepass/current', {
+                const res = await fetch(`${import.meta.env.VITE_API_URL}/api/battlepass/current`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 if (res.ok) {
@@ -74,7 +74,7 @@ export default function BattlePass() {
         setBuyStatus('loading');
         try {
             const token = localStorage.getItem('token');
-            const res = await fetch('http://localhost:3000/api/battlepass/buy-premium', {
+            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/battlepass/buy-premium`, {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${token}` }
             });
@@ -104,9 +104,9 @@ export default function BattlePass() {
     }
 
     const CURRENT_LEVEL = user.level;
-    const CURRENT_XP = user.xp;
     const XP_FOR_NEXT = CURRENT_LEVEL * 100;
-    const xpPercent = Math.min(100, Math.round((CURRENT_XP / XP_FOR_NEXT) * 100));
+    const xpPercent = Math.min(100, Math.round(user.xpProgress));
+    const CURRENT_XP = Math.round(user.xpProgress / 100 * XP_FOR_NEXT);
     const IS_PREMIUM = user.isPremium;
     const passName = battlePass?.name || 'Nexus Protocol';
     const season = battlePass?.season || 1;

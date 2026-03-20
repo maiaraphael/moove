@@ -87,7 +87,7 @@ export default function Store() {
         const fetchStore = async () => {
             try {
                 const token = localStorage.getItem('token');
-                const res = await fetch('http://localhost:3000/api/store', {
+                const res = await fetch(`${import.meta.env.VITE_API_URL}/api/store`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 
@@ -124,7 +124,7 @@ export default function Store() {
     }, [user, isLoading]);
 
     useEffect(() => {
-        fetch('http://localhost:3000/api/vip/active')
+        fetch(`${import.meta.env.VITE_API_URL}/api/vip/active`)
             .then(res => res.ok ? res.json() : null)
             .then(data => setVipConfig(data))
             .catch(() => setVipConfig(null));
@@ -156,7 +156,7 @@ export default function Store() {
         setGemBuyStatus(prev => ({ ...prev, [packId]: 'loading' }));
         try {
             const token = localStorage.getItem('token');
-            const res = await fetch('http://localhost:3000/api/payment/buy-gems', {
+            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/payment/buy-gems`, {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
                 body: JSON.stringify({ packId })
@@ -176,7 +176,7 @@ export default function Store() {
         setVipBuyStatus('loading');
         try {
             const token = localStorage.getItem('token');
-            const res = await fetch('http://localhost:3000/api/vip/buy', {
+            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/vip/buy`, {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
                 body: JSON.stringify({ planId: vipConfig.id })
@@ -201,7 +201,7 @@ export default function Store() {
         
         try {
             const token = localStorage.getItem('token');
-            const res = await fetch('http://localhost:3000/api/store/buy', {
+            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/store/buy`, {
                 method: 'POST',
                 headers: { 
                     'Authorization': `Bearer ${token}`,

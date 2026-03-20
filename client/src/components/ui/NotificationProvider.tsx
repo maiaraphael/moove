@@ -231,7 +231,7 @@ export function NotificationProvider({ children, userId, token }: { children: Re
     useEffect(() => {
         if (!userId || !token) return;
 
-        const skt = createSocket('http://localhost:3000', { transports: ['websocket'] });
+        const skt = createSocket(import.meta.env.VITE_API_URL, { transports: ['websocket'] });
         socketRef.current = skt;
 
         skt.on('connect', () => {

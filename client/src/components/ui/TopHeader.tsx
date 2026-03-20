@@ -34,13 +34,13 @@ export default function TopHeader({ user }: { user: UserProfile | null }) {
         try {
             const token = localStorage.getItem('token');
             // Find the friendship id by fetching incoming requests
-            const res = await fetch('http://localhost:3000/api/friends/requests/incoming', {
+            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/friends/requests/incoming`, {
                 headers: { Authorization: `Bearer ${token}` },
             });
             const list = await res.json();
             const req = list.find((r: any) => r.id === fromId);
             if (req?.friendshipId) {
-                await fetch(`http://localhost:3000/api/friends/accept/${req.friendshipId}`, {
+                await fetch(`${import.meta.env.VITE_API_URL}/api/friends/accept/${req.friendshipId}`, {
                     method: 'POST',
                     headers: { Authorization: `Bearer ${token}` },
                 });

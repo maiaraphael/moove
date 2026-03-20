@@ -171,7 +171,7 @@ export default function Game() {
             try {
                 const token = localStorage.getItem('token');
                 if (!token) return;
-                const res = await fetch('http://localhost:3000/api/collection', { headers: { 'Authorization': `Bearer ${token}` } });
+                const res = await fetch(`${import.meta.env.VITE_API_URL}/api/collection`, { headers: { 'Authorization': `Bearer ${token}` } });
                 if (res.ok) {
                     const inventory = await res.json();
                     // storeItem is embedded in the collection response (includes inactive items)
@@ -202,7 +202,7 @@ export default function Game() {
         // Wait for user to load — userId is required for game:rejoin
         if (!isMultiplayer || !roomId || !user) return;
         const token = localStorage.getItem('token') || '';
-        const skt = createSocket('http://localhost:3000', { transports: ['websocket'] });
+        const skt = createSocket(import.meta.env.VITE_API_URL, { transports: ['websocket'] });
         mpSocketRef.current = skt;
 
         skt.on('connect', () => {
@@ -1022,9 +1022,9 @@ export default function Game() {
             setTableSets(prev => {
                 const newSets = prev.map((s, i) => i === staged.origin ? [...s, staged.card] : s);
                 // If the original set index no longer exists (e.g. all cards were staged), add a new set at that index restored from saved
-                if (staged.origin >= prev.length) {
+                if (typeof staged.origin === 'number' && staged.origin >= prev.length) {
                     const restored = [...prev];
-                    restored[staged.origin as number] = [staged.card];
+                    restored[staged.origin] = [staged.card];
                     return restored;
                 }
                 return newSets;

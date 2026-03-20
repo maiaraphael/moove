@@ -34,7 +34,7 @@ export default function PlayerProfileModal({ username, onClose }: Props) {
         setError('');
         setProfile(null);
         const token = localStorage.getItem('token');
-        fetch(`http://localhost:3000/api/users/profile/${encodeURIComponent(username)}`, {
+        fetch(`${import.meta.env.VITE_API_URL}/api/users/profile/${encodeURIComponent(username)}`, {
             headers: { Authorization: `Bearer ${token}` },
         })
             .then(r => r.json())

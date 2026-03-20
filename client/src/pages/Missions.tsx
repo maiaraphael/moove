@@ -59,7 +59,7 @@ export default function Missions() {
     const fetchMissions = useCallback(async () => {
         try {
             const token = localStorage.getItem('token');
-            const res = await fetch('http://localhost:3000/api/missions/daily', {
+            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/missions/daily`, {
                 headers: { 'Authorization': `Bearer ${token}` },
             });
             if (res.ok) setMissions(await res.json());
@@ -83,7 +83,7 @@ export default function Missions() {
         setClaimStatus(prev => ({ ...prev, [missionId]: 'loading' }));
         try {
             const token = localStorage.getItem('token');
-            const res = await fetch(`http://localhost:3000/api/missions/${missionId}/claim`, {
+            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/missions/${missionId}/claim`, {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${token}` },
             });

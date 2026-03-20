@@ -49,28 +49,28 @@ export default function AdminDashboard() {
         if (!token) return navigate('/login');
         const headers = { 'Authorization': `Bearer ${token}` };
 
-        fetch('http://localhost:3000/api/admin/stats', { headers })
+        fetch(`${import.meta.env.VITE_API_URL}/api/admin/stats`, { headers })
             .then(res => res.json()).then(setStats).catch(console.error);
 
-        fetch('http://localhost:3000/api/admin/users', { headers })
+        fetch(`${import.meta.env.VITE_API_URL}/api/admin/users`, { headers })
             .then(res => res.json()).then(setUsers).catch(console.error);
 
-        fetch('http://localhost:3000/api/admin/store', { headers })
+        fetch(`${import.meta.env.VITE_API_URL}/api/admin/store`, { headers })
             .then(res => res.json()).then(setItems).catch(console.error);
 
-        fetch('http://localhost:3000/api/admin/ranks', { headers })
+        fetch(`${import.meta.env.VITE_API_URL}/api/admin/ranks`, { headers })
             .then(res => res.json()).then(setRanks).catch(console.error);
 
-        fetch('http://localhost:3000/api/tournaments', { headers })
+        fetch(`${import.meta.env.VITE_API_URL}/api/tournaments`, { headers })
             .then(res => res.json()).then(setTournaments).catch(console.error);
 
-        fetch('http://localhost:3000/api/admin/battlepass', { headers })
+        fetch(`${import.meta.env.VITE_API_URL}/api/admin/battlepass`, { headers })
             .then(res => res.json()).then(setBattlePasses).catch(console.error);
 
-        fetch('http://localhost:3000/api/admin/vip', { headers })
+        fetch(`${import.meta.env.VITE_API_URL}/api/admin/vip`, { headers })
             .then(res => res.json()).then(setVipConfigs).catch(console.error);
 
-        fetch('http://localhost:3000/api/admin/missions', { headers })
+        fetch(`${import.meta.env.VITE_API_URL}/api/admin/missions`, { headers })
             .then(res => res.json()).then(setMissions).catch(console.error);
     };    useEffect(() => {
         fetchAllData();
@@ -78,7 +78,7 @@ export default function AdminDashboard() {
 
     const fetchBpTiers = async (bpId: string) => {
         const token = localStorage.getItem('token');
-        const res = await fetch(`http://localhost:3000/api/admin/battlepass/${bpId}/tiers`, {
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/battlepass/${bpId}/tiers`, {
             headers: { 'Authorization': `Bearer ${token}` }
         });
         if (res.ok) setBpTiers(await res.json());
@@ -95,7 +95,7 @@ export default function AdminDashboard() {
             const token = localStorage.getItem('token');
             const fd = new FormData();
             fd.append('file', file);
-            const res = await fetch('http://localhost:3000/api/upload', {
+            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/upload`, {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${token}` },
                 body: fd
@@ -119,7 +119,7 @@ export default function AdminDashboard() {
         if (!token) { alert('Sessão expirada. Faça login novamente.'); return; }
         try {
             console.log(`[DELETE] /api/admin/${endpoint}/${id}`);
-            const res = await fetch(`http://localhost:3000/api/admin/${endpoint}/${id}`, {
+            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/${endpoint}/${id}`, {
                 method: 'DELETE',
                 headers: { 'Authorization': `Bearer ${token}` }
             });
@@ -145,7 +145,7 @@ export default function AdminDashboard() {
         if (modalType === 'user-create') {
             if (!formData.username || !formData.email || !formData.password) { alert('Preencha todos os campos obrigatórios.'); return; }
             try {
-                const res = await fetch('http://localhost:3000/api/admin/users', {
+                const res = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/users`, {
                     method: 'POST',
                     headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
                     body: JSON.stringify({ username: formData.username, email: formData.email, password: formData.password, role: formData.role || 'USER' })
@@ -158,7 +158,7 @@ export default function AdminDashboard() {
 
         if (modalType === 'user-currency') {
             try {
-                const res = await fetch(`http://localhost:3000/api/admin/users/${formData.id}/currency`, {
+                const res = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/users/${formData.id}/currency`, {
                     method: 'PUT',
                     headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
                     body: JSON.stringify({ creditsAdjust: formData.creditsAdjust || 0, gemsAdjust: formData.gemsAdjust || 0 })
@@ -171,7 +171,7 @@ export default function AdminDashboard() {
 
         if (modalType === 'user-mmr') {
             try {
-                const res = await fetch(`http://localhost:3000/api/admin/users/${formData.id}/mmr`, {
+                const res = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/users/${formData.id}/mmr`, {
                     method: 'PUT',
                     headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
                     body: JSON.stringify({ mmr: formData.newMmr ?? 0 })
@@ -186,8 +186,8 @@ export default function AdminDashboard() {
         if (modalType === 'mission') {
             const isEditing = !!formData.id;
             const url = isEditing
-                ? `http://localhost:3000/api/admin/missions/${formData.id}`
-                : `http://localhost:3000/api/admin/missions`;
+                ? `${import.meta.env.VITE_API_URL}/api/admin/missions/${formData.id}`
+                : `${import.meta.env.VITE_API_URL}/api/admin/missions`;
             try {
                 const res = await fetch(url, {
                     method: isEditing ? 'PUT' : 'POST',
@@ -213,8 +213,8 @@ export default function AdminDashboard() {
         if (modalType === 'vip') {
             const isEditing = !!formData.id;
             const url = isEditing
-                ? `http://localhost:3000/api/admin/vip/${formData.id}`
-                : `http://localhost:3000/api/admin/vip`;
+                ? `${import.meta.env.VITE_API_URL}/api/admin/vip/${formData.id}`
+                : `${import.meta.env.VITE_API_URL}/api/admin/vip`;
             try {
                 const res = await fetch(url, {
                     method: isEditing ? 'PUT' : 'POST',
@@ -241,8 +241,8 @@ export default function AdminDashboard() {
         if (modalType === 'battlepass') {
             const isEditing = !!formData.id;
             const url = isEditing
-                ? `http://localhost:3000/api/admin/battlepass/${formData.id}`
-                : `http://localhost:3000/api/admin/battlepass`;
+                ? `${import.meta.env.VITE_API_URL}/api/admin/battlepass/${formData.id}`
+                : `${import.meta.env.VITE_API_URL}/api/admin/battlepass`;
             try {
                 const res = await fetch(url, {
                     method: isEditing ? 'PUT' : 'POST',
@@ -258,8 +258,8 @@ export default function AdminDashboard() {
         if (modalType === 'tier') {
             const isEditing = !!formData.id;
             const url = isEditing
-                ? `http://localhost:3000/api/admin/battlepass/${formData.battlePassId}/tiers/${formData.id}`
-                : `http://localhost:3000/api/admin/battlepass/${formData.battlePassId}/tiers`;
+                ? `${import.meta.env.VITE_API_URL}/api/admin/battlepass/${formData.battlePassId}/tiers/${formData.id}`
+                : `${import.meta.env.VITE_API_URL}/api/admin/battlepass/${formData.battlePassId}/tiers`;
             try {
                 const body = isEditing
                     ? { freeItemId: formData.freeItemId || null, premiumItemId: formData.premiumItemId || null }
@@ -278,8 +278,8 @@ export default function AdminDashboard() {
         }
         const isEditing = !!formData.id;
         const url = isEditing
-            ? `http://localhost:3000/api/admin/${endpoint}/${formData.id}`
-            : `http://localhost:3000/api/admin/${endpoint}`;
+            ? `${import.meta.env.VITE_API_URL}/api/admin/${endpoint}/${formData.id}`
+            : `${import.meta.env.VITE_API_URL}/api/admin/${endpoint}`;
         console.log(`[SUBMIT] ${isEditing ? 'PUT' : 'POST'} ${url}`, formData);
         try {
             const res = await fetch(url, {
@@ -308,7 +308,7 @@ export default function AdminDashboard() {
         const newStatus = currentStatus === 'ACTIVE' ? 'BANNED' : 'ACTIVE';
         try {
             const token = localStorage.getItem('token');
-            const res = await fetch(`http://localhost:3000/api/admin/users/${userId}/status`, {
+            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/users/${userId}/status`, {
                 method: 'PUT',
                 headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
                 body: JSON.stringify({ status: newStatus })
@@ -325,7 +325,7 @@ export default function AdminDashboard() {
         if (!window.confirm('Tem certeza de que deseja excluir permanentemente este usuário?')) return;
         try {
             const token = localStorage.getItem('token');
-            const res = await fetch(`http://localhost:3000/api/admin/users/${userId}`, {
+            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/users/${userId}`, {
                 method: 'DELETE',
                 headers: { 'Authorization': `Bearer ${token}` }
             });
@@ -347,7 +347,7 @@ export default function AdminDashboard() {
         
         try {
             const token = localStorage.getItem('token');
-            const res = await fetch(`http://localhost:3000/api/admin/users/${userId}/password`, {
+            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/users/${userId}/password`, {
                 method: 'PUT',
                 headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
                 body: JSON.stringify({ newPassword })
@@ -552,7 +552,7 @@ export default function AdminDashboard() {
                                                             <button
                                                                 onClick={async () => {
                                                                     const token = localStorage.getItem('token');
-                                                                    const res = await fetch(`http://localhost:3000/api/admin/store/${item.id}`, {
+                                                                    const res = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/store/${item.id}`, {
                                                                         method: 'PUT',
                                                                         headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
                                                                         body: JSON.stringify({ isActive: !item.isActive })
@@ -742,7 +742,7 @@ export default function AdminDashboard() {
                                         <div className="flex items-center gap-2">
                                             {bp.isActive && <span className="text-xs font-bold text-green-400 bg-green-400/10 px-2 py-1 rounded-lg">ATIVA</span>}
                                             <button onClick={(e) => { e.stopPropagation(); setModalType('battlepass'); setFormData({ id: bp.id, name: bp.name, season: bp.season, isActive: bp.isActive }); setModalOpen(true); }} className="p-2 hover:bg-white/10 rounded-lg transition-colors text-gray-400 hover:text-white"><Edit2 size={14} /></button>
-                                            <button onClick={async (e) => { e.stopPropagation(); if (!confirm(`Excluir "${bp.name}"? Todos os níveis serão removidos.`)) return; const token = localStorage.getItem('token'); await fetch(`http://localhost:3000/api/admin/battlepass/${bp.id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } }); if (selectedBpId === bp.id) setSelectedBpId(null); fetchAllData(); }} className="p-2 hover:bg-red-500/10 rounded-lg transition-colors text-gray-400 hover:text-red-400"><Trash2 size={14} /></button>
+                                            <button onClick={async (e) => { e.stopPropagation(); if (!confirm(`Excluir "${bp.name}"? Todos os níveis serão removidos.`)) return; const token = localStorage.getItem('token'); await fetch(`${import.meta.env.VITE_API_URL}/api/admin/battlepass/${bp.id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } }); if (selectedBpId === bp.id) setSelectedBpId(null); fetchAllData(); }} className="p-2 hover:bg-red-500/10 rounded-lg transition-colors text-gray-400 hover:text-red-400"><Trash2 size={14} /></button>
                                         </div>
                                     </div>
                                 ))}
@@ -807,7 +807,7 @@ export default function AdminDashboard() {
                                                         <td className="px-6 py-4 text-right">
                                                             <div className="flex justify-end gap-2">
                                                                 <button onClick={() => { setModalType('tier'); setFormData({ id: tier.id, level: tier.level, battlePassId: selectedBpId, freeItemId: tier.freeItemId || '', freeGems: tier.freeGems ?? 0, premiumItemId: tier.premiumItemId || '', premiumGems: tier.premiumGems ?? 0 }); setModalOpen(true); }} className="p-2 hover:bg-white/10 rounded-lg transition-colors text-gray-400 hover:text-white"><Edit2 size={14} /></button>
-                                                                <button onClick={async () => { if (!confirm(`Excluir nível ${tier.level}?`)) return; const token = localStorage.getItem('token'); await fetch(`http://localhost:3000/api/admin/battlepass/${selectedBpId}/tiers/${tier.id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } }); fetchBpTiers(selectedBpId); }} className="p-2 hover:bg-red-500/10 rounded-lg transition-colors text-gray-400 hover:text-red-400"><Trash2 size={14} /></button>
+                                                                <button onClick={async () => { if (!confirm(`Excluir nível ${tier.level}?`)) return; const token = localStorage.getItem('token'); await fetch(`${import.meta.env.VITE_API_URL}/api/admin/battlepass/${selectedBpId}/tiers/${tier.id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } }); fetchBpTiers(selectedBpId); }} className="p-2 hover:bg-red-500/10 rounded-lg transition-colors text-gray-400 hover:text-red-400"><Trash2 size={14} /></button>
                                                             </div>
                                                         </td>
                                                     </tr>
@@ -1106,7 +1106,7 @@ export default function AdminDashboard() {
                                                                     const token = localStorage.getItem('token');
                                                                     const fd = new FormData();
                                                                     fd.append('file', f);
-                                                                    const res = await fetch('http://localhost:3000/api/upload', {
+                                                                    const res = await fetch(`${import.meta.env.VITE_API_URL}/api/upload`, {
                                                                         method: 'POST',
                                                                         headers: { 'Authorization': `Bearer ${token}` },
                                                                         body: fd
@@ -1304,7 +1304,7 @@ export default function AdminDashboard() {
                                                             const token = localStorage.getItem('token');
                                                             const fd = new FormData();
                                                             fd.append('file', f);
-                                                            const res = await fetch('http://localhost:3000/api/upload', {
+                                                            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/upload`, {
                                                                 method: 'POST',
                                                                 headers: { 'Authorization': `Bearer ${token}` },
                                                                 body: fd

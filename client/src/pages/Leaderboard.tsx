@@ -31,7 +31,7 @@ export default function Leaderboard() {
         const fetchLeaderboard = async () => {
             try {
                 const token = localStorage.getItem('token');
-                const res = await fetch('http://localhost:3000/api/users/leaderboard', {
+                const res = await fetch(`${import.meta.env.VITE_API_URL}/api/users/leaderboard`, {
                     headers: { 'Authorization': `Bearer ${token}` },
                 });
                 if (res.ok) {

@@ -38,7 +38,7 @@ export default function Dashboard() {
         try {
             const token = localStorage.getItem('token');
             if (!token) return;
-            const res = await fetch('http://localhost:3000/api/missions/daily', {
+            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/missions/daily`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             if (res.ok) setMissions(await res.json());
@@ -49,7 +49,7 @@ export default function Dashboard() {
         try {
             const token = localStorage.getItem('token');
             if (!token) return;
-            const res = await fetch('http://localhost:3000/api/friends/requests/incoming', {
+            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/friends/requests/incoming`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             if (res.ok) { const d = await res.json(); setPendingFriends(d.length); }
@@ -62,7 +62,7 @@ export default function Dashboard() {
                 const token = localStorage.getItem('token');
                 if (!token) return;
 
-                const tRes = await fetch('http://localhost:3000/api/tournaments', {
+                const tRes = await fetch(`${import.meta.env.VITE_API_URL}/api/tournaments`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 

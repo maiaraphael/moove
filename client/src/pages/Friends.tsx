@@ -8,7 +8,7 @@ import PlayerProfileModal from '../components/ui/PlayerProfileModal';
 import ChatModal from '../components/ui/ChatModal';
 import { useNotify } from '../components/ui/NotificationProvider';
 
-const API = 'http://localhost:3000/api/friends';
+const API = `${import.meta.env.VITE_API_URL}/api/friends`;
 
 interface FriendUser {
     id: string;
