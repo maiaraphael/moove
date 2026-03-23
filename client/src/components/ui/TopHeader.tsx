@@ -60,6 +60,7 @@ export default function TopHeader({ user }: { user: UserProfile | null }) {
     }
 
     return (
+        <>
         <header className="w-full px-6 py-5 flex items-center justify-between relative z-[100] max-w-7xl mx-auto border-b border-white/5 bg-[#0f0814]/80 backdrop-blur-md sticky top-0">
             {/* User Profile (Left) */}
             <div className="flex items-center gap-4">
@@ -250,6 +251,7 @@ export default function TopHeader({ user }: { user: UserProfile | null }) {
         </header>
 
         <SettingsModal isOpen={settingsOpen} onClose={() => setSettingsOpen(false)} />
+        </>
     );
 }
 
