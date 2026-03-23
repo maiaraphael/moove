@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { Zap, Trophy, Users, ChevronRight } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 // Fake game cards to show off the real aesthetic
 const DEMO_CARDS = [
@@ -46,6 +47,7 @@ function GameCard({ card, delay }: { card: typeof DEMO_CARDS[0]; delay: number }
 }
 
 export default function Hero() {
+    const { t } = useTranslation();
     return (
         <section className="relative w-full min-h-screen flex flex-col items-center justify-center overflow-hidden pt-20">
 
@@ -70,7 +72,7 @@ export default function Hero() {
                     className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#b026ff]/10 border border-[#b026ff]/30 mb-8 backdrop-blur-sm"
                 >
                     <span className="w-2 h-2 rounded-full bg-green-400 shadow-[0_0_8px_rgba(74,222,128,1)] animate-pulse" />
-                    <span className="text-[11px] font-bold tracking-[0.2em] text-[#d685ff] uppercase">Open Beta · Play Now For Free</span>
+                    <span className="text-[11px] font-bold tracking-[0.2em] text-[#d685ff] uppercase">{t('hero.badge')}</span>
                 </motion.div>
 
                 {/* Main headline */}
@@ -80,9 +82,9 @@ export default function Hero() {
                     transition={{ duration: 0.9, delay: 0.2 }}
                     className="text-[3.2rem] sm:text-[5rem] md:text-[6rem] font-black italic tracking-tighter leading-[0.88] text-white uppercase mb-6"
                 >
-                    PLAY CARDS.<br />
-                    <span style={{ WebkitTextStroke: '2px #b026ff', color: 'transparent' }}>DOMINATE.</span><br />
-                    <span className="text-[#b026ff]">COLLECT.</span>
+                    {t('hero.headline1')}<br />
+                    <span style={{ WebkitTextStroke: '2px #b026ff', color: 'transparent' }}>{t('hero.headline2')}</span><br />
+                    <span className="text-[#b026ff]">{t('hero.headline3')}</span>
                 </motion.h1>
 
                 {/* Sub */}
@@ -92,7 +94,7 @@ export default function Hero() {
                     transition={{ duration: 0.8, delay: 0.4 }}
                     className="text-gray-400 text-base md:text-lg max-w-xl mx-auto mb-10 leading-relaxed"
                 >
-                    A fast-paced multiplayer card game where strategy, timing and rare collectibles decide who rules the table.
+                    {t('hero.sub')}
                 </motion.p>
 
                 {/* CTAs */}
@@ -105,13 +107,13 @@ export default function Hero() {
                     <Link to="/register"
                         className="relative group flex items-center gap-2 px-8 py-4 bg-[#b026ff] rounded-xl text-white font-black text-sm uppercase tracking-widest shadow-[0_0_30px_rgba(176,38,255,0.5)] hover:shadow-[0_0_50px_rgba(176,38,255,0.8)] hover:bg-[#c040ff] transition-all overflow-hidden"
                     >
-                        <span className="relative z-10 flex items-center gap-2"><Zap size={16} className="fill-white" /> Play For Free</span>
+                        <span className="relative z-10 flex items-center gap-2"><Zap size={16} className="fill-white" /> {t('hero.playFree')}</span>
                         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
                     </Link>
                     <Link to="/rules"
                         className="flex items-center gap-2 px-8 py-4 rounded-xl border border-white/15 text-gray-300 font-bold text-sm uppercase tracking-widest hover:border-white/30 hover:text-white hover:bg-white/5 transition-all"
                     >
-                        How to Play <ChevronRight size={16} />
+                        {t('hero.howToPlay')} <ChevronRight size={16} />
                     </Link>
                 </motion.div>
 
@@ -123,14 +125,14 @@ export default function Hero() {
                     className="flex items-center gap-8 sm:gap-12 text-center"
                 >
                     {[
-                        { icon: Users, value: '12K+', label: 'Players Online' },
-                        { icon: Trophy, value: '500+', label: 'Tournaments Run' },
-                        { icon: Zap, value: '120+', label: 'Unique Cards' },
-                    ].map(({ icon: Icon, value, label }) => (
-                        <div key={label} className="flex flex-col items-center gap-1">
+                        { icon: Users, value: '12K+', labelKey: 'hero.stats.players' },
+                        { icon: Trophy, value: '500+', labelKey: 'hero.stats.tournaments' },
+                        { icon: Zap, value: '120+', labelKey: 'hero.stats.cards' },
+                    ].map(({ icon: Icon, value, labelKey }) => (
+                        <div key={labelKey} className="flex flex-col items-center gap-1">
                             <span className="text-2xl sm:text-3xl font-black text-white">{value}</span>
                             <div className="flex items-center gap-1 text-[11px] text-gray-500 font-semibold uppercase tracking-widest">
-                                <Icon size={11} className="text-[#b026ff]" />{label}
+                                <Icon size={11} className="text-[#b026ff]" />{t(labelKey)}
                             </div>
                         </div>
                     ))}

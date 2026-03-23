@@ -1,16 +1,18 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Bell, CreditCard, Diamond, Crown, UserPlus, Users, X, Check, Swords } from 'lucide-react';
+import { Bell, CreditCard, Diamond, Crown, UserPlus, Users, X, Check, Swords, Settings } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 import type { UserProfile } from '../../hooks/useUser';
 import FramedAvatar from './FramedAvatar';
 import { useNotify } from './NotificationProvider';
+import SettingsModal from './SettingsModal';
 
 export default function TopHeader({ user }: { user: UserProfile | null }) {
     const navigate = useNavigate();
     const isVip = !!user?.vipExpiresAt && new Date(user.vipExpiresAt) > new Date();
     const { bellItems, unreadCount, markAllRead, dismissBell, clearAllBell } = useNotify();
     const [panelOpen, setPanelOpen] = useState(false);
+    const [settingsOpen, setSettingsOpen] = useState(false);
     const panelRef = useRef<HTMLDivElement>(null);
 
     // Close panel when clicking outside
@@ -118,6 +120,15 @@ export default function TopHeader({ user }: { user: UserProfile | null }) {
                         <span className="ml-1 bg-[#b026ff]/20 text-[#b026ff] rounded px-1.5 py-0.5 text-[8px] uppercase font-black">+ Get</span>
                     </div>
                 </div>
+
+                {/* Settings button */}
+                <button
+                    onClick={() => setSettingsOpen(true)}
+                    title="Settings"
+                    className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 transition-colors text-white"
+                >
+                    <Settings size={18} className="text-gray-300" />
+                </button>
 
                 {/* Bell button + dropdown */}
                 <div className="relative" ref={panelRef}>
@@ -237,6 +248,8 @@ export default function TopHeader({ user }: { user: UserProfile | null }) {
                 </div>
             </div>
         </header>
+
+        <SettingsModal isOpen={settingsOpen} onClose={() => setSettingsOpen(false)} />
     );
 }
 

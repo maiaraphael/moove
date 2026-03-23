@@ -3,6 +3,7 @@ import { User, AtSign, Lock, ShieldCheck, Zap, ArrowLeft } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
 import MouseGlow from '../components/ui/MouseGlow';
+import { useTranslation } from 'react-i18next';
 
 export default function Register() {
     const [username, setUsername] = useState('');
@@ -11,13 +12,14 @@ export default function Register() {
     const [confirmPassword, setConfirmPassword] = useState('');
     const [error, setError] = useState('');
     const navigate = useNavigate();
+    const { t } = useTranslation();
 
     const handleRegister = async (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
         
         if (password !== confirmPassword) {
-            setError('Passwords do not match');
+            setError(t('register.error.passwordMismatch'));
             return;
         }
 
@@ -32,11 +34,11 @@ export default function Register() {
                 localStorage.setItem('token', data.token);
                 navigate('/dashboard');
             } else {
-                setError(data.error || 'Registration failed');
+                setError(data.error || t('register.error.network'));
             }
         } catch (err) {
             console.error(err);
-            setError('Network error');
+            setError(t('register.error.network'));
         }
     };
 
@@ -46,7 +48,7 @@ export default function Register() {
 
             <Link to="/" className="absolute top-6 left-6 z-20 flex items-center gap-2 text-gray-400 hover:text-white transition-colors group">
                 <ArrowLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
-                <span className="text-sm font-bold tracking-widest uppercase">Back to Grid</span>
+                <span className="text-sm font-bold tracking-widest uppercase">{t('register.back')}</span>
             </Link>
 
             <div className="relative z-10 w-full max-w-lg flex flex-col items-center">
@@ -169,7 +171,7 @@ export default function Register() {
                         {/* Submit */}
                         <button onClick={handleRegister} className="w-full mt-4 py-4 rounded-xl bg-gradient-to-r from-[#b026ff] to-[#d685ff] hover:from-[#9d1ce6] hover:to-[#c461f0] text-white text-sm font-bold tracking-[0.15em] uppercase flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(176,38,255,0.4)] transition-all group overflow-hidden relative">
                             <span className="relative z-10 flex items-center gap-2">
-                                Initialize Pilot <Zap size={16} className="fill-white" />
+                                {t('register.submit')} <Zap size={16} className="fill-white" />
                             </span>
                             <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 pointer-events-none" />
                         </button>
@@ -179,9 +181,9 @@ export default function Register() {
                     {/* Login Link */}
                     <div className="mt-8 text-center">
                         <p className="text-gray-400 text-xs font-medium">
-                            Already have a profile?{' '}
+                            {t('register.haveAccount')}{' '}
                             <Link to="/login" className="text-white hover:text-[#b026ff] transition-colors font-bold">
-                                Log in
+                                {t('register.loginHere')}
                             </Link>
                         </p>
                     </div>

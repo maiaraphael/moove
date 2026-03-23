@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Zap, ChevronRight } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 // Mini card for the background decoration
 function MiniCard({ num, color, style }: { num: string; color: string; style: React.CSSProperties }) {
@@ -19,6 +20,7 @@ function MiniCard({ num, color, style }: { num: string; color: string; style: Re
 }
 
 export default function CTA() {
+    const { t } = useTranslation();
     return (
         <section className="relative w-full py-32 overflow-hidden">
             <div className="absolute inset-0 bg-[#0c0618]" />
@@ -47,29 +49,29 @@ export default function CTA() {
                     viewport={{ once: true }}
                     transition={{ duration: 0.8 }}
                 >
-                    <span className="text-[11px] font-black tracking-[0.3em] text-[#b026ff] uppercase mb-6 block">The Table is Set</span>
+                    <span className="text-[11px] font-black tracking-[0.3em] text-[#b026ff] uppercase mb-6 block">{t('cta.tag')}</span>
 
                     <h2 className="text-5xl md:text-7xl font-black italic text-white uppercase leading-[0.88] tracking-tighter mb-8">
-                        YOUR NEXT<br />
-                        <span style={{ WebkitTextStroke: '2px #b026ff', color: 'transparent' }}>VICTORY</span><br />
-                        AWAITS.
+                        {t('cta.title1')}<br />
+                        <span style={{ WebkitTextStroke: '2px #b026ff', color: 'transparent' }}>{t('cta.title2')}</span><br />
+                        {t('cta.title3')}
                     </h2>
 
                     <p className="text-gray-400 text-base md:text-lg max-w-lg mx-auto leading-relaxed mb-10">
-                        Join thousands of players already competing. Create your account in seconds — no download required.
+                        {t('cta.sub')}
                     </p>
 
                     <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
                         <Link to="/register"
                             className="relative group flex items-center gap-2 px-10 py-4 bg-[#b026ff] rounded-xl text-white font-black text-sm uppercase tracking-widest shadow-[0_0_40px_rgba(176,38,255,0.5)] hover:shadow-[0_0_60px_rgba(176,38,255,0.8)] hover:bg-[#c040ff] transition-all overflow-hidden"
                         >
-                            <span className="relative z-10 flex items-center gap-2"><Zap size={16} className="fill-white" /> Create Free Account</span>
+                            <span className="relative z-10 flex items-center gap-2"><Zap size={16} className="fill-white" /> {t('cta.joinFree')}</span>
                             <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
                         </Link>
                         <Link to="/login"
                             className="flex items-center gap-1 text-sm text-gray-400 font-semibold hover:text-white transition-colors"
                         >
-                            Already have an account? <span className="text-[#b026ff] font-black">Log In</span> <ChevronRight size={14} />
+                            {t('login.haveAccount', 'Already have an account?')} <span className="text-[#b026ff] font-black">{t('login.loginHere', 'Log In')}</span> <ChevronRight size={14} />
                         </Link>
                     </div>
                 </motion.div>

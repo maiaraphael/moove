@@ -104,6 +104,31 @@ router.get('/me', authenticateToken, async (req: AuthRequest, res) => {
     }
 });
 
+// PUT /api/users/me/password — change own password
+router.put('/me/password', authenticateToken, async (req: AuthRequest, res) => {
+    try {
+        if (!req.user) { res.status(401).json({ error: 'Unauthorized' }); return; }
+        const { currentPassword, newPassword } = req.body;
+        if (!currentPassword || !newPassword) {
+            res.status(400).json({ error: 'Current password and new password are required' }); return;
+        }
+        if (newPassword.length < 6) {
+            res.status(400).json({ error: 'New password must be at least 6 characters' }); return;
+        }
+        const bcrypt = await import('bcrypt');
+        const user = await prisma.user.findUnique({ where: { id: req.user.id } });
+        if (!user) { res.status(404).json({ error: 'User not found' }); return; }
+        const valid = await bcrypt.compare(currentPassword, user.passwordHash);
+        if (!valid) { res.status(400).json({ error: 'Current password is incorrect' }); return; }
+        const hash = await bcrypt.hash(newPassword, 12);
+        await prisma.user.update({ where: { id: req.user.id }, data: { passwordHash: hash } });
+        res.json({ success: true });
+    } catch (err) {
+        console.error('Change password error:', err);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
 // GET /api/users/profile/:username — public profile
 router.get('/profile/:username', authenticateToken, async (req: AuthRequest, res) => {
     try {

@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
 import MouseGlow from '../components/ui/MouseGlow';
 import { useUser } from '../hooks/useUser';
+import { useTranslation } from 'react-i18next';
 
 export default function Login() {
     const [email, setEmail] = useState('');
@@ -11,6 +12,7 @@ export default function Login() {
     const [error, setError] = useState('');
     const navigate = useNavigate();
     const { refreshUser } = useUser();
+    const { t } = useTranslation();
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -31,7 +33,7 @@ export default function Login() {
                 await refreshUser();
                 navigate('/dashboard');
             } else {
-                setError(data.error || 'Login failed');
+                setError(data.error || t('login.error.invalid'));
             }
         } catch (err) {
             console.error(err);
@@ -44,7 +46,7 @@ export default function Login() {
 
             <Link to="/" className="absolute top-6 left-6 z-20 flex items-center gap-2 text-gray-400 hover:text-white transition-colors group">
                 <ArrowLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
-                <span className="text-sm font-bold tracking-widest uppercase">Back to Grid</span>
+                <span className="text-sm font-bold tracking-widest uppercase">{t('login.back')}</span>
             </Link>
 
             <div className="relative z-10 w-full max-w-md flex flex-col items-center">
@@ -58,16 +60,16 @@ export default function Login() {
                 >
                     <div className="px-4 py-1.5 rounded-full border border-[#b026ff]/30 bg-[#120a1f]/70 mb-6 backdrop-blur-md">
                         <span className="text-[10px] font-bold tracking-[0.2em] text-[#b026ff] uppercase">
-                            Secure Uplink
+                            {t('login.badge')}
                         </span>
                     </div>
 
                     <h1 className="text-4xl md:text-5xl font-black italic tracking-tighter text-white uppercase mb-4 drop-shadow-lg">
-                        Access <span className="text-[#b026ff] text-glow">Node</span>
+                        {t('login.title')} <span className="text-[#b026ff] text-glow">{t('login.titleAccent')}</span>
                     </h1>
 
                     <p className="text-gray-400 text-xs md:text-sm tracking-[0.2em] uppercase font-semibold">
-                        Authenticate your neural link
+                        {t('login.sub')}
                     </p>
                 </motion.div>
 
@@ -86,7 +88,7 @@ export default function Login() {
                         {/* Email Address */}
                         <div className="flex flex-col gap-2">
                             <label className="text-[10px] font-bold text-gray-400 tracking-[0.15em] uppercase ml-1">
-                                Email Address
+                                {t('login.emailOrUser')}
                             </label>
                             <div className="relative flex items-center">
                                 <div className="absolute left-4 text-[#b026ff]/60">
@@ -106,10 +108,10 @@ export default function Login() {
                         <div className="flex flex-col gap-2">
                             <div className="flex items-center justify-between ml-1">
                                 <label className="text-[10px] font-bold text-gray-400 tracking-[0.15em] uppercase">
-                                    Password
+                                    {t('login.password')}
                                 </label>
                                 <Link to="/forgot-password" className="text-[10px] font-bold text-[#b026ff] hover:text-[#d685ff] tracking-widest uppercase transition-colors">
-                                    Forgot?
+                                    {t('login.forgot')}
                                 </Link>
                             </div>
                             <div className="relative flex items-center">
@@ -131,7 +133,7 @@ export default function Login() {
                         {/* Submit */}
                         <button onClick={handleLogin} className="w-full mt-4 py-4 rounded-xl bg-gradient-to-r from-[#b026ff] to-[#d685ff] hover:from-[#9d1ce6] hover:to-[#c461f0] text-white text-sm font-bold tracking-[0.15em] uppercase flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(176,38,255,0.4)] transition-all group overflow-hidden relative">
                             <span className="relative z-10 flex items-center gap-2">
-                                Establish Sync <ChevronRight size={18} className="translate-y-[1px]" />
+                                {t('login.submit')} <ChevronRight size={18} className="translate-y-[1px]" />
                             </span>
                             <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 pointer-events-none" />
                         </button>
@@ -142,9 +144,9 @@ export default function Login() {
                     <div className="mt-8 text-center flex flex-col gap-3">
                         <div className="w-full h-[1px] bg-gradient-to-r from-transparent via-white/10 to-transparent" />
                         <p className="text-gray-400 text-xs font-medium pt-3">
-                            Need network clearance?{' '}
+                            {t('login.noAccount')}{' '}
                             <Link to="/register" className="text-white hover:text-[#b026ff] transition-colors font-bold">
-                                Initialize Pilot
+                                {t('login.register')}
                             </Link>
                         </p>
                     </div>
