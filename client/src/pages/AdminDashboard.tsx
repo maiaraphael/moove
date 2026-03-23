@@ -50,28 +50,28 @@ export default function AdminDashboard() {
         const headers = { 'Authorization': `Bearer ${token}` };
 
         fetch(`${import.meta.env.VITE_API_URL}/api/admin/stats`, { headers })
-            .then(res => res.json()).then(setStats).catch(console.error);
+            .then(res => res.json()).then(d => { if (d && !d.error) setStats(d); }).catch(console.error);
 
         fetch(`${import.meta.env.VITE_API_URL}/api/admin/users`, { headers })
-            .then(res => res.json()).then(setUsers).catch(console.error);
+            .then(res => res.json()).then(d => { if (Array.isArray(d)) setUsers(d); }).catch(console.error);
 
         fetch(`${import.meta.env.VITE_API_URL}/api/admin/store`, { headers })
-            .then(res => res.json()).then(setItems).catch(console.error);
+            .then(res => res.json()).then(d => { if (Array.isArray(d)) setItems(d); }).catch(console.error);
 
         fetch(`${import.meta.env.VITE_API_URL}/api/admin/ranks`, { headers })
-            .then(res => res.json()).then(setRanks).catch(console.error);
+            .then(res => res.json()).then(d => { if (Array.isArray(d)) setRanks(d); }).catch(console.error);
 
         fetch(`${import.meta.env.VITE_API_URL}/api/tournaments`, { headers })
-            .then(res => res.json()).then(setTournaments).catch(console.error);
+            .then(res => res.json()).then(d => { if (Array.isArray(d)) setTournaments(d); }).catch(console.error);
 
         fetch(`${import.meta.env.VITE_API_URL}/api/admin/battlepass`, { headers })
-            .then(res => res.json()).then(setBattlePasses).catch(console.error);
+            .then(res => res.json()).then(d => { if (Array.isArray(d)) setBattlePasses(d); }).catch(console.error);
 
         fetch(`${import.meta.env.VITE_API_URL}/api/admin/vip`, { headers })
-            .then(res => res.json()).then(setVipConfigs).catch(console.error);
+            .then(res => res.json()).then(d => { if (Array.isArray(d)) setVipConfigs(d); }).catch(console.error);
 
         fetch(`${import.meta.env.VITE_API_URL}/api/admin/missions`, { headers })
-            .then(res => res.json()).then(setMissions).catch(console.error);
+            .then(res => res.json()).then(d => { if (Array.isArray(d)) setMissions(d); }).catch(console.error);
     };    useEffect(() => {
         fetchAllData();
     }, [navigate]);
