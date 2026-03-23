@@ -1035,19 +1035,19 @@ export default function Game() {
     const commitMultiCombine = () => {
         const allStagedCards = stagingCards.map(s => s.card);
         if (allStagedCards.length < 3) {
-            showToast('Você precisa de pelo menos 3 cartas na staging para formar uma combinação!');
+            showToast('You need at least 3 cards in staging to form a combination!');
             return;
         }
         const handCardsStaged = stagingCards.filter(s => s.origin === 'hand').map(s => s.card);
         if (handCardsStaged.length === 0) {
-            showToast('Você precisa jogar pelo menos 1 carta da sua mão!');
+            showToast('You must play at least 1 card from your hand!');
             return;
         }
         // Check remaining table sets are all valid (must be empty or valid group)
         const remainingSets = tableSets.filter(s => s.length > 0);
         for (const s of remainingSets) {
             if (!isValidGroup(s)) {
-                showToast('Jogada inválida! Alguns jogos na mesa ficaram incompletos. Tente incluí-los na combinação ou cancele.');
+                showToast('Invalid move! Some sets on the table are incomplete. Try including them in the combination or cancel.');
                 return;
             }
         }
@@ -1059,7 +1059,7 @@ export default function Game() {
             newGroups = partitionIntoValidGroups(allStagedCards);
         }
         if (!newGroups) {
-            showToast('Não foi possível formar combinações válidas com as cartas selecionadas. Revertendo...');
+            showToast('Could not form valid combinations with the selected cards. Reverting...');
             cancelMultiCombine();
             return;
         }
@@ -1093,7 +1093,7 @@ export default function Game() {
                 onClick={() => stageTableCard(card, setIdx)}
                 className="w-8 h-12 sm:w-10 sm:h-14 md:w-11 md:h-16 rounded-lg cursor-pointer flex flex-col items-center justify-center border-2 relative overflow-hidden select-none"
                 style={{ background: 'rgba(0,0,0,0.7)', borderColor: col, boxShadow: `0 0 12px ${col}55` }}
-                title="Clique para pegar esta carta"
+                title="Click to take this card"
             >
                 <span style={{ color: col, fontWeight: 900, fontSize: '0.85rem', lineHeight: 1 }}>{card.number === 'JOKER' ? 'J' : card.number}</span>
                 <div className="absolute inset-0 opacity-0 hover:opacity-100 bg-white/10 transition-opacity flex items-center justify-center">
@@ -1660,7 +1660,7 @@ export default function Game() {
                     <div className="text-center mb-3">
                         <span className="inline-flex items-center gap-2 text-[11px] font-black uppercase tracking-[0.2em] text-[#b026ff] bg-[#b026ff]/10 border border-[#b026ff]/30 rounded-full px-4 py-1.5">
                             <ArrowDownUp size={12} />
-                            Modo Multi-Combinação — clique nas cartas da mesa para pegar
+                            Multi-Combine Mode — click table cards to pick them up
                         </span>
                     </div>
                 )}
@@ -1792,7 +1792,7 @@ export default function Game() {
                                 <button
                                     onClick={enterMultiCombine}
                                     className="group bg-[#120a1f]/80 hover:bg-purple-700/40 backdrop-blur-xl px-3 py-2 rounded-2xl border border-purple-500/30 hover:border-purple-400/60 flex items-center gap-1.5 text-purple-400 hover:text-purple-200 transition-all text-xs font-black uppercase tracking-widest shadow-[0_4px_15px_rgba(0,0,0,0.5)]"
-                                    title="Modo Multi-Combinação"
+                                    title="Multi-Combine Mode"
                                 >
                                     <Plus size={13} />
                                     Multi
@@ -1887,7 +1887,7 @@ export default function Game() {
                                 </button>
                             </div>
                         ) : (
-                            <span className="text-[11px] text-gray-500 font-bold uppercase tracking-widest">Aguardando sua vez...</span>
+                            <span className="text-[11px] text-gray-500 font-bold uppercase tracking-widest">Waiting for your turn...</span>
                         )}
                     </div>
 
@@ -1906,7 +1906,7 @@ export default function Game() {
                                 <div className="mx-3 my-2 rounded-2xl border border-purple-500/40 bg-purple-900/20 p-3">
                                     <div className="flex items-center justify-between mb-2">
                                         <span className="text-[10px] font-black uppercase tracking-[0.2em] text-purple-300">
-                                            Staging — {stagingCards.length} carta{stagingCards.length !== 1 ? 's' : ''}
+                                            Staging — {stagingCards.length} card{stagingCards.length !== 1 ? 's' : ''}
                                         </span>
                                         <div className="flex gap-2">
                                             <button
@@ -1914,18 +1914,18 @@ export default function Game() {
                                                 disabled={stagingCards.length < 3}
                                                 className="px-3 py-1 rounded-lg text-[11px] font-black uppercase tracking-wider bg-green-500 hover:bg-green-400 disabled:opacity-30 disabled:cursor-not-allowed text-black transition-all shadow-[0_0_12px_rgba(34,197,94,0.4)]"
                                             >
-                                                ✓ Confirmar
+                                                ✓ Confirm
                                             </button>
                                             <button
                                                 onClick={cancelMultiCombine}
                                                 className="px-3 py-1 rounded-lg text-[11px] font-black uppercase tracking-wider bg-red-500/20 hover:bg-red-500 text-red-300 hover:text-white border border-red-500/40 transition-all"
                                             >
-                                                ✕ Cancelar
+                                                ✕ Cancel
                                             </button>
                                         </div>
                                     </div>
                                     {stagingCards.length === 0 ? (
-                                        <p className="text-center text-purple-400/50 text-[11px] italic py-1">Clique nas cartas da mesa ou da mão para adicioná-las aqui</p>
+                                        <p className="text-center text-purple-400/50 text-[11px] italic py-1">Click cards from the table or your hand to add them here</p>
                                     ) : (
                                         <div className="flex flex-wrap gap-1.5">
                                             {stagingCards.map(({ card, origin }) => {
@@ -1942,7 +1942,7 @@ export default function Game() {
                                                         onClick={() => unstageCard({ card, origin })}
                                                         className="w-9 h-13 rounded-lg cursor-pointer flex flex-col items-center justify-center gap-0.5 border-2 relative"
                                                         style={{ background: 'rgba(0,0,0,0.7)', borderColor: col, boxShadow: `0 0 10px ${col}44`, height: '52px', width: '36px' }}
-                                                        title={`${origin === 'hand' ? '✋ Mão' : '🃏 Mesa'} — clique para devolver`}
+                                                        title={`${origin === 'hand' ? '✋ Hand' : '🃏 Table'} — click to return`}
                                                     >
                                                         <span style={{ color: col, fontWeight: 900, fontSize: '0.9rem', lineHeight: 1 }}>{card.number === 'JOKER' ? 'J' : card.number}</span>
                                                         <span style={{ color: col, fontSize: '0.55rem', opacity: 0.7, fontWeight: 700 }}>{origin === 'hand' ? '✋' : '🃏'}</span>
@@ -1989,7 +1989,7 @@ export default function Game() {
             {isSpectator && (
                 <div className="fixed top-0 left-0 right-0 z-50 pointer-events-none">
                     <div className="flex items-center justify-center py-2 bg-[#b026ff]/80 backdrop-blur-md border-b border-[#b026ff]/40">
-                        <span className="text-xs font-black text-white tracking-[0.25em] uppercase">👁 MODO ESPECTADOR — você está assistindo a partida</span>
+                        <span className="text-xs font-black text-white tracking-[0.25em] uppercase">👁 SPECTATOR MODE — you are watching this match</span>
                     </div>
                 </div>
             )}
