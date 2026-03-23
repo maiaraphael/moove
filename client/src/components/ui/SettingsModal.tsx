@@ -88,6 +88,7 @@ export default function SettingsModal({ isOpen, onClose }: Props) {
     }
 
     function handleLanguageChange(code: string) {
+        localStorage.setItem('moove_lang', code);
         i18n.changeLanguage(code);
     }
 

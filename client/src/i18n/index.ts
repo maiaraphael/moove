@@ -18,6 +18,7 @@ i18n
         fallbackLng: 'en',
         defaultNS: 'translation',
         interpolation: { escapeValue: false },
+        initImmediate: false,
         detection: {
             order: ['localStorage', 'navigator'],
             caches: ['localStorage'],
