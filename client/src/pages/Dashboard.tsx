@@ -113,7 +113,7 @@ export default function Dashboard() {
         }
     ];
 
-    if (isUserLoading || isLoadingTourns || !user) {
+    if (isUserLoading || !user) {
         return (
             <div className="min-h-screen bg-[#0f0814] flex flex-col items-center justify-center gap-4">
                 <div className="w-12 h-12 border-4 border-[#b026ff]/20 border-t-[#b026ff] rounded-full animate-spin"></div>

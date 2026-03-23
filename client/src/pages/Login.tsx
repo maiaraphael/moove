@@ -3,12 +3,14 @@ import { AtSign, Lock, ChevronRight, ArrowLeft } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
 import MouseGlow from '../components/ui/MouseGlow';
+import { useUser } from '../hooks/useUser';
 
 export default function Login() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const navigate = useNavigate();
+    const { refreshUser } = useUser();
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -25,6 +27,8 @@ export default function Login() {
                 if (data.loginBonus) {
                     sessionStorage.setItem('loginBonus', JSON.stringify(data.loginBonus));
                 }
+                // Fetch user data now so the dashboard doesn't spin with user=null
+                await refreshUser();
                 navigate('/dashboard');
             } else {
                 setError(data.error || 'Login failed');
