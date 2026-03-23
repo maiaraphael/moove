@@ -5,6 +5,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import TopHeader from '../components/ui/TopHeader';
 import { useUser } from '../hooks/useUser';
 import LoginBonusModal from '../components/ui/LoginBonusModal';
+import { useTranslation } from 'react-i18next';
 
 interface Tournament {
     id: number;
@@ -20,6 +21,7 @@ interface Tournament {
 export default function Dashboard() {
     const navigate = useNavigate();
     const { user, isLoading: isUserLoading } = useUser();
+    const { t } = useTranslation();
     const [tournaments, setTournaments] = useState<Tournament[]>([]);
     const [isLoadingTourns, setIsLoadingTourns] = useState(true);
     const [missions, setMissions] = useState<any[]>([]);
@@ -84,30 +86,29 @@ export default function Dashboard() {
         fetchPendingFriends();
     }, [fetchMissions, fetchPendingFriends]);
 
-    // Protocols remain static configuration for now
     const protocols = [
         {
             id: "ranked",
-            title: "RANKED MATCH",
-            subtitle: "ELITE CIRCUIT",
-            description: "Climb the global leaderboards",
+            title: t('dashboard.ranked'),
+            subtitle: t('dashboard.rankedSub'),
+            description: t('dashboard.rankedDesc'),
             accent: "#ef4444",
-            badge: "LIVE NOW",
+            badge: t('dashboard.liveNow'),
             bgImage: "https://lh3.googleusercontent.com/aida-public/AB6AXuD2wSi-PcPJKU4p1xZ8dN475FDznpKYyJEAH9HdMQFcGQnu0Lomn3zhCDyLts1IR3xN0Tac3TLhuWjDEQPB2ovCgjaFM7oGuWJolBctnOjD0uXIaMFhI00jo6e7jbtJQxQGWOAmeYuOTDrjdHNVwRaC2HcIv7m6LllOPSO-6tSRTMXal7GKo9TrQ0Pi3rcTU_GTSkzJEBm5YGQs1_na13VE5lA6Ay9J6Y1KKcrUNv5ZYBpk5F6hxgKCeoaD_gAER4fXkK2aod7V8g",
         },
         {
             id: "casual",
-            title: "CASUAL PLAY",
-            subtitle: "URBAN SECTOR",
-            description: "Refine your skills without pressure",
+            title: t('dashboard.casual'),
+            subtitle: t('dashboard.casualSub'),
+            description: t('dashboard.casualDesc'),
             accent: "#3b82f6",
             bgImage: "https://lh3.googleusercontent.com/aida-public/AB6AXuAeQ4moVmnmZ1Dxj7G2UPNtPdBNimArNEv1pm07VeQs-GuEzc-sV6j_OjHoLMdBrmId-ILAWoyIPX2y7LLyawwD7xMolGpPqScndQV3uefWHcD3KjOGl-6RzUrE1soCj-N3-GWpM8uhor4bj-5_cL25jfVyjv0KPGFCaBt3DeXTFY4b9MGVIyhn4nzhX18ihR2FEJZs2Z0f7OTBcMdTGLuEwoqe9056eItGlZ_TeB5W6pKUWtzZrDBjn9O7BqMBeTvUGZ1L_HC_fw",
         },
         {
             id: "ai",
-            title: "VS AI",
-            subtitle: "SIMULATION HUB",
-            description: "Train against advanced neural nets",
+            title: t('dashboard.vsAI'),
+            subtitle: t('dashboard.vsAISub'),
+            description: t('dashboard.vsAIDesc'),
             accent: "#10b981",
             bgImage: "https://lh3.googleusercontent.com/aida-public/AB6AXuDv2jMzVGBdsK02qVloqAo_eY30uARJsZPXLkkum4ZBfcCtv0KYzlE42juLsyLsbI_apV2_5SQBN6REm2Xiy-pZ-uYVbOl3eb6MWO5p7jvGf6coB5SLlF_XyeMHQec5WngdsHpmiKmpxvzMj9PjY47Tgs7WaN_QXiFv-WQQ1Zc2ZnlY64wh39mF13sUc_m0v6Vc0PhGM1q8OWUiqUgZfc9B8HptWYSjzb_Nn-Wj9vN-fvLK7UN_y3mxQoOYa_WK4ExsvOPjDQ1C7A",
         }
@@ -118,7 +119,7 @@ export default function Dashboard() {
             <div className="min-h-screen bg-[#0f0814] flex flex-col items-center justify-center gap-4">
                 <div className="w-12 h-12 border-4 border-[#b026ff]/20 border-t-[#b026ff] rounded-full animate-spin"></div>
                 <p className="text-[#b026ff] text-[10px] font-bold tracking-[0.2em] uppercase animate-pulse">
-                    Syncing Neural Link...
+                    {t('dashboard.syncing')}
                 </p>
             </div>
         );
@@ -139,7 +140,7 @@ export default function Dashboard() {
 
                 {/* SELECT PROTOCOL */}
                 <section className="mb-12">
-                    <h3 className="text-xs font-bold text-gray-400 tracking-[0.2em] uppercase mb-6">Select Protocol</h3>
+                    <h3 className="text-xs font-bold text-gray-400 tracking-[0.2em] uppercase mb-6">{t('dashboard.selectProtocol')}</h3>
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                         {protocols.map((protocol, index) => (
@@ -196,16 +197,16 @@ export default function Dashboard() {
                     <div className="flex items-center justify-between mb-4">
                         <div className="flex items-center gap-2">
                             <Target size={14} className="text-[#b026ff]" />
-                            <h3 className="text-xs font-bold text-gray-400 tracking-[0.2em] uppercase">Missões Diárias</h3>
+                            <h3 className="text-xs font-bold text-gray-400 tracking-[0.2em] uppercase">{t('dashboard.missions')}</h3>
                         </div>
                         <Link to="/missions" className="flex items-center gap-1 text-[10px] font-bold text-[#b026ff] tracking-[0.15em] uppercase hover:text-[#d685ff] transition-colors">
-                            Ver Todas <ArrowRight size={10} />
+                            {t('dashboard.viewAll')} <ArrowRight size={10} />
                         </Link>
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-8">
                         {missions.length === 0 ? (
                             <Link to="/missions" className="col-span-3 flex items-center justify-center gap-2 bg-[#160d26]/60 border border-white/5 rounded-xl py-4 text-xs font-bold text-gray-500 hover:border-[#b026ff]/20 hover:text-[#b026ff] transition-all">
-                                <Target size={14} /> Ver missões de hoje
+                                <Target size={14} /> {t('dashboard.seeMissionsToday')}
                             </Link>
                         ) : (
                             missions.map((um: any) => {
@@ -237,15 +238,15 @@ export default function Dashboard() {
                 {/* ACTIVE TOURNAMENTS */}
                 <section>
                     <div className="flex items-center justify-between mb-6">
-                        <h3 className="text-xs font-bold text-gray-400 tracking-[0.2em] uppercase">Active Tournaments</h3>
+                        <h3 className="text-xs font-bold text-gray-400 tracking-[0.2em] uppercase">{t('dashboard.tournaments')}</h3>
                         <button className="text-[10px] font-bold text-[#b026ff] tracking-[0.15em] uppercase hover:text-[#d685ff] transition-colors">
-                            View All
+                            {t('dashboard.viewAll')}
                         </button>
                     </div>
 
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                         {tournaments.length === 0 ? (
-                            <div className="col-span-2 text-center py-8 text-gray-500 text-sm">No active tournaments found.</div>
+                            <div className="col-span-2 text-center py-8 text-gray-500 text-sm">{t('dashboard.noTournaments')}</div>
                         ) : (
                             tournaments.map((tourney, index) => (
                                 <motion.div

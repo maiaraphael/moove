@@ -9,6 +9,7 @@ import PetViewer from '../components/ui/PetViewer';
 import { parseFrameConfig } from '../utils/frameUtils';
 import type { PetConfig } from '../components/ui/PetViewer';
 import { useUser } from '../hooks/useUser';
+import { useTranslation } from 'react-i18next';
 
 type GameMode = 'ranked' | 'casual' | 'ai' | null;
 type PlayerCount = 2 | 4 | null;
@@ -18,6 +19,7 @@ interface RoomState { id: string; name: string; hostSocketId: string; turnTime: 
 
 export default function Play() {
     const { user, isLoading } = useUser();
+    const { t } = useTranslation();
     const [selectedMode, setSelectedMode] = useState<GameMode>(null);
     const [playerCount, setPlayerCount] = useState<PlayerCount>(null);
     const navigate = useNavigate();
@@ -142,33 +144,32 @@ export default function Play() {
         );
     }
 
-    // Modes Configuration
     const modes = [
         {
             id: 'ranked' as const,
-            title: 'RANKED MATCH',
-            subtitle: 'ELITE CIRCUIT',
+            title: t('dashboard.ranked'),
+            subtitle: t('dashboard.rankedSub'),
             icon: Trophy,
-            color: '#ef4444', // Red
-            description: 'Compete for global ranking points. Winning increases your MMR.',
+            color: '#ef4444',
+            description: t('play.rankedDesc'),
             bgImage: 'https://lh3.googleusercontent.com/aida-public/AB6AXuD2wSi-PcPJKU4p1xZ8dN475FDznpKYyJEAH9HdMQFcGQnu0Lomn3zhCDyLts1IR3xN0Tac3TLhuWjDEQPB2ovCgjaFM7oGuWJolBctnOjD0uXIaMFhI00jo6e7jbtJQxQGWOAmeYuOTDrjdHNVwRaC2HcIv7m6LllOPSO-6tSRTMXal7GKo9TrQ0Pi3rcTU_GTSkzJEBm5YGQs1_na13VE5lA6Ay9J6Y1KKcrUNv5ZYBpk5F6hxgKCeoaD_gAER4fXkK2aod7V8g'
         },
         {
             id: 'casual' as const,
-            title: 'CASUAL LOBBY',
-            subtitle: 'URBAN SECTOR',
+            title: t('play.casualLobby'),
+            subtitle: t('dashboard.casualSub'),
             icon: Globe,
-            color: '#3b82f6', // Blue
-            description: 'Join or create custom lobbies safely without risking your rank.',
+            color: '#3b82f6',
+            description: t('play.casualLobbyDesc'),
             bgImage: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAeQ4moVmnmZ1Dxj7G2UPNtPdBNimArNEv1pm07VeQs-GuEzc-sV6j_OjHoLMdBrmId-ILAWoyIPX2y7LLyawwD7xMolGpPqScndQV3uefWHcD3KjOGl-6RzUrE1soCj-N3-GWpM8uhor4bj-5_cL25jfVyjv0KPGFCaBt3DeXTFY4b9MGVIyhn4nzhX18ihR2FEJZs2Z0f7OTBcMdTGLuEwoqe9056eItGlZ_TeB5W6pKUWtzZrDBjn9O7BqMBeTvUGZ1L_HC_fw'
         },
         {
             id: 'ai' as const,
-            title: 'VS. AI',
-            subtitle: 'SIMULATION HUB',
+            title: t('dashboard.vsAI'),
+            subtitle: t('dashboard.vsAISub'),
             icon: Bot,
-            color: '#10b981', // Green
-            description: 'Train your strategies against adaptive neural network bots.',
+            color: '#10b981',
+            description: t('play.vsAiDesc2'),
             bgImage: 'https://lh3.googleusercontent.com/aida-public/AB6AXuA32P4pFVTwedoAMwXGPJUyhu2xPOCHgKK6P9_s0jIQ8PRiBajI8bB3bprJrn2UmuqY_9g8opii992SkeeoQIpnQBeEXpn3B8Z0FzjWgn26IGpQYjynUWqdhkTjfKqUEJhkG1pe1SOUzRpPFkUZIC1ndZxp-CICGEEr5R0oZmA_eiVX_GV9QV5HAa-cTS7JcViGaAOq8MMityqtxNW1I4oJO2F0ItvmAHcDIwaZu0QUFS_Utn5_sjHUFIu94n_7zd4yKz91fWxVpA'
         }
     ];
@@ -197,7 +198,7 @@ export default function Play() {
                         <h1 className="text-3xl font-black italic tracking-tighter uppercase drop-shadow-md">
                             SELECT <span className="text-[#b026ff]">PROTOCOL</span>
                         </h1>
-                        <p className="text-sm text-gray-400 font-medium mt-1">Initialize your battle sequence</p>
+                        <p className="text-sm text-gray-400 font-medium mt-1">{t('play.initializeBattle')}</p>
                     </div>
 
                     {/* Back button if a mode is selected */}
@@ -210,7 +211,7 @@ export default function Play() {
                                 onClick={() => { setSelectedMode(null); setPlayerCount(null); }}
                                 className="flex items-center gap-2 text-sm font-bold tracking-widest uppercase text-gray-400 hover:text-white transition-colors border border-white/10 bg-white/5 px-4 py-2 rounded-lg"
                             >
-                                <ChevronLeft size={16} /> CHANGE PROTOCOL
+                                <ChevronLeft size={16} /> {t('play.changeProtocol')}
                             </motion.button>
                         )}
                     </AnimatePresence>
@@ -255,7 +256,7 @@ export default function Play() {
 
                                                 <div className="mt-8 flex items-center justify-between border-t border-white/10 pt-4">
                                                     <span className="text-xs font-bold tracking-widest text-white uppercase flex items-center gap-2">
-                                                        INITIATE <Swords size={14} className="opacity-0 group-hover:opacity-100 transition-opacity translate-x-[-10px] group-hover:translate-x-0 duration-300" />
+                                                        {t('play.initiate')} <Swords size={14} className="opacity-0 group-hover:opacity-100 transition-opacity translate-x-[-10px] group-hover:translate-x-0 duration-300" />
                                                     </span>
                                                 </div>
                                             </div>
@@ -297,7 +298,7 @@ export default function Play() {
 
                                                 {/* Player Setup Section */}
                                                 <div className="bg-[#120a1f]/80 backdrop-blur-xl border border-white/5 rounded-2xl p-6 shadow-xl">
-                                                    <h3 className="text-[10px] font-bold text-gray-400 tracking-[0.2em] uppercase mb-4">Participant Matrix</h3>
+                                                    <h3 className="text-[10px] font-bold text-gray-400 tracking-[0.2em] uppercase mb-4">{t('play.participantMatrix')}</h3>
 
                                                     <div className="grid grid-cols-2 gap-4">
                                                         <button
@@ -335,7 +336,7 @@ export default function Play() {
                                                             onClick={() => setShowCreateModal(true)}
                                                             className="w-full mt-6 py-4 rounded-xl flex items-center justify-center gap-2 text-sm font-bold tracking-[0.15em] uppercase transition-all duration-300 bg-[#120a1f] border border-[#3b82f6] text-[#3b82f6] hover:bg-[#3b82f6]/10"
                                                         >
-                                                            <Plus size={18} /> CREATE ROOM
+                                                            <Plus size={18} /> {t('play.createRoom')}
                                                         </button>
                                                     ) : selectedMode === 'ai' ? (
                                                         <button
@@ -343,7 +344,7 @@ export default function Play() {
                                                             onClick={handleStartAiGame}
                                                             className={`w-full mt-6 py-4 rounded-xl flex items-center justify-center gap-2 text-sm font-bold tracking-[0.15em] uppercase transition-all duration-300 ${playerCount ? 'bg-[#10b981] text-white hover:bg-[#059669] shadow-[0_0_20px_rgba(16,185,129,0.4)]' : 'bg-white/5 text-gray-500 cursor-not-allowed border border-white/5'}`}
                                                         >
-                                                            <Bot size={18} /> PLAY VS AI
+                                                            <Bot size={18} /> {t('play.playVsAi')}
                                                         </button>
                                                     ) : (
                                                         <button
@@ -351,7 +352,7 @@ export default function Play() {
                                                             onClick={handleFindRankedMatch}
                                                             className={`w-full mt-6 py-4 rounded-xl flex items-center justify-center gap-2 text-sm font-bold tracking-[0.15em] uppercase transition-all duration-300 ${playerCount ? 'bg-[#ef4444] text-white hover:bg-[#dc2626] shadow-[0_0_20px_rgba(239,68,68,0.4)]' : 'bg-white/5 text-gray-500 cursor-not-allowed border border-white/5'}`}
                                                         >
-                                                            <Swords size={18} /> FIND RANKED MATCH
+                                                            <Swords size={18} /> {t('play.findRankedMatch')}
                                                         </button>
                                                     )}
                                                 </div>
@@ -407,7 +408,7 @@ export default function Play() {
                                                                                 ) : (
                                                                                     <div className="flex items-center gap-3 flex-1 opacity-30">
                                                                                         <div className="w-10 h-10 rounded-full bg-white/5 border-2 border-dashed border-white/10 flex items-center justify-center"><UserIcon size={16} className="text-gray-600" /></div>
-                                                                                        <span className="text-xs font-bold text-gray-600 uppercase tracking-widest">Waiting for player…</span>
+                                                                                        <span className="text-xs font-bold text-gray-600 uppercase tracking-widest">{t('play.waitingForPlayer')}</span>
                                                                                     </div>
                                                                                 )}
                                                                             </div>
@@ -416,11 +417,11 @@ export default function Play() {
                                                                 </div>
                                                                 {mySocketId === currentRoom.hostSocketId ? (
                                                                     <button onClick={handleStartGame} disabled={currentRoom.players.length < 2} className={`w-full py-4 rounded-xl font-black uppercase tracking-[0.15em] text-sm flex items-center justify-center gap-2 transition-all ${currentRoom.players.length >= 2 ? 'bg-[#3b82f6] text-white hover:bg-[#2563eb] shadow-[0_0_25px_rgba(59,130,246,0.5)]' : 'bg-white/5 text-gray-500 cursor-not-allowed border border-white/5'}`}>
-                                                                        <PlayIcon size={18} />{currentRoom.players.length < 2 ? `Waiting… (${currentRoom.players.length}/${currentRoom.maxPlayers})` : 'START GAME'}
+                                                                        <PlayIcon size={18} />{currentRoom.players.length < 2 ? `${t('play.waitingForPlayer')} (${currentRoom.players.length}/${currentRoom.maxPlayers})` : t('play.startGame')}
                                                                     </button>
                                                                 ) : (
                                                                     <div className="w-full py-4 rounded-xl font-black uppercase tracking-[0.15em] text-sm flex items-center justify-center gap-2 bg-white/5 text-gray-500 border border-white/5">
-                                                                        <Clock size={16} /> Waiting for host to start…
+                                                                        <Clock size={16} /> {t('play.waitingForHost')}
                                                                     </div>
                                                                 )}
                                                             </div>
@@ -429,11 +430,11 @@ export default function Play() {
                                                             <>
                                                                 <div className="flex items-center justify-between mb-6">
                                                                     <h3 className="text-xs font-bold text-white tracking-[0.2em] uppercase flex items-center gap-2">
-                                                                        <span className="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_8px_#22c55e]"></span> Open Lobbies
+                                                                    <span className="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_8px_#22c55e]"></span> {t('play.openLobbies')}
                                                                     </h3>
                                                                     <div className="flex items-center gap-2 bg-[#0f0814] border border-white/10 rounded-lg px-3 py-1.5 focus-within:border-[#3b82f6]/50 transition-colors">
                                                                         <Search size={14} className="text-gray-500" />
-                                                                        <input type="text" placeholder="Search Lobby..." value={lobbySearch} onChange={e => setLobbySearch(e.target.value)} className="bg-transparent border-none outline-none text-xs text-white w-32 placeholder-gray-600" />
+                                                                        <input type="text" placeholder={t('play.searchLobby')} value={lobbySearch} onChange={e => setLobbySearch(e.target.value)} className="bg-transparent border-none outline-none text-xs text-white w-32 placeholder-gray-600" />
                                                                     </div>
                                                                 </div>
                                                                 {lobbyError && <div className="mb-3 text-xs text-red-400 bg-red-500/10 border border-red-500/30 px-3 py-2 rounded-lg font-bold">{lobbyError}</div>}
@@ -441,8 +442,8 @@ export default function Play() {
                                                                     {filteredLobbies.length === 0 ? (
                                                                         <div className="flex flex-col items-center justify-center py-16 text-center">
                                                                             <Globe size={40} className="text-gray-700 mb-4" />
-                                                                            <p className="text-gray-500 font-bold text-sm">No open lobbies right now</p>
-                                                                            <p className="text-gray-600 text-xs mt-1">Be the first — create a room!</p>
+                                                                            <p className="text-gray-500 font-bold text-sm">{t('play.noLobbies')}</p>
+                                                                            <p className="text-gray-600 text-xs mt-1">{t('play.beFirstCreate')}</p>
                                                                         </div>
                                                                     ) : filteredLobbies.map(lobby => (
                                                                         <div key={lobby.id} className="flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/5 hover:bg-white/10 hover:border-white/10 transition-all group">
@@ -481,7 +482,7 @@ export default function Play() {
                                                                         <Loader2 size={36} className="text-red-400 animate-spin" />
                                                                     </div>
                                                                 </div>
-                                                                <h3 className="text-xl font-black italic tracking-tighter uppercase text-white mb-2">Searching for Opponent…</h3>
+                                                                <h3 className="text-xl font-black italic tracking-tighter uppercase text-white mb-2">{t('play.searchingOpponent')}</h3>
                                                                 <p className="text-gray-400 text-sm mb-1">Looking for {playerCount === 2 ? '1v1' : '4-player'} ranked match</p>
                                                                 <p className="text-xs text-gray-600 mb-8">Matching with players 1 rank above or below yours</p>
                                                                 {user.rankConfig?.iconUrl && (
@@ -509,8 +510,8 @@ export default function Play() {
                                                     // AI SPLASH INFO
                                                     <div className="flex-1 flex flex-col items-center justify-center text-center px-10">
                                                         <Bot size={64} className="text-green-500/20 mb-6 drop-shadow-[0_0_30px_rgba(16,185,129,0.2)]" />
-                                                        <h3 className="text-2xl font-black italic tracking-tighter uppercase text-white mb-4">Neural Network Testing</h3>
-                                                        <p className="text-gray-400 text-sm leading-relaxed max-w-md">Simulate combat scenarios against our adaptive learning algorithms. The AI adjusts its difficulty based on your performance. No ranking points awarded or lost.</p>
+                                                <h3 className="text-2xl font-black italic tracking-tighter uppercase text-white mb-4">{t('play.neuralTesting')}</h3>
+                                                <p className="text-gray-400 text-sm leading-relaxed max-w-md">{t('play.neuralTestingDesc')}</p>
                                                     </div>
                                                 )}
 
@@ -563,16 +564,16 @@ export default function Play() {
                     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm px-4" onClick={() => setShowCreateModal(false)}>
                         <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} className="bg-[#120a1f] border border-white/10 rounded-2xl p-7 w-full max-w-md shadow-[0_0_60px_rgba(59,130,246,0.2)]" onClick={e => e.stopPropagation()}>
                             <div className="flex items-center justify-between mb-6">
-                                <h2 className="text-xl font-black uppercase tracking-tighter text-white">Create Room</h2>
+                                <h2 className="text-xl font-black uppercase tracking-tighter text-white">{t('play.createRoomTitle')}</h2>
                                 <button onClick={() => setShowCreateModal(false)} className="p-1.5 rounded-lg hover:bg-white/10 text-gray-400 hover:text-white transition-colors"><X size={18} /></button>
                             </div>
                             <div className="flex flex-col gap-5">
                                 <div>
-                                    <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Room Name</label>
+                                    <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">{t('play.roomName')}</label>
                                     <input type="text" maxLength={40} placeholder="My Awesome Room" value={createForm.name} onChange={e => setCreateForm(f => ({ ...f, name: e.target.value }))} className="w-full bg-[#0f0814] border border-white/10 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-[#3b82f6]/60 transition-colors placeholder-gray-600" />
                                 </div>
                                 <div>
-                                    <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Max Players</label>
+                                    <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">{t('play.maxPlayers')}</label>
                                     <div className="grid grid-cols-2 gap-3">
                                         {([2, 4] as const).map(n => (
                                             <button key={n} onClick={() => setCreateForm(f => ({ ...f, maxPlayers: n }))} className={`py-3 rounded-xl text-sm font-black border transition-all ${createForm.maxPlayers === n ? 'bg-[#3b82f6]/20 border-[#3b82f6] text-[#3b82f6]' : 'bg-white/5 border-white/10 text-gray-400 hover:bg-white/10'}`}>{n} Players</button>
@@ -580,7 +581,7 @@ export default function Play() {
                                     </div>
                                 </div>
                                 <div>
-                                    <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Turn Time</label>
+                                    <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">{t('play.turnTime')}</label>
                                     <div className="grid grid-cols-3 gap-3">
                                         {([30, 45, 60] as const).map(t => (
                                             <button key={t} onClick={() => setCreateForm(f => ({ ...f, turnTime: t }))} className={`py-3 rounded-xl text-sm font-black border transition-all ${createForm.turnTime === t ? 'bg-[#3b82f6]/20 border-[#3b82f6] text-[#3b82f6]' : 'bg-white/5 border-white/10 text-gray-400 hover:bg-white/10'}`}>{t}s</button>
@@ -591,8 +592,8 @@ export default function Play() {
                                     <div className="flex items-center gap-2">
                                         <Lock size={16} className="text-yellow-400" />
                                         <div>
-                                            <p className="text-sm font-bold text-white">Private Room</p>
-                                            <p className="text-[10px] text-gray-500">Password required to join</p>
+                                            <p className="text-sm font-bold text-white">{t('play.privateRoom')}</p>
+                                            <p className="text-[10px] text-gray-500">{t('play.passwordRequired')}</p>
                                         </div>
                                     </div>
                                     <button onClick={() => setCreateForm(f => ({ ...f, isPrivate: !f.isPrivate, password: '' }))} className={`w-12 h-6 rounded-full transition-colors relative ${createForm.isPrivate ? 'bg-yellow-500' : 'bg-white/10'}`}>
@@ -607,7 +608,7 @@ export default function Play() {
                                 )}
                                 {lobbyError && <div className="text-xs text-red-400 bg-red-500/10 border border-red-500/30 px-3 py-2 rounded-lg font-bold">{lobbyError}</div>}
                                 <button onClick={handleCreateRoom} className="w-full py-4 rounded-xl bg-[#3b82f6] text-white font-black uppercase tracking-[0.15em] text-sm hover:bg-[#2563eb] transition-colors shadow-[0_0_25px_rgba(59,130,246,0.4)]">
-                                    Create Room
+                                    {t('play.createRoomTitle')}
                                 </button>
                             </div>
                         </motion.div>

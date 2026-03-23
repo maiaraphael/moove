@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { Lock, Check, Crown, Home, Gamepad2, Trophy, Medal, User, Layers, ShoppingBag, Package, Users } from 'lucide-react';
 import TopHeader from '../components/ui/TopHeader';
 import { useUser } from '../hooks/useUser';
+import { useTranslation } from 'react-i18next';
 
 interface BattlePassItem {
     id: string;
@@ -34,6 +35,7 @@ interface BattlePassData {
 
 export default function BattlePass() {
     const { user, isLoading, refreshUser } = useUser();
+    const { t } = useTranslation();
     const [battlePass, setBattlePass] = useState<BattlePassData | null>(null);
     const [isFetching, setIsFetching] = useState(true);
     const [buyStatus, setBuyStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
@@ -130,14 +132,14 @@ export default function BattlePass() {
                         {passName} <span className="text-yellow-500 text-lg md:text-2xl mt-2">(S{season})</span>
                     </h1>
                     <p className="text-gray-400 font-bold max-w-xl text-lg">
-                        Complete matches and operational workflows to unlock encrypted rewards. Unlock Premium to decrypyt extreme-value assets.
+                        {t('battlepass.sub')}
                     </p>
                 </div>
 
                 {!IS_PREMIUM && (
                     <div className="flex flex-col items-end gap-2">
                         {buyError && <p className="text-red-400 text-xs font-bold text-right">{buyError}</p>}
-                        {buyStatus === 'success' && <p className="text-green-400 text-xs font-bold">Premium ativado! 🎉</p>}
+                        {buyStatus === 'success' && <p className="text-green-400 text-xs font-bold">{t('battlepass.premiumActivated')}</p>}
                         <motion.button
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
@@ -146,7 +148,7 @@ export default function BattlePass() {
                             className="bg-gradient-to-r from-yellow-500 to-yellow-600 text-black px-8 py-4 rounded-xl font-black tracking-widest uppercase hover:from-yellow-400 hover:to-yellow-500 transition-all shadow-[0_0_30px_rgba(234,179,8,0.3)] flex items-center gap-3 disabled:opacity-60"
                         >
                             <Crown size={24} />
-                            {buyStatus === 'loading' ? 'Comprando...' : passPrice > 0 ? `Get Premium — ${passPrice} 💎` : 'Get Premium Pass'}
+                            {buyStatus === 'loading' ? t('battlepass.buying') : passPrice > 0 ? `${t('battlepass.getPremiumPass')} — ${passPrice} 💎` : t('battlepass.getPremiumPass')}
                         </motion.button>
                     </div>
                 )}
@@ -158,7 +160,7 @@ export default function BattlePass() {
                     <div className="absolute top-0 right-0 w-64 h-64 bg-[#b026ff]/5 rounded-full blur-3xl" />
 
                     <div className="flex flex-col items-center justify-center shrink-0">
-                        <span className="text-gray-400 text-sm font-bold tracking-widest uppercase mb-1">Current Tier</span>
+                        <span className="text-gray-400 text-sm font-bold tracking-widest uppercase mb-1">{t('battlepass.currentTier')}</span>
                         <div className="w-24 h-24 rounded-full border-4 border-[#b026ff] flex items-center justify-center text-4xl font-black text-white shadow-[0_0_20px_rgba(176,38,255,0.4)] bg-black/50">
                             {CURRENT_LEVEL}
                         </div>
@@ -177,7 +179,7 @@ export default function BattlePass() {
                                 className="h-full bg-gradient-to-r from-[#b026ff] to-[#d685ff] shadow-[0_0_15px_rgba(176,38,255,0.8)]"
                             />
                         </div>
-                        <p className="text-gray-400 mt-4 text-sm font-medium">Complete ranked matches to earn XP and unlock tier rewards.</p>
+                        <p className="text-gray-400 mt-4 text-sm font-medium">{t('battlepass.completeTip')}</p>
                     </div>
                 </div>
             </section>
@@ -188,12 +190,12 @@ export default function BattlePass() {
 
                     {/* Headers */}
                     <div className="min-w-[800px] grid grid-cols-[100px_1fr_1fr] gap-6 mb-6 px-4">
-                        <div className="text-center font-bold text-gray-400 tracking-widest uppercase text-sm">Tier</div>
+                        <div className="text-center font-bold text-gray-400 tracking-widest uppercase text-sm">{t('battlepass.tier')}</div>
                         <div className="font-bold text-gray-300 tracking-widest uppercase text-sm flex items-center gap-2">
-                            Free Track
+                            {t('battlepass.freeTrack')}
                         </div>
                         <div className="font-bold text-yellow-500 tracking-widest uppercase text-sm flex items-center gap-2">
-                            <Crown size={16} /> Premium Track
+                            <Crown size={16} /> {t('battlepass.premiumTrack')}
                         </div>
                     </div>
 
@@ -201,7 +203,7 @@ export default function BattlePass() {
                     <div className="min-w-[800px] flex flex-col gap-4">
                         {tiers.length === 0 ? (
                             <div className="text-center py-10 opacity-50 flex-1 flex flex-col justify-center">
-                                <p className="text-xs text-gray-500 font-bold uppercase tracking-widest">No Active Battle Pass Found</p>
+                                <p className="text-xs text-gray-500 font-bold uppercase tracking-widest">{t('battlepass.noActiveBP')}</p>
                             </div>
                         ) : tiers.map((tier) => {
                             const isCompleted = tier.level <= CURRENT_LEVEL;
@@ -217,7 +219,7 @@ const ItemCard = ({ item, gems, isPremium }: { item: { name: string; type: strin
                                 const unlocked = isCompleted && (isPremium ? IS_PREMIUM : true);
                                 if (!item && gems <= 0) return (
                                     <div className="flex items-center gap-3 flex-1">
-                                        <span className="text-xs text-gray-600 font-bold italic">— No reward —</span>
+                                        <span className="text-xs text-gray-600 font-bold italic">{t('battlepass.noReward')}</span>
                                     </div>
                                 );
                                 return (
