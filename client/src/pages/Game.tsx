@@ -1318,83 +1318,93 @@ export default function Game() {
         const isTurn = player.isActive;
 
         const rootClasses =
-            position === 'topLeft' ? 'top-4 left-4 sm:left-6' :
-                position === 'topRight' ? 'top-4 right-4 sm:right-6' :
-                    'top-4 left-1/2 -translate-x-1/2';
+            position === 'topLeft' ? 'top-2 left-2 sm:top-4 sm:left-4 sm:left-6' :
+                position === 'topRight' ? 'top-2 right-2 sm:top-4 sm:right-4 sm:right-6' :
+                    'top-2 left-1/2 -translate-x-1/2 sm:top-4';
 
         const maxCardsShown = 3;
 
-        return (
-            <div className={`absolute z-30 flex items-start gap-3 md:gap-4 ${rootClasses} flex-row`}>
-                <div className={`relative flex-shrink-0 transition-all ${isTurn ? 'scale-110' : ''}`} style={{ width: 56, height: 56 }}>
-                    {/* Floating emote below opponent avatar */}
-                    <AnimatePresence>
-                        {opponentEmotes[player.id] && (
-                            <motion.div
-                                initial={{ opacity: 0, scale: 0.5, y: -10 }}
-                                animate={{ opacity: 1, scale: 1.4, y: 52 }}
-                                exit={{ opacity: 0, scale: 0.5, y: 0 }}
-                                className="absolute bottom-0 left-1/2 -translate-x-1/2 z-50 text-3xl drop-shadow-[0_0_12px_rgba(255,255,255,0.8)] pointer-events-none"
-                            >
-                                {opponentEmotes[player.id]}
-                            </motion.div>
-                        )}
-                    </AnimatePresence>
-                    {player.frameConfig ? (
-                        <FramedAvatar
-                            src={player.avatar}
-                            alt={player.name}
-                            size={56}
-                            rounded="full"
-                            frameConfig={player.frameConfig}
-                            className={isTurn ? 'shadow-[0_0_30px_rgba(176,38,255,0.6)]' : ''}
+        const avatarBlock = (size: number) => (
+            <div className={`relative flex-shrink-0 transition-all ${isTurn ? 'scale-110' : ''}`} style={{ width: size, height: size }}>
+                <AnimatePresence>
+                    {opponentEmotes[player.id] && (
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.5, y: -10 }}
+                            animate={{ opacity: 1, scale: 1.4, y: size - 4 }}
+                            exit={{ opacity: 0, scale: 0.5, y: 0 }}
+                            className="absolute bottom-0 left-1/2 -translate-x-1/2 z-50 text-2xl drop-shadow-[0_0_12px_rgba(255,255,255,0.8)] pointer-events-none"
+                        >
+                            {opponentEmotes[player.id]}
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+                {player.frameConfig ? (
+                    <FramedAvatar
+                        src={player.avatar}
+                        alt={player.name}
+                        size={size}
+                        rounded="full"
+                        frameConfig={player.frameConfig}
+                        className={isTurn ? 'shadow-[0_0_20px_rgba(176,38,255,0.6)]' : ''}
+                    />
+                ) : (
+                    <div className={`w-full h-full rounded-full p-[3px] overflow-hidden ${isTurn ? 'bg-[#b026ff] shadow-[0_0_20px_rgba(176,38,255,0.6)]' : 'bg-white/10 border border-white/5'}`}>
+                        <img src={player.avatar} alt={player.name} className="w-full h-full rounded-full object-cover" />
+                    </div>
+                )}
+                {isTurn && (
+                    <svg className="absolute inset-0 w-full h-full -rotate-90 pointer-events-none" viewBox="0 0 100 100">
+                        <circle cx="50" cy="50" r="48" fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="4" />
+                        <circle cx="50" cy="50" r="48" fill="none" stroke="#fff" strokeWidth="4"
+                            strokeDasharray="301" strokeDashoffset={301 - (301 * (player.timeLeft / 45))}
                         />
-                    ) : (
-                        <div className={`w-full h-full rounded-full p-1 overflow-hidden ${isTurn ? 'bg-[#b026ff] shadow-[0_0_30px_rgba(176,38,255,0.6)]' : 'bg-white/10 border border-white/5'}`}>
-                            <img src={player.avatar} alt={player.name} className="w-full h-full rounded-full object-cover" />
-                        </div>
-                    )}
+                    </svg>
+                )}
+            </div>
+        );
 
-                    {/* Timer Circle */}
-                    {isTurn && (
-                        <svg className="absolute inset-0 w-full h-full -rotate-90 pointer-events-none" viewBox="0 0 100 100">
-                            <circle cx="50" cy="50" r="48" fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="4" />
-                            <circle cx="50" cy="50" r="48" fill="none" stroke="#fff" strokeWidth="4"
-                                strokeDasharray="301" strokeDashoffset={301 - (301 * (player.timeLeft / 45))}
-                            />
-                        </svg>
-                    )}
+        return (
+            <div className={`absolute z-30 ${rootClasses}`}>
+                {/* ── MOBILE: compact column (avatar + name + card count badge) ── */}
+                <div className="flex sm:hidden flex-col items-center gap-0.5">
+                    <div className="relative">
+                        {avatarBlock(40)}
+                        {/* card count badge */}
+                        <div className="absolute -bottom-1 -right-1 bg-black/80 border border-white/20 text-white text-[8px] font-black min-w-[16px] h-4 px-0.5 rounded flex items-center justify-center">
+                            {player.cardCount}
+                        </div>
+                    </div>
+                    <span className="text-[8px] font-bold text-gray-300 max-w-[44px] truncate leading-tight">{player.name}</span>
                 </div>
 
-                <div className="flex flex-col gap-1 items-start">
-                    <div className="flex items-center gap-2">
-                        <div className="bg-black/60 backdrop-blur-md px-3 py-1.5 rounded-xl border border-white/5 flex flex-col min-w-[90px]">
-                            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none mb-1">{player.name}</span>
-                            <div className="flex items-center gap-2">
-                                <Layers size={12} className="text-[#b026ff]" />
-                                <span className="text-xs font-black text-white">{player.cardCount} cards</span>
+                {/* ── DESKTOP: full layout ── */}
+                <div className="hidden sm:flex items-start gap-3 md:gap-4 flex-row">
+                    {avatarBlock(56)}
+                    <div className="flex flex-col gap-1 items-start">
+                        <div className="flex items-center gap-2">
+                            <div className="bg-black/60 backdrop-blur-md px-3 py-1.5 rounded-xl border border-white/5 flex flex-col min-w-[90px]">
+                                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none mb-1">{player.name}</span>
+                                <div className="flex items-center gap-2">
+                                    <Layers size={12} className="text-[#b026ff]" />
+                                    <span className="text-xs font-black text-white">{player.cardCount} cards</span>
+                                </div>
                             </div>
+                            {player.petConfig?.modelUrl && (
+                                <PetViewer petConfig={player.petConfig} size={48} withBackground={false} />
+                            )}
                         </div>
-
-                        {/* Pet do oponente (à direita do card de nome) */}
-                        {player.petConfig?.modelUrl && (
-                            <PetViewer petConfig={player.petConfig} size={48} withBackground={false} />
-                        )}
-                    </div>
-
-                    {/* Opponent Hand (Compact 3 + N form) */}
-                    <div className="flex flex-row items-center -space-x-3 mt-1 opacity-90">
-                        {Array.from({ length: Math.min(player.cardCount, maxCardsShown) }).map((_, i) => (
-                            <div key={i} className="w-8 h-12 md:w-10 md:h-14 rounded bg-gray-900 border border-white/10 shadow-lg overflow-hidden flex-shrink-0" style={{ zIndex: i }}>
-                                <img src={player.sleeve} className="w-full h-full object-cover opacity-80" alt="Sleeve" />
-                            </div>
-                        ))}
-
-                        {player.cardCount > maxCardsShown && (
-                            <div className="w-8 h-12 md:w-10 md:h-14 rounded bg-black/90 border border-[#b026ff]/30 flex items-center justify-center text-[10px] font-black text-[#b026ff] z-10 flex-shrink-0 ml-1">
-                                +{player.cardCount - maxCardsShown}
-                            </div>
-                        )}
+                        <div className="flex flex-row items-center -space-x-3 mt-1 opacity-90">
+                            {Array.from({ length: Math.min(player.cardCount, maxCardsShown) }).map((_, i) => (
+                                <div key={i} className="w-8 h-12 md:w-10 md:h-14 rounded bg-gray-900 border border-white/10 shadow-lg overflow-hidden flex-shrink-0" style={{ zIndex: i }}>
+                                    <img src={player.sleeve} className="w-full h-full object-cover opacity-80" alt="Sleeve" />
+                                </div>
+                            ))}
+                            {player.cardCount > maxCardsShown && (
+                                <div className="w-8 h-12 md:w-10 md:h-14 rounded bg-black/90 border border-[#b026ff]/30 flex items-center justify-center text-[10px] font-black text-[#b026ff] z-10 flex-shrink-0 ml-1">
+                                    +{player.cardCount - maxCardsShown}
+                                </div>
+                            )}
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1645,7 +1655,7 @@ export default function Game() {
             )}
 
             {/* --- GAME TABLE (CENTER) --- */}
-            <div className="absolute inset-x-4 sm:inset-x-12 top-28 bottom-48 border-2 border-white/5 rounded-3xl bg-white/[0.02] backdrop-blur-sm p-4 sm:p-8 overflow-y-auto overflow-x-hidden custom-scrollbar">
+            <div className="absolute inset-x-2 sm:inset-x-12 top-20 sm:top-28 bottom-56 sm:bottom-48 border-2 border-white/5 rounded-3xl bg-white/[0.02] backdrop-blur-sm p-3 sm:p-8 overflow-y-auto overflow-x-hidden custom-scrollbar">
                 {multiCombineActive && (
                     <div className="text-center mb-3">
                         <span className="inline-flex items-center gap-2 text-[11px] font-black uppercase tracking-[0.2em] text-[#b026ff] bg-[#b026ff]/10 border border-[#b026ff]/30 rounded-full px-4 py-1.5">
@@ -1697,7 +1707,7 @@ export default function Game() {
                         initial={{ opacity: 0, y: 50, scale: 0.9, x: '-50%' }}
                         animate={{ opacity: 1, y: 0, scale: 1, x: '-50%' }}
                         exit={{ opacity: 0, y: 50, scale: 0.9, x: '-50%' }}
-                        className="fixed bottom-[212px] left-1/2 z-50 origin-bottom"
+                        className="fixed bottom-[268px] sm:bottom-[212px] left-1/2 z-50 origin-bottom"
                     >
                         <button
                             onClick={playSelectedCards}
@@ -1814,34 +1824,71 @@ export default function Game() {
                             <button onClick={() => setShowSurrenderModal(true)} className="p-2.5 bg-red-900/20 hover:bg-red-500 rounded-xl border border-red-500/30 transition-colors flex items-center justify-center text-red-500 hover:text-white" title="Surrender">
                                 <Flag size={16} />
                             </button>
-                            <div className="w-px h-7 bg-white/10" />
-                            <div className="flex flex-col items-end">
-                                <span className="text-[10px] uppercase tracking-widest font-bold text-gray-500">Deck</span>
-                                <div className="font-black text-base text-white">{deck.length}</div>
+                            {/* Desktop-only: Deck + turn actions */}
+                            <div className="hidden sm:flex items-center gap-2">
+                                <div className="w-px h-7 bg-white/10" />
+                                <div className="flex flex-col items-end">
+                                    <span className="text-[10px] uppercase tracking-widest font-bold text-gray-500">Deck</span>
+                                    <div className="font-black text-base text-white">{deck.length}</div>
+                                </div>
+                                <div className="relative w-10 rounded-lg bg-gradient-to-br from-[#120a1f] to-[#2a0e42] border-2 border-white/20 flex items-center justify-center shadow-xl overflow-hidden group" style={{ height: 60 }}>
+                                    <img src={players[0].sleeve} className="absolute inset-0 w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" alt="Deck" />
+                                    <div className="absolute inset-0 bg-black/20" />
+                                </div>
+                                {isMyTurn && (
+                                    <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="flex items-center gap-2">
+                                        <button
+                                            onClick={useExtraTime}
+                                            className="py-2 px-3 rounded-xl font-black text-xs uppercase tracking-widest flex items-center gap-1 transition-all border bg-yellow-500/10 hover:bg-yellow-500 text-yellow-500 hover:text-yellow-900 border-yellow-500/30 hover:shadow-[0_0_12px_rgba(234,179,8,0.5)]"
+                                            title="Use 30s Bank Time"
+                                        >
+                                            <Timer size={14} /> +{myPlayer.bankTime}s
+                                        </button>
+                                        <button
+                                            onClick={passTurn}
+                                            className="py-2 px-4 rounded-xl font-black text-sm uppercase tracking-widest bg-[#b026ff] text-white hover:bg-[#9d1ce6] transition-colors shadow-[0_0_18px_rgba(176,38,255,0.4)] whitespace-nowrap"
+                                        >
+                                            {hasPlayedThisTurn ? 'End Turn' : 'Pass & Draw'}
+                                        </button>
+                                    </motion.div>
+                                )}
                             </div>
-                            {/* Visual Deck */}
-                            <div className="relative w-10 rounded-lg bg-gradient-to-br from-[#120a1f] to-[#2a0e42] border-2 border-white/20 flex items-center justify-center shadow-xl overflow-hidden group" style={{ height: 60 }}>
-                                <img src={players[0].sleeve} className="absolute inset-0 w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" alt="Deck" />
+                        </div>
+                    </div>
+
+                    {/* ── MOBILE-ONLY: Deck + Turn action row ── */}
+                    <div className="flex sm:hidden items-center justify-between px-3 pb-1 gap-2 pointer-events-auto">
+                        {/* Deck display */}
+                        <div className="flex items-center gap-2">
+                            <div className="relative w-8 rounded bg-gradient-to-br from-[#120a1f] to-[#2a0e42] border border-white/20 overflow-hidden flex-shrink-0" style={{ height: 44 }}>
+                                <img src={players[0].sleeve} className="absolute inset-0 w-full h-full object-cover opacity-80" alt="Deck" />
                                 <div className="absolute inset-0 bg-black/20" />
                             </div>
-                            {isMyTurn && (
-                                <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="flex items-center gap-2">
-                                    <button
-                                        onClick={useExtraTime}
-                                        className="py-2 px-3 rounded-xl font-black text-xs uppercase tracking-widest flex items-center gap-1 transition-all border bg-yellow-500/10 hover:bg-yellow-500 text-yellow-500 hover:text-yellow-900 border-yellow-500/30 hover:shadow-[0_0_12px_rgba(234,179,8,0.5)]"
-                                        title="Use 30s Bank Time"
-                                    >
-                                        <Timer size={14} /> +{myPlayer.bankTime}s
-                                    </button>
-                                    <button
-                                        onClick={passTurn}
-                                        className="py-2 px-4 rounded-xl font-black text-sm uppercase tracking-widest bg-[#b026ff] text-white hover:bg-[#9d1ce6] transition-colors shadow-[0_0_18px_rgba(176,38,255,0.4)] whitespace-nowrap"
-                                    >
-                                        {hasPlayedThisTurn ? 'End Turn' : 'Pass & Draw'}
-                                    </button>
-                                </motion.div>
-                            )}
+                            <div className="flex flex-col">
+                                <span className="text-[9px] uppercase tracking-widest font-bold text-gray-500">Deck</span>
+                                <span className="font-black text-sm text-white leading-none">{deck.length}</span>
+                            </div>
                         </div>
+                        {/* Turn actions (only when it's my turn) */}
+                        {isMyTurn ? (
+                            <div className="flex items-center gap-2">
+                                <button
+                                    onClick={useExtraTime}
+                                    className="py-2 px-2.5 rounded-xl font-black text-xs uppercase flex items-center gap-1 transition-all border bg-yellow-500/10 text-yellow-500 border-yellow-500/30"
+                                    title="Use Bank Time"
+                                >
+                                    <Timer size={13} /> +{myPlayer.bankTime}s
+                                </button>
+                                <button
+                                    onClick={passTurn}
+                                    className="py-2 px-5 rounded-xl font-black text-sm uppercase tracking-widest bg-[#b026ff] text-white shadow-[0_0_18px_rgba(176,38,255,0.5)] whitespace-nowrap active:scale-95 transition-all"
+                                >
+                                    {hasPlayedThisTurn ? 'End Turn' : 'Pass & Draw'}
+                                </button>
+                            </div>
+                        ) : (
+                            <span className="text-[11px] text-gray-500 font-bold uppercase tracking-widest">Aguardando sua vez...</span>
+                        )}
                     </div>
 
                     {/* Thin separator */}
