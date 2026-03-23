@@ -44,9 +44,9 @@ router.post('/', authenticateToken, upload.single('file'), async (req: AuthReque
             stream.end(req.file!.buffer);
         });
         res.json({ url: result.secure_url, filename: result.public_id });
-    } catch (err) {
-        console.error('Upload error:', err);
-        res.status(500).json({ error: 'Upload failed' });
+    } catch (err: any) {
+        console.error('Upload error:', err?.message || err);
+        res.status(500).json({ error: err?.message || 'Upload failed' });
     }
 });
 
