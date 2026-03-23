@@ -9,6 +9,7 @@ import PetViewer from '../components/ui/PetViewer';
 import type { PetConfig } from '../components/ui/PetViewer';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useUser } from '../hooks/useUser';
+import { useTranslation } from 'react-i18next';
 
 const DEFAULT_SLEEVE = 'https://images.unsplash.com/photo-1462331940025-496dfbfc7564?q=80&w=200&auto=format&fit=crop';
 
@@ -141,6 +142,7 @@ export default function Game() {
     const navigate = useNavigate();
     const playersCount = parseInt(searchParams.get('players') || '4');
     const { user, refreshUser } = useUser();
+    const { t } = useTranslation();
     const [equippedSleeve, setEquippedSleeve] = useState<string>(DEFAULT_SLEEVE);
     const [equippedFrameConfig, setEquippedFrameConfig] = useState<FrameConfig | null>(null);
     const [equippedPetConfig, setEquippedPetConfig] = useState<PetConfig | null>(null);
@@ -1467,7 +1469,7 @@ export default function Game() {
                                 <p className="text-center text-[10px] font-black tracking-[0.45em] uppercase mb-3"
                                     style={{ color: isVictory ? 'rgba(251,191,36,0.6)' : 'rgba(239,68,68,0.6)' }}
                                 >
-                                    {gameOver.reason === 'deck_empty' ? '— TIE BREAKER —' : gameOver.reason === 'hand_empty' ? '— HAND CLEARED —' : gameOver.reason === 'forfeited' ? '— FORFEITED —' : '— MATCH RESULT —'}
+                                    {gameOver.reason === 'deck_empty' ? t('game.tieBreaker') : gameOver.reason === 'hand_empty' ? t('game.handCleared') : gameOver.reason === 'forfeited' ? t('game.forfeited') : t('game.matchResult')}
                                 </p>
 
                                 {/* Giant title */}
@@ -1488,7 +1490,7 @@ export default function Game() {
                                                 : 'drop-shadow(0 0 40px rgba(239,68,68,0.5))',
                                         }}
                                     >
-                                        {isVictory ? 'VICTORY' : 'DEFEAT'}
+                                        {isVictory ? t('game.victory') : t('game.defeat')}
                                     </motion.h1>
                                 </div>
 
@@ -1596,7 +1598,7 @@ export default function Game() {
                                                 className="flex-1 py-3.5 rounded-xl font-black uppercase tracking-[0.12em] text-sm text-gray-400 hover:text-white transition-all"
                                                 style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}
                                             >
-                                                Exit
+                                                {t('game.exit')}
                                             </motion.button>
                                         </div>
                                     </div>
@@ -1618,18 +1620,18 @@ export default function Game() {
                             </div>
 
                             <h2 className="text-2xl font-black text-white mb-2 uppercase tracking-widest">
-                                Surrender?
+                                {t('game.surrender')}?
                             </h2>
                             <p className="text-gray-400 text-sm mb-8 font-bold">
-                                Are you sure you want to surrender this match?
+                                {t('game.surrenderConfirm')}
                             </p>
 
                             <div className="flex gap-4">
                                 <button onClick={() => setShowSurrenderModal(false)} className="flex-1 py-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl font-black uppercase tracking-widest text-gray-300 hover:text-white transition-all">
-                                    Cancel
+                                    {t('game.cancel')}
                                 </button>
                                 <button onClick={() => { if (isMultiplayer) { mpSocketRef.current?.emit('game:surrender'); } else { navigate('/play'); } setShowSurrenderModal(false); }} className="flex-1 py-3 bg-red-600 hover:bg-red-500 rounded-xl font-black uppercase tracking-widest text-white transition-all shadow-[0_0_20px_rgba(239,68,68,0.4)]">
-                                    Surrender
+                                    {t('game.surrender')}
                                 </button>
                             </div>
                         </motion.div>
@@ -1694,7 +1696,7 @@ export default function Game() {
                     {tableSets.filter(s => s.length > 0).length === 0 && (
                         <div className="flex flex-col items-center text-white/20 mt-12">
                             <GripHorizontal size={48} className="mb-4 opacity-50" />
-                            <p className="font-bold tracking-widest uppercase">Table is empty</p>
+                            <p className="font-bold tracking-widest uppercase">{t('game.tableEmpty')}</p>
                         </div>
                     )}
                 </div>
@@ -1713,7 +1715,7 @@ export default function Game() {
                             onClick={playSelectedCards}
                             className="bg-[#b026ff] hover:bg-[#c95bff] text-white px-8 py-3 rounded-full font-black tracking-widest uppercase shadow-[0_0_40px_rgba(176,38,255,0.8)] border-2 border-white/20 transition-all hover:scale-105 active:scale-95"
                         >
-                            Play Combination
+                            {t('game.playCombination')}
                         </button>
                     </motion.div>
                 )}
@@ -1770,10 +1772,10 @@ export default function Game() {
                                     <PetViewer petConfig={equippedPetConfig} size={40} withBackground={false} />
                                 )}
                                 <div className="bg-black/60 backdrop-blur-md px-3 py-1 rounded-xl border border-white/10 flex flex-col">
-                                    <span className="text-[10px] font-bold text-gray-400">My Hand</span>
+                                    <span className="text-[10px] font-bold text-gray-400">{t('game.myHand')}</span>
                                     <div className="flex items-center gap-1">
                                         <Layers size={12} className="text-[#b026ff]" />
-                                        <span className="text-xs font-black">{myHand.length} cards</span>
+                                        <span className="text-xs font-black">{myHand.length} {t('game.cards')}</span>
                                     </div>
                                 </div>
                             </div>
@@ -1786,7 +1788,7 @@ export default function Game() {
                                 className="group bg-[#120a1f]/80 hover:bg-[#b026ff]/30 backdrop-blur-xl px-3 py-2 rounded-2xl border border-white/10 hover:border-[#b026ff]/50 flex items-center gap-1.5 text-gray-400 hover:text-white transition-all text-xs font-black uppercase tracking-widest shadow-[0_4px_15px_rgba(0,0,0,0.5)] hover:shadow-[0_0_15px_rgba(176,38,255,0.4)]"
                             >
                                 <ArrowDownUp size={14} className="text-[#b026ff] group-hover:rotate-180 transition-transform duration-500" />
-                                Sort
+                                {t('game.sort')}
                             </button>
                             {isMyTurn && !multiCombineActive && (
                                 <button
@@ -1795,7 +1797,7 @@ export default function Game() {
                                     title="Multi-Combine Mode"
                                 >
                                     <Plus size={13} />
-                                    Multi
+                                    {t('game.multi')}
                                 </button>
                             )}
                             <div className="relative">
@@ -1828,7 +1830,7 @@ export default function Game() {
                             <div className="hidden sm:flex items-center gap-2">
                                 <div className="w-px h-7 bg-white/10" />
                                 <div className="flex flex-col items-end">
-                                    <span className="text-[10px] uppercase tracking-widest font-bold text-gray-500">Deck</span>
+                                    <span className="text-[10px] uppercase tracking-widest font-bold text-gray-500">{t('game.deck')}</span>
                                     <div className="font-black text-base text-white">{deck.length}</div>
                                 </div>
                                 <div className="relative w-10 rounded-lg bg-gradient-to-br from-[#120a1f] to-[#2a0e42] border-2 border-white/20 flex items-center justify-center shadow-xl overflow-hidden group" style={{ height: 60 }}>
@@ -1848,7 +1850,7 @@ export default function Game() {
                                             onClick={passTurn}
                                             className="py-2 px-4 rounded-xl font-black text-sm uppercase tracking-widest bg-[#b026ff] text-white hover:bg-[#9d1ce6] transition-colors shadow-[0_0_18px_rgba(176,38,255,0.4)] whitespace-nowrap"
                                         >
-                                            {hasPlayedThisTurn ? 'End Turn' : 'Pass & Draw'}
+                                            {hasPlayedThisTurn ? t('game.endTurn') : t('game.passAndDraw')}
                                         </button>
                                     </motion.div>
                                 )}
@@ -1856,7 +1858,7 @@ export default function Game() {
                         </div>
                     </div>
 
-                    {/* ── MOBILE-ONLY: Deck + Turn action row ── */}
+                    {/* ── MOBILE-ONLY: Deck + Turn action row ── */}}
                     <div className="flex sm:hidden items-center justify-between px-3 pb-1 gap-2 pointer-events-auto">
                         {/* Deck display */}
                         <div className="flex items-center gap-2">
@@ -1865,7 +1867,7 @@ export default function Game() {
                                 <div className="absolute inset-0 bg-black/20" />
                             </div>
                             <div className="flex flex-col">
-                                <span className="text-[9px] uppercase tracking-widest font-bold text-gray-500">Deck</span>
+                                <span className="text-[9px] uppercase tracking-widest font-bold text-gray-500">{t('game.deck')}</span>
                                 <span className="font-black text-sm text-white leading-none">{deck.length}</span>
                             </div>
                         </div>
@@ -1883,11 +1885,11 @@ export default function Game() {
                                     onClick={passTurn}
                                     className="py-2 px-5 rounded-xl font-black text-sm uppercase tracking-widest bg-[#b026ff] text-white shadow-[0_0_18px_rgba(176,38,255,0.5)] whitespace-nowrap active:scale-95 transition-all"
                                 >
-                                    {hasPlayedThisTurn ? 'End Turn' : 'Pass & Draw'}
+                                    {hasPlayedThisTurn ? t('game.endTurn') : t('game.passAndDraw')}
                                 </button>
                             </div>
                         ) : (
-                            <span className="text-[11px] text-gray-500 font-bold uppercase tracking-widest">Waiting for your turn...</span>
+                            <span className="text-[11px] text-gray-500 font-bold uppercase tracking-widest">{t('game.waiting')}</span>
                         )}
                     </div>
 
@@ -1989,7 +1991,7 @@ export default function Game() {
             {isSpectator && (
                 <div className="fixed top-0 left-0 right-0 z-50 pointer-events-none">
                     <div className="flex items-center justify-center py-2 bg-[#b026ff]/80 backdrop-blur-md border-b border-[#b026ff]/40">
-                        <span className="text-xs font-black text-white tracking-[0.25em] uppercase">👁 SPECTATOR MODE — you are watching this match</span>
+                        <span className="text-xs font-black text-white tracking-[0.25em] uppercase">👁 {t('game.spectator')}</span>
                     </div>
                 </div>
             )}
