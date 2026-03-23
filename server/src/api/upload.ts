@@ -1,23 +1,20 @@
 import { Router } from 'express';
 import multer from 'multer';
 import path from 'path';
+import { v2 as cloudinary } from 'cloudinary';
 import { authenticateToken, AuthRequest } from '../middleware/auth';
 
 const router = Router();
 
-const storage = multer.diskStorage({
-    destination: (_req, _file, cb) => {
-        cb(null, path.join(__dirname, '../../uploads'));
-    },
-    filename: (_req, file, cb) => {
-        const ext = path.extname(file.originalname);
-        const uniqueName = `${Date.now()}-${Math.round(Math.random() * 1e9)}${ext}`;
-        cb(null, uniqueName);
-    }
+cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
+// Use memory storage — no disk needed
 const upload = multer({
-    storage,
+    storage: multer.memoryStorage(),
     limits: { fileSize: 10 * 1024 * 1024 }, // 10MB max
     fileFilter: (_req, file, cb) => {
         const allowed = ['.png', '.jpg', '.jpeg', '.gif', '.webp', '.svg'];
@@ -31,14 +28,22 @@ const upload = multer({
 });
 
 // POST /api/upload
-router.post('/', authenticateToken, upload.single('file'), (req: AuthRequest, res) => {
+router.post('/', authenticateToken, upload.single('file'), async (req: AuthRequest, res) => {
     try {
         if (!req.file) {
             return res.status(400).json({ error: 'No file uploaded' });
         }
-        // Return the URL that the frontend can use
-        const fileUrl = `http://localhost:3000/uploads/${req.file.filename}`;
-        res.json({ url: fileUrl, filename: req.file.filename });
+        const result = await new Promise<any>((resolve, reject) => {
+            const stream = cloudinary.uploader.upload_stream(
+                { folder: 'moove', resource_type: 'auto' },
+                (error, result) => {
+                    if (error) reject(error);
+                    else resolve(result);
+                }
+            );
+            stream.end(req.file!.buffer);
+        });
+        res.json({ url: result.secure_url, filename: result.public_id });
     } catch (err) {
         console.error('Upload error:', err);
         res.status(500).json({ error: 'Upload failed' });
