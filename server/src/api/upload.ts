@@ -6,10 +6,22 @@ import { authenticateToken, AuthRequest } from '../middleware/auth';
 
 const router = Router();
 
+const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
+const apiKey = process.env.CLOUDINARY_API_KEY;
+const apiSecret = process.env.CLOUDINARY_API_SECRET;
+
+if (!cloudName || !apiKey || !apiSecret) {
+    console.error('[Upload] MISSING Cloudinary env vars:', {
+        CLOUDINARY_CLOUD_NAME: !!cloudName,
+        CLOUDINARY_API_KEY: !!apiKey,
+        CLOUDINARY_API_SECRET: !!apiSecret,
+    });
+}
+
 cloudinary.config({
-    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-    api_key: process.env.CLOUDINARY_API_KEY,
-    api_secret: process.env.CLOUDINARY_API_SECRET,
+    cloud_name: cloudName,
+    api_key: apiKey,
+    api_secret: apiSecret,
 });
 
 // Use memory storage — no disk needed
@@ -45,8 +57,12 @@ router.post('/', authenticateToken, upload.single('file'), async (req: AuthReque
         });
         res.json({ url: result.secure_url, filename: result.public_id });
     } catch (err: any) {
-        console.error('Upload error:', err?.message || err);
-        res.status(500).json({ error: err?.message || 'Upload failed' });
+        const msg = err?.message || String(err) || 'Upload failed';
+        console.error('[Upload] error detail:', msg, '| Cloudinary configured:', !!cloudName);
+        if (!cloudName || !apiKey || !apiSecret) {
+            return res.status(500).json({ error: 'Cloudinary não configurado no servidor (variáveis de ambiente ausentes)' });
+        }
+        res.status(500).json({ error: msg });
     }
 });
 
