@@ -1871,7 +1871,7 @@ export default function Game() {
                         </div>
                     </div>
 
-                    {/* ── MOBILE-ONLY: Deck + Turn action row ── */}}
+                    {/* ── MOBILE-ONLY: Deck + Turn action row ── */}
                     <div className="flex sm:hidden items-center justify-between px-3 pb-1 gap-2 pointer-events-auto">
                         {/* Deck display */}
                         <div className="flex items-center gap-2">
