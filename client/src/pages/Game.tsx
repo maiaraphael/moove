@@ -413,6 +413,15 @@ export default function Game() {
     const [isEmoteOpen, setIsEmoteOpen] = useState(false);
     const [activeEmote, setActiveEmote] = useState<string | null>(null);
     const emoteTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+    // ── Mobile detection for compact card hand ──
+    const [windowWidth, setWindowWidth] = useState(() => typeof window !== 'undefined' ? window.innerWidth : 1024);
+    useEffect(() => {
+        const onResize = () => setWindowWidth(window.innerWidth);
+        window.addEventListener('resize', onResize);
+        return () => window.removeEventListener('resize', onResize);
+    }, []);
+    const isMobile = windowWidth < 640;
     const [opponentEmotes, setOpponentEmotes] = useState<Record<string, string | null>>({});
     const opponentEmoteTimeoutsRef = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
     const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -1106,17 +1115,21 @@ export default function Game() {
     };
 
     // Card Component
-    const renderCard = (card: GameCard, isHand = false, isTable = false) => {
+    const renderCard = (card: GameCard, isHand = false, isTable = false, compact = false) => {
         const isSelected = selectedCards.find(c => c.id === card.id) !== undefined;
 
         const sizeClasses = isTable
             ? "w-8 h-12 sm:w-10 sm:h-14 md:w-11 md:h-16"
+            : compact
+            ? "w-9 h-12 sm:w-14 sm:h-20 md:w-16 md:h-24"
             : "w-12 h-16 sm:w-14 sm:h-20 md:w-16 md:h-24";
 
         // ───── JOKER CARD — Premium Void Design ─────
         if (card.number === 'JOKER') {
             const jokerSize = isTable
                 ? { w: 32, h: 48, stroke: 0.8, cornerText: '6px', centerW: 18, centerH: 18 }
+                : compact
+                ? { w: 36, h: 48, stroke: 0.9, cornerText: '7px', centerW: 22, centerH: 22 }
                 : { w: 48, h: 64, stroke: 1.2, cornerText: '9px', centerW: 30, centerH: 30 };
 
             return (
@@ -1216,8 +1229,8 @@ export default function Game() {
 
         // ───── REGULAR CARD — Premium Void Design ─────
         const theme = CARD_THEME[card.color as keyof typeof CARD_THEME];
-        const numSize = isTable ? '1.15rem' : '2.2rem';
-        const cornerSize = isTable ? '0.42rem' : '0.65rem';
+        const numSize = isTable ? '1.15rem' : compact ? '1.5rem' : '2.2rem';
+        const cornerSize = isTable ? '0.42rem' : compact ? '0.5rem' : '0.65rem';
 
         return (
             <motion.div
@@ -1959,30 +1972,41 @@ export default function Game() {
                     </AnimatePresence>
 
                     {/* ── CARDS ROW ── */}
-                    <div className="overflow-x-auto custom-scrollbar pb-3 pt-2 pointer-events-auto">
-                        <div className="flex items-end justify-start sm:justify-center min-w-max px-4">
-                            <AnimatePresence>
-                                {myHand.map((card, i) => {
-                                    const mid = (myHand.length - 1) / 2;
-                                    const rotate = myHand.length > 7 ? (i - mid) * (myHand.length > 12 ? 2.5 : 1.5) : 0;
-                                    const overlap = Math.min(4, Math.max(-24, 4 - Math.max(0, myHand.length - 7) * 3));
-                                    return (
-                                        <div
-                                            key={card.id}
-                                            style={{
-                                                transform: `rotate(${rotate}deg)`,
-                                                transformOrigin: 'bottom center',
-                                                marginLeft: i === 0 ? 0 : overlap,
-                                            }}
-                                            onClick={multiCombineActive && isMyTurn ? () => stageHandCard(card) : undefined}
-                                        >
-                                            {renderCard(card, !multiCombineActive)}
-                                        </div>
-                                    );
-                                })}
-                            </AnimatePresence>
+                    {(() => {
+                        const compact = isMobile && myHand.length > 8;
+                        return (
+                        <div className="relative overflow-x-auto custom-scrollbar pb-3 pt-2 pointer-events-auto">
+                            {/* Right-fade scroll hint when compact */}
+                            {compact && (
+                                <div className="absolute right-0 top-0 bottom-3 w-10 bg-gradient-to-l from-[#0f0814] to-transparent z-10 pointer-events-none" />
+                            )}
+                            <div className="flex items-end justify-start sm:justify-center min-w-max px-4">
+                                <AnimatePresence>
+                                    {myHand.map((card, i) => {
+                                        const mid = (myHand.length - 1) / 2;
+                                        const rotate = compact ? 0 : (myHand.length > 7 ? (i - mid) * (myHand.length > 12 ? 2.5 : 1.5) : 0);
+                                        const overlap = compact
+                                            ? -Math.min(10, Math.max(0, myHand.length - 8))
+                                            : Math.min(4, Math.max(-24, 4 - Math.max(0, myHand.length - 7) * 3));
+                                        return (
+                                            <div
+                                                key={card.id}
+                                                style={{
+                                                    transform: `rotate(${rotate}deg)`,
+                                                    transformOrigin: 'bottom center',
+                                                    marginLeft: i === 0 ? 0 : overlap,
+                                                }}
+                                                onClick={multiCombineActive && isMyTurn ? () => stageHandCard(card) : undefined}
+                                            >
+                                                {renderCard(card, !multiCombineActive, false, compact)}
+                                            </div>
+                                        );
+                                    })}
+                                </AnimatePresence>
+                            </div>
                         </div>
-                    </div>
+                        );
+                    })()}
                 </div>
             </div>
             )} {/* end !isSpectator bottom panel */}
