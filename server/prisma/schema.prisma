@@ -214,6 +214,7 @@ model VipConfig {
   gemsBonus     Int      @default(0)   // % extra gems per ranked game
   xpBonus       Int      @default(0)   // % extra XP per ranked game
   noMmrLoss     Boolean  @default(false)
+  turnBonusSeconds Int   @default(0)   // extra seconds per turn (added to base 45s)
   isActive      Boolean  @default(true)
   createdAt     DateTime @default(now())
 }

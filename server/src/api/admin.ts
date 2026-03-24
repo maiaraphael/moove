@@ -476,7 +476,7 @@ router.get('/vip', async (_req, res) => {
 
 router.post('/vip', async (req, res) => {
     try {
-        const { name, description, imageUrl, price, durationDays, gemsBonus, xpBonus, noMmrLoss, isActive } = req.body;
+        const { name, description, imageUrl, price, durationDays, gemsBonus, xpBonus, noMmrLoss, turnBonusSeconds, isActive } = req.body;
         const vip = await prisma.vipConfig.create({
             data: {
                 name,
@@ -487,6 +487,7 @@ router.post('/vip', async (req, res) => {
                 gemsBonus: parseInt(String(gemsBonus)) || 0,
                 xpBonus: parseInt(String(xpBonus)) || 0,
                 noMmrLoss: Boolean(noMmrLoss),
+                turnBonusSeconds: parseInt(String(turnBonusSeconds)) || 0,
                 isActive: isActive !== false,
             }
         });
@@ -499,7 +500,7 @@ router.post('/vip', async (req, res) => {
 
 router.put('/vip/:id', async (req, res) => {
     try {
-        const { name, description, imageUrl, price, durationDays, gemsBonus, xpBonus, noMmrLoss, isActive } = req.body;
+        const { name, description, imageUrl, price, durationDays, gemsBonus, xpBonus, noMmrLoss, turnBonusSeconds, isActive } = req.body;
         const vip = await prisma.vipConfig.update({
             where: { id: req.params.id },
             data: {
@@ -511,6 +512,7 @@ router.put('/vip/:id', async (req, res) => {
                 gemsBonus: parseInt(String(gemsBonus)) || 0,
                 xpBonus: parseInt(String(xpBonus)) || 0,
                 noMmrLoss: Boolean(noMmrLoss),
+                turnBonusSeconds: parseInt(String(turnBonusSeconds)) || 0,
                 isActive: Boolean(isActive),
             }
         });

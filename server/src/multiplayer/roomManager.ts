@@ -54,6 +54,7 @@ interface GameState {
     activeSlot: string;
     hasPlayedThisTurn: boolean;
     slotTimers: Record<string, { timeLeft: number; bankTime: number }>;
+    slotTurnTime: Record<string, number>; // per-player effective turn time (base + VIP bonus)
     slotOrder: string[];
     afkStrikes: Record<string, number>;
     forfeitedSlots: Set<string>;
@@ -217,6 +218,7 @@ function broadcastGameState(io: Server, room: Room) {
             activeSlot: gs.activeSlot,
             hasPlayedThisTurn: gs.hasPlayedThisTurn,
             slotTimers: gs.slotTimers,
+            slotTurnTime: gs.slotTurnTime,
         });
     }
     // Broadcast to spectators (no hand data)
@@ -232,6 +234,7 @@ function broadcastGameState(io: Server, room: Room) {
             activeSlot: gs.activeSlot,
             hasPlayedThisTurn: gs.hasPlayedThisTurn,
             slotTimers: gs.slotTimers,
+            slotTurnTime: gs.slotTurnTime,
         };
         for (const [socketId] of room.spectators) {
             const specSkt = io.sockets.sockets.get(socketId);
@@ -247,7 +250,7 @@ function advanceTurn(io: Server, room: Room) {
     const idx = gs.slotOrder.indexOf(gs.activeSlot);
     gs.activeSlot = gs.slotOrder[(idx + 1) % gs.slotOrder.length];
     gs.hasPlayedThisTurn = false;
-    gs.slotTimers[gs.activeSlot].timeLeft = room.turnTime;
+    gs.slotTimers[gs.activeSlot].timeLeft = gs.slotTurnTime[gs.activeSlot] ?? room.turnTime;
     broadcastGameState(io, room);
     startTurnTimer(io, room);
 }
@@ -658,7 +661,7 @@ async function forfeitPlayerInGame(io: Server, room: Room, slot: string, reason:
         }
         gs.activeSlot = nextSlot;
         gs.hasPlayedThisTurn = false;
-        gs.slotTimers[nextSlot].timeLeft = room.turnTime;
+        gs.slotTimers[nextSlot].timeLeft = gs.slotTurnTime[nextSlot] ?? room.turnTime;
         broadcastGameState(io, room);
         startTurnTimer(io, room);
     } else {
@@ -701,7 +704,24 @@ async function startRankedMatch(io: Server, entries: RankedQueueEntry[]) {
     const { deck: remDeck, hands } = dealCards(generateDeck(playerCount), playerCount);
     const slotOrder = roomPlayers.map(p => p.slot);
     const slotTimers: Record<string, { timeLeft: number; bankTime: number }> = {};
-    for (const p of roomPlayers) slotTimers[p.slot] = { timeLeft: turnTime, bankTime: 30 };
+
+    // Build per-player turn times based on VIP turnBonusSeconds
+    const slotTurnTime: Record<string, number> = {};
+    const vipCfgForTimer = await prisma.vipConfig.findFirst({ where: { isActive: true } });
+    if (vipCfgForTimer && vipCfgForTimer.turnBonusSeconds > 0) {
+        const userVipRows = await prisma.user.findMany({
+            where: { id: { in: entries.map(e => e.userId) } },
+            select: { id: true, vipExpiresAt: true }
+        });
+        const vipMap = new Map(userVipRows.map(u => [u.id, !!u.vipExpiresAt && u.vipExpiresAt > new Date()]));
+        for (let i = 0; i < entries.length; i++) {
+            slotTurnTime[`p${i}`] = turnTime + (vipMap.get(entries[i].userId) ? vipCfgForTimer.turnBonusSeconds : 0);
+        }
+    } else {
+        for (let i = 0; i < entries.length; i++) slotTurnTime[`p${i}`] = turnTime;
+    }
+
+    for (const p of roomPlayers) slotTimers[p.slot] = { timeLeft: slotTurnTime[p.slot] ?? turnTime, bankTime: 30 };
     const firstSlot = slotOrder[Math.floor(Math.random() * slotOrder.length)];
 
     const afkStrikes: Record<string, number> = {};
@@ -711,7 +731,7 @@ async function startRankedMatch(io: Server, entries: RankedQueueEntry[]) {
         id: roomId, name: 'Ranked Match', hostSocketId: roomPlayers[0].socketId,
         players: roomPlayers, maxPlayers: playerCount, turnTime,
         isPrivate: true, ranked: true, status: 'in-game', createdAt: Date.now(),
-        gameState: { deck: remDeck, hands, tableSets: [], activeSlot: firstSlot, hasPlayedThisTurn: false, slotTimers, slotOrder, afkStrikes, forfeitedSlots: new Set() },
+        gameState: { deck: remDeck, hands, tableSets: [], activeSlot: firstSlot, hasPlayedThisTurn: false, slotTimers, slotTurnTime, slotOrder, afkStrikes, forfeitedSlots: new Set() },
     };
     rooms.set(roomId, room);
 
@@ -742,7 +762,7 @@ async function startRankedMatch(io: Server, entries: RankedQueueEntry[]) {
         if (skt) skt.emit('ranked:match_found', {
             roomId, slot: `p${i}`, hand: hands[`p${i}`],
             players: playerProfiles, deckCount: remDeck.length, tableSets: [],
-            activeSlot: firstSlot, turnTime, slotTimers,
+            activeSlot: firstSlot, turnTime, slotTimers, slotTurnTime,
         });
     }
 
@@ -906,7 +926,7 @@ export const setupMultiplayer = (io: Server) => {
         });
 
         // ── START ──
-        socket.on('lobby:start', () => {
+        socket.on('lobby:start', async () => {
             const room = getRoom();
             if (!room) { socket.emit('lobby:error', { message: 'Not in a room' }); return; }
             if (room.hostSocketId !== socket.id) { socket.emit('lobby:error', { message: 'Only the host can start' }); return; }
@@ -915,14 +935,32 @@ export const setupMultiplayer = (io: Server) => {
             const { deck: remDeck, hands } = dealCards(generateDeck(room.players.length), room.players.length);
             const slotOrder = room.players.map(p => p.slot);
             const slotTimers: Record<string, { timeLeft: number; bankTime: number }> = {};
-            for (const p of room.players) slotTimers[p.slot] = { timeLeft: room.turnTime, bankTime: 30 };
+
+            // Build per-player turn times based on VIP turnBonusSeconds
+            const slotTurnTime: Record<string, number> = {};
+            const vipCfgLobby = await prisma.vipConfig.findFirst({ where: { isActive: true } });
+            if (vipCfgLobby && vipCfgLobby.turnBonusSeconds > 0) {
+                const userIds = room.players.map(p => p.userId).filter(Boolean);
+                const userVipRows = await prisma.user.findMany({
+                    where: { id: { in: userIds } },
+                    select: { id: true, vipExpiresAt: true }
+                });
+                const vipMap = new Map(userVipRows.map(u => [u.id, !!u.vipExpiresAt && u.vipExpiresAt > new Date()]));
+                for (const p of room.players) {
+                    slotTurnTime[p.slot] = room.turnTime + (vipMap.get(p.userId) ? vipCfgLobby.turnBonusSeconds : 0);
+                }
+            } else {
+                for (const p of room.players) slotTurnTime[p.slot] = room.turnTime;
+            }
+
+            for (const p of room.players) slotTimers[p.slot] = { timeLeft: slotTurnTime[p.slot] ?? room.turnTime, bankTime: 30 };
             // Randomly pick who goes first
             const firstSlot = slotOrder[Math.floor(Math.random() * slotOrder.length)];
             // Give the first player their full turn timer
-            slotTimers[firstSlot].timeLeft = room.turnTime;
+            slotTimers[firstSlot].timeLeft = slotTurnTime[firstSlot] ?? room.turnTime;
             const afkStrikes: Record<string, number> = {};
             for (const p of room.players) afkStrikes[p.slot] = 0;
-            room.gameState = { deck: remDeck, hands, tableSets: [], activeSlot: firstSlot, hasPlayedThisTurn: false, slotTimers, slotOrder, afkStrikes, forfeitedSlots: new Set() };
+            room.gameState = { deck: remDeck, hands, tableSets: [], activeSlot: firstSlot, hasPlayedThisTurn: false, slotTimers, slotTurnTime, slotOrder, afkStrikes, forfeitedSlots: new Set() };
             for (const player of room.players) {
                 // Mark old socketId as transitioning so disconnect on navigate won't kick them
                 transitioning.add(player.socketId);
@@ -930,7 +968,7 @@ export const setupMultiplayer = (io: Server) => {
                 if (pSkt) pSkt.emit('game:start', {
                     roomId: room.id, slot: player.slot, hand: hands[player.slot],
                     players: room.players.map(p => ({ slot: p.slot, username: p.username, avatar: p.avatar, sleeve: p.sleeve, frame: p.frame, pet: p.pet, cardCount: 7 })),
-                    deckCount: remDeck.length, tableSets: [], activeSlot: firstSlot, turnTime: room.turnTime, slotTimers,
+                    deckCount: remDeck.length, tableSets: [], activeSlot: firstSlot, turnTime: room.turnTime, slotTimers, slotTurnTime,
                 });
             }
             broadcastRoomList(io);

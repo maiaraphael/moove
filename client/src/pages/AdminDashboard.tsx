@@ -232,6 +232,7 @@ export default function AdminDashboard() {
                         gemsBonus: parseInt(String(formData.gemsBonus)) || 0,
                         xpBonus: parseInt(String(formData.xpBonus)) || 0,
                         noMmrLoss: !!formData.noMmrLoss,
+                        turnBonusSeconds: parseInt(String(formData.turnBonusSeconds)) || 0,
                         isActive: formData.isActive !== false,
                     })
                 });
@@ -966,7 +967,7 @@ export default function AdminDashboard() {
                                             </div>
                                             <div>
                                                 <p className="font-bold text-white">{v.name}</p>
-                                                <p className="text-xs text-gray-500">{v.price} Credits · {v.durationDays} dias · +{v.gemsBonus}% Gems · +{v.xpBonus}% XP{v.noMmrLoss ? ' · Sem perda de MMR' : ''}</p>
+                                                <p className="text-xs text-gray-500">{v.price} Credits · {v.durationDays} dias · +{v.gemsBonus}% Gems · +{v.xpBonus}% XP{v.noMmrLoss ? ' · Sem perda de MMR' : ''}{v.turnBonusSeconds > 0 ? ` · +${v.turnBonusSeconds}s/turno` : ''}</p>
                                             </div>
                                         </div>
                                         <div className="flex items-center gap-3">
@@ -1697,6 +1698,11 @@ export default function AdminDashboard() {
                                                 <label className="text-xs text-gray-400 font-bold uppercase tracking-widest">Bônus XP <span className="text-gray-500 font-normal">(%)</span></label>
                                                 <input type="number" min="0" placeholder="Ex: 10" value={formData.xpBonus ?? 0} className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-[#b026ff] outline-none" onChange={e => setFormData({ ...formData, xpBonus: parseInt(e.target.value) || 0 })} />
                                             </div>
+                                        </div>
+                                        <div className="flex flex-col gap-1">
+                                            <label className="text-xs text-[#b026ff] font-bold uppercase tracking-widest">⏱ Segundos Extras por Turno <span className="text-gray-500 font-normal">(0 = sem bônus)</span></label>
+                                            <input type="number" min="0" max="60" placeholder="Ex: 15" value={formData.turnBonusSeconds ?? 0} className="w-full bg-black/50 border border-[#b026ff]/30 rounded-xl px-4 py-3 text-white focus:border-[#b026ff] outline-none" onChange={e => setFormData({ ...formData, turnBonusSeconds: parseInt(e.target.value) || 0 })} />
+                                            <p className="text-[10px] text-gray-500">Jogadores VIP terão {formData.turnBonusSeconds > 0 ? `45 + ${formData.turnBonusSeconds} = ${45 + (formData.turnBonusSeconds || 0)}s` : '45s (padrão)'} por turno.</p>
                                         </div>
                                         <div className="flex flex-col gap-3">
                                             <label className="flex items-center gap-3 cursor-pointer group">

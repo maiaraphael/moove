@@ -43,8 +43,9 @@ interface Player {
     petConfig?: PetConfig | null;
     cardCount: number;
     isActive: boolean;
-    timeLeft: number; // main turn 45s
+    timeLeft: number; // main turn time (VIP may have more than 45s)
     bankTime: number; // extra time 30s
+    maxTurnTime: number; // max for this player (base + VIP bonus)
 }
 
 // Generate the Moove Deck
@@ -260,6 +261,7 @@ export default function Game() {
                     isActive: data.activeSlot === p.slot,
                     timeLeft: data.slotTimers[p.slot]?.timeLeft ?? data.turnTime,
                     bankTime: data.slotTimers[p.slot]?.bankTime ?? 30,
+                    maxTurnTime: (data.slotTurnTime?.[p.slot] ?? data.turnTime) as number,
                 };
             }));
             setAllHands({ p0: data.hand });
@@ -291,6 +293,7 @@ export default function Game() {
                     isActive: data.activeSlot === p.slot,
                     timeLeft: data.slotTimers[p.slot]?.timeLeft ?? data.turnTime,
                     bankTime: data.slotTimers[p.slot]?.bankTime ?? 30,
+                    maxTurnTime: (data.slotTurnTime?.[p.slot] ?? data.turnTime) as number,
                 };
             }));
             setAllHands({});
@@ -329,6 +332,7 @@ export default function Game() {
                             isActive: data.activeSlot === sp.slot,
                             timeLeft: timer?.timeLeft ?? updated[li].timeLeft,
                             bankTime: timer?.bankTime ?? updated[li].bankTime,
+                            maxTurnTime: (data.slotTurnTime?.[sp.slot] ?? updated[li].maxTurnTime) as number,
                             // Update sleeve if server now has it (opponent just sent theirs)
                             sleeve: li === 0 ? updated[li].sleeve : (sp.sleeve || updated[li].sleeve),
                             frameConfig: li === 0 ? updated[li].frameConfig : (sp.frame ? parseFrameConfig(sp.frame) : updated[li].frameConfig),
@@ -495,11 +499,11 @@ export default function Game() {
 
     // Mock opponents — p0 uses real user data, AI players use static data
     const [players, setPlayers] = useState<Player[]>([
-        { id: 'p0', name: user?.name || 'You', avatar: user?.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=you`, sleeve: DEFAULT_SLEEVE, cardCount: 7, isActive: true, timeLeft: 45, bankTime: 30 },
-        { id: 'p1', name: 'NeonRider', avatar: 'https://i.pravatar.cc/150?u=1', sleeve: 'https://images.unsplash.com/photo-1550684848-fac1c5b4e853?q=80&w=200&auto=format&fit=crop', cardCount: 7, isActive: false, timeLeft: 45, bankTime: 30 },
+        { id: 'p0', name: user?.name || 'You', avatar: user?.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=you`, sleeve: DEFAULT_SLEEVE, cardCount: 7, isActive: true, timeLeft: 45, bankTime: 30, maxTurnTime: 45 },
+        { id: 'p1', name: 'NeonRider', avatar: 'https://i.pravatar.cc/150?u=1', sleeve: 'https://images.unsplash.com/photo-1550684848-fac1c5b4e853?q=80&w=200&auto=format&fit=crop', cardCount: 7, isActive: false, timeLeft: 45, bankTime: 30, maxTurnTime: 45 },
         ...(playersCount === 4 ? [
-            { id: 'p2', name: 'Glitch', avatar: 'https://i.pravatar.cc/150?u=3', sleeve: 'https://images.unsplash.com/photo-1577401239170-897942555fb3?q=80&w=200&auto=format&fit=crop', cardCount: 7, isActive: false, timeLeft: 45, bankTime: 30 },
-            { id: 'p3', name: 'CyberSamurai', avatar: 'https://i.pravatar.cc/150?u=4', sleeve: 'https://images.unsplash.com/photo-1557683316-973673baf926?q=80&w=200&auto=format&fit=crop', cardCount: 7, isActive: false, timeLeft: 45, bankTime: 30 }
+            { id: 'p2', name: 'Glitch', avatar: 'https://i.pravatar.cc/150?u=3', sleeve: 'https://images.unsplash.com/photo-1577401239170-897942555fb3?q=80&w=200&auto=format&fit=crop', cardCount: 7, isActive: false, timeLeft: 45, bankTime: 30, maxTurnTime: 45 },
+            { id: 'p3', name: 'CyberSamurai', avatar: 'https://i.pravatar.cc/150?u=4', sleeve: 'https://images.unsplash.com/photo-1557683316-973673baf926?q=80&w=200&auto=format&fit=crop', cardCount: 7, isActive: false, timeLeft: 45, bankTime: 30, maxTurnTime: 45 }
         ] : [])
     ]);
 
@@ -587,7 +591,7 @@ export default function Game() {
 
         // Reset timers for current player and pass
         setPlayers(prev => prev.map((p, idx) => {
-            if (idx === activePlayerIndex) return { ...p, isActive: false, timeLeft: 45 };
+            if (idx === activePlayerIndex) return { ...p, isActive: false, timeLeft: p.maxTurnTime || 45 };
             if (idx === (activePlayerIndex + 1) % playersCount) return { ...p, isActive: true };
             return p;
         }));
@@ -690,7 +694,7 @@ export default function Game() {
 
             // Move to next player
             setPlayers(prev => prev.map((p, idx) => {
-                if (idx === activePlayerIndex) return { ...p, isActive: false, timeLeft: 45 };
+                if (idx === activePlayerIndex) return { ...p, isActive: false, timeLeft: p.maxTurnTime || 45 };
                 if (idx === (activePlayerIndex + 1) % playersCount) return { ...p, isActive: true };
                 return p;
             }));
@@ -1403,7 +1407,7 @@ export default function Game() {
                     <svg className="absolute inset-0 w-full h-full -rotate-90 pointer-events-none" viewBox="0 0 100 100">
                         <circle cx="50" cy="50" r="48" fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="4" />
                         <circle cx="50" cy="50" r="48" fill="none" stroke="#fff" strokeWidth="4"
-                            strokeDasharray="301" strokeDashoffset={301 - (301 * (player.timeLeft / 45))}
+                            strokeDasharray="301" strokeDashoffset={301 - (301 * (player.timeLeft / (player.maxTurnTime || 45)))}
                         />
                     </svg>
                 )}
