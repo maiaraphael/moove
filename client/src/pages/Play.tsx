@@ -11,7 +11,7 @@ import type { PetConfig } from '../components/ui/PetViewer';
 import { useUser } from '../hooks/useUser';
 import { useTranslation } from 'react-i18next';
 
-type GameMode = 'ranked' | 'casual' | 'ai' | null;
+type GameMode = 'ranked' | 'casual' | 'ai' | 'multi' | null;
 type PlayerCount = 2 | 4 | null;
 
 interface LobbyEntry { id: string; name: string; host: string; players: number; maxPlayers: number; turnTime: number; isPrivate: boolean; status: string; }
@@ -171,6 +171,15 @@ export default function Play() {
             color: '#10b981',
             description: t('play.vsAiDesc2'),
             bgImage: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDv2jMzVGBdsK02qVloqAo_eY30uARJsZPXLkkum4ZBfcCtv0KYzlE42juLsyLsbI_apV2_5SQBN6REm2Xiy-pZ-uYVbOl3eb6MWO5p7jvGf6coB5SLlF_XyeMHQec5WngdsHpmiKmpxvzMj9PjY47Tgs7WaN_QXiFv-WQQ1Zc2ZnlY64wh39mF13sUc_m0v6Vc0PhGM1q8OWUiqUgZfc9B8HptWYSjzb_Nn-Wj9vN-fvLK7UN_y3mxQoOYa_WK4ExsvOPjDQ1C7A'
+        },
+        {
+            id: 'multi' as const,
+            title: 'Multi Jogadas',
+            subtitle: '2 a 4 jogadores',
+            icon: Users,
+            color: '#b026ff',
+            description: 'Sala multiplayer aberta. Crie uma sala ou entre em uma existente e jogue com até 4 jogadores.',
+            bgImage: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAeQ4moVmnmZ1Dxj7G2UPNtPdBNimArNEv1pm07VeQs-GuEzc-sV6j_OjHoLMdBrmId-ILAWoyIPX2y7LLyawwD7xMolGpPqScndQV3uefWHcD3KjOGl-6RzUrE1soCj-N3-GWpM8uhor4bj-5_cL25jfVyjv0KPGFCaBt3DeXTFY4b9MGVIyhn4nzhX18ihR2FEJZs2Z0f7OTBcMdTGLuEwoqe9056eItGlZ_TeB5W6pKUWtzZrDBjn9O7BqMBeTvUGZ1L_HC_fw'
         }
     ];
 
@@ -183,7 +192,8 @@ export default function Play() {
             <div className={`fixed top-[-20%] left-[-10%] w-[60%] h-[60%] rounded-full blur-[150px] pointer-events-none transition-colors duration-1000 ${selectedMode === 'ranked' ? 'bg-red-600/10' :
                 selectedMode === 'casual' ? 'bg-blue-600/10' :
                     selectedMode === 'ai' ? 'bg-green-600/10' :
-                        'bg-[#b026ff]/5'
+                        selectedMode === 'multi' ? 'bg-[#b026ff]/10' :
+                            'bg-[#b026ff]/5'
                 }`} />
 
             {/* --- TOP HEADER --- */}
@@ -229,14 +239,20 @@ export default function Play() {
                                 animate={{ opacity: 1, scale: 1 }}
                                 exit={{ opacity: 0, scale: 0.95 }}
                                 transition={{ duration: 0.3 }}
-                                className="grid grid-cols-1 md:grid-cols-3 gap-6"
+                                className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6"
                             >
                                 {modes.map((mode) => {
                                     const Icon = mode.icon;
                                     return (
                                         <div
                                             key={mode.id}
-                                            onClick={() => setSelectedMode(mode.id)}
+                                            onClick={() => {
+                                                setSelectedMode(mode.id);
+                                                if (mode.id === 'multi') {
+                                                    setPlayerCount(4);
+                                                    setCreateForm(f => ({ ...f, maxPlayers: 4 }));
+                                                }
+                                            }}
                                             className="group relative h-[450px] rounded-2xl overflow-hidden cursor-pointer border border-white/10 transition-all duration-500 hover:border-white/30"
                                             style={{ boxShadow: `0 0 40px inset ${mode.color}15` }}
                                         >
@@ -346,6 +362,13 @@ export default function Play() {
                                                         >
                                                             <Bot size={18} /> {t('play.playVsAi')}
                                                         </button>
+                                                    ) : selectedMode === 'multi' ? (
+                                                        <button
+                                                            onClick={() => setShowCreateModal(true)}
+                                                            className="w-full mt-6 py-4 rounded-xl flex items-center justify-center gap-2 text-sm font-bold tracking-[0.15em] uppercase transition-all duration-300 bg-[#120a1f] border border-[#b026ff] text-[#b026ff] hover:bg-[#b026ff]/10"
+                                                        >
+                                                            <Plus size={18} /> Criar Sala Multi
+                                                        </button>
                                                     ) : (
                                                         <button
                                                             disabled={!playerCount}
@@ -361,8 +384,8 @@ export default function Play() {
                                             {/* Right Panel: Contextual Content */}
                                             <div className="w-full lg:w-2/3 bg-[#120a1f]/60 backdrop-blur-md border border-white/5 rounded-2xl p-6 flex flex-col">
 
-                                                {selectedMode === 'casual' ? (
-                                                    // CASUAL: room lobby or lobby list
+                                                {selectedMode === 'casual' || selectedMode === 'multi' ? (
+                                                    // CASUAL / MULTI: room lobby or lobby list
                                                     <div className="flex-1 flex flex-col">
                                                         {currentRoom ? (
                                                             /* ── ROOM LOBBY VIEW ── */
