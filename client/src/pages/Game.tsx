@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Timer, Plus, Menu, Settings, Flag, Smile, Layers, GripHorizontal, Sparkles, Infinity as InfinityIcon, ArrowDownUp } from 'lucide-react';
+import { Timer, Plus, Menu, Settings, Flag, Smile, Layers, GripHorizontal, Sparkles, Infinity as InfinityIcon, ArrowDownUp, Shuffle, Check, X, Zap } from 'lucide-react';
 import { io as createSocket } from 'socket.io-client';
 import FramedAvatar from '../components/ui/FramedAvatar';
 import { parseFrameConfig } from '../utils/frameUtils';
@@ -1958,10 +1958,11 @@ export default function Game() {
                             {isMyTurn && !multiCombineActive && (
                                 <button
                                     onClick={enterMultiCombine}
-                                    className="group bg-[#120a1f]/80 hover:bg-purple-700/40 backdrop-blur-xl px-3 py-2 rounded-2xl border border-purple-500/30 hover:border-purple-400/60 flex items-center gap-1.5 text-purple-400 hover:text-purple-200 transition-all text-xs font-black uppercase tracking-widest shadow-[0_4px_15px_rgba(0,0,0,0.5)]"
+                                    className="group relative overflow-hidden bg-gradient-to-r from-purple-900/60 to-[#b026ff]/20 hover:from-purple-800/70 hover:to-[#b026ff]/40 backdrop-blur-xl px-3 py-2 rounded-2xl border border-[#b026ff]/40 hover:border-[#b026ff]/80 flex items-center gap-1.5 text-[#c77dff] hover:text-white transition-all duration-300 text-xs font-black uppercase tracking-widest shadow-[0_0_15px_rgba(176,38,255,0.2)] hover:shadow-[0_0_20px_rgba(176,38,255,0.5)]"
                                     title="Multi-Combine Mode"
                                 >
-                                    <Plus size={13} />
+                                    <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
+                                    <Shuffle size={13} className="group-hover:rotate-180 transition-transform duration-500" />
                                     {t('game.multi')}
                                 </button>
                             )}
@@ -2065,59 +2066,127 @@ export default function Game() {
                     <AnimatePresence>
                         {multiCombineActive && (
                             <motion.div
-                                initial={{ opacity: 0, height: 0 }}
-                                animate={{ opacity: 1, height: 'auto' }}
-                                exit={{ opacity: 0, height: 0 }}
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: 20 }}
+                                transition={{ type: 'spring', stiffness: 400, damping: 30 }}
                                 className="overflow-hidden"
                             >
-                                <div className="mx-3 my-2 rounded-2xl border border-purple-500/40 bg-purple-900/20 p-3">
-                                    <div className="flex items-center justify-between mb-2">
-                                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-purple-300">
-                                            Staging — {stagingCards.length} card{stagingCards.length !== 1 ? 's' : ''}
-                                        </span>
-                                        <div className="flex gap-2">
+                                {/* Glowing top border accent */}
+                                <div className="mx-3 mt-2 mb-1 h-px bg-gradient-to-r from-transparent via-[#b026ff]/60 to-transparent" />
+                                <div className="mx-3 mb-2 rounded-2xl border border-[#b026ff]/30 bg-gradient-to-b from-[#1a0a2e]/90 to-[#120a1f]/90 backdrop-blur-xl overflow-hidden shadow-[0_0_30px_rgba(176,38,255,0.15)] relative">
+                                    {/* Subtle animated bg glow */}
+                                    <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(176,38,255,0.08)_0%,transparent_70%)] pointer-events-none" />
+
+                                    {/* Header bar */}
+                                    <div className="flex items-center justify-between px-3 py-2 border-b border-[#b026ff]/20">
+                                        <div className="flex items-center gap-2">
+                                            <div className="flex items-center justify-center w-5 h-5 rounded-md bg-[#b026ff]/20 border border-[#b026ff]/40">
+                                                <Zap size={11} className="text-[#b026ff]" />
+                                            </div>
+                                            <span className="text-[11px] font-black uppercase tracking-[0.2em] text-[#c77dff]">Multi Jogadas</span>
+                                            {stagingCards.length > 0 && (
+                                                <motion.span
+                                                    key={stagingCards.length}
+                                                    initial={{ scale: 1.4, opacity: 0 }}
+                                                    animate={{ scale: 1, opacity: 1 }}
+                                                    className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-[#b026ff] text-white text-[9px] font-black shadow-[0_0_8px_rgba(176,38,255,0.6)]"
+                                                >
+                                                    {stagingCards.length}
+                                                </motion.span>
+                                            )}
+                                        </div>
+                                        <div className="flex gap-1.5">
                                             <button
                                                 onClick={commitMultiCombine}
                                                 disabled={stagingCards.length < 3}
-                                                className="px-3 py-1 rounded-lg text-[11px] font-black uppercase tracking-wider bg-green-500 hover:bg-green-400 disabled:opacity-30 disabled:cursor-not-allowed text-black transition-all shadow-[0_0_12px_rgba(34,197,94,0.4)]"
+                                                className="group flex items-center gap-1 px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider bg-emerald-500/20 hover:bg-emerald-500 disabled:opacity-25 disabled:cursor-not-allowed text-emerald-400 hover:text-black border border-emerald-500/40 hover:border-emerald-400 transition-all duration-200 shadow-[0_0_8px_rgba(52,211,153,0.2)] hover:shadow-[0_0_14px_rgba(52,211,153,0.5)]"
                                             >
-                                                ✓ Confirm
+                                                <Check size={11} className="group-hover:scale-110 transition-transform" />
+                                                Confirmar
                                             </button>
                                             <button
                                                 onClick={cancelMultiCombine}
-                                                className="px-3 py-1 rounded-lg text-[11px] font-black uppercase tracking-wider bg-red-500/20 hover:bg-red-500 text-red-300 hover:text-white border border-red-500/40 transition-all"
+                                                className="group flex items-center gap-1 px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider bg-red-500/10 hover:bg-red-500/80 text-red-400 hover:text-white border border-red-500/30 hover:border-red-400/60 transition-all duration-200"
                                             >
-                                                ✕ Cancel
+                                                <X size={11} className="group-hover:rotate-90 transition-transform duration-300" />
+                                                Cancelar
                                             </button>
                                         </div>
                                     </div>
-                                    {stagingCards.length === 0 ? (
-                                        <p className="text-center text-purple-400/50 text-[11px] italic py-1">Click cards from the table or your hand to add them here</p>
-                                    ) : (
-                                        <div className="flex flex-wrap gap-1.5">
-                                            {stagingCards.map(({ card, origin }) => {
-                                                const colorMap: Record<string, string> = { red: '#ef4444', blue: '#60a5fa', green: '#4ade80', yellow: '#facc15', joker: '#b026ff' };
-                                                const col = colorMap[card.color] ?? '#fff';
-                                                return (
-                                                    <motion.div
-                                                        key={card.id}
-                                                        initial={{ scale: 0.5, opacity: 0 }}
-                                                        animate={{ scale: 1, opacity: 1 }}
-                                                        exit={{ scale: 0.5, opacity: 0 }}
-                                                        whileHover={{ scale: 1.1, y: -3 }}
-                                                        whileTap={{ scale: 0.9 }}
-                                                        onClick={() => unstageCard({ card, origin })}
-                                                        className="w-9 h-13 rounded-lg cursor-pointer flex flex-col items-center justify-center gap-0.5 border-2 relative"
-                                                        style={{ background: 'rgba(0,0,0,0.7)', borderColor: col, boxShadow: `0 0 10px ${col}44`, height: '52px', width: '36px' }}
-                                                        title={`${origin === 'hand' ? '✋ Hand' : '🃏 Table'} — click to return`}
-                                                    >
-                                                        <span style={{ color: col, fontWeight: 900, fontSize: '0.9rem', lineHeight: 1 }}>{card.number === 'JOKER' ? 'J' : card.number}</span>
-                                                        <span style={{ color: col, fontSize: '0.55rem', opacity: 0.7, fontWeight: 700 }}>{origin === 'hand' ? '✋' : '🃏'}</span>
-                                                    </motion.div>
-                                                );
-                                            })}
+
+                                    {/* Staging cards area */}
+                                    <div className="px-3 py-2">
+                                        {stagingCards.length === 0 ? (
+                                            <div className="flex flex-col items-center justify-center py-3 gap-1">
+                                                <div className="flex items-center gap-2 opacity-40">
+                                                    <div className="h-px w-8 bg-[#b026ff]/50" />
+                                                    <Shuffle size={14} className="text-[#b026ff]" />
+                                                    <div className="h-px w-8 bg-[#b026ff]/50" />
+                                                </div>
+                                                <p className="text-[10px] text-purple-400/50 font-bold tracking-wider">Toque em cartas da mesa ou da mão</p>
+                                            </div>
+                                        ) : (
+                                            <div className="flex items-center gap-1.5 overflow-x-auto custom-scrollbar pb-1">
+                                                <AnimatePresence mode="popLayout">
+                                                    {stagingCards.map(({ card, origin }) => {
+                                                        const colorMap: Record<string, string> = { red: '#ef4444', blue: '#60a5fa', green: '#4ade80', yellow: '#facc15', joker: '#b026ff' };
+                                                        const col = colorMap[card.color] ?? '#fff';
+                                                        const isFromHand = origin === 'hand';
+                                                        return (
+                                                            <motion.div
+                                                                key={card.id}
+                                                                layout
+                                                                initial={{ scale: 0.4, opacity: 0, y: 10 }}
+                                                                animate={{ scale: 1, opacity: 1, y: 0 }}
+                                                                exit={{ scale: 0.4, opacity: 0 }}
+                                                                whileHover={{ scale: 1.12, y: -4 }}
+                                                                whileTap={{ scale: 0.9 }}
+                                                                onClick={() => unstageCard({ card, origin })}
+                                                                className="relative cursor-pointer flex-shrink-0 flex flex-col items-center justify-center rounded-xl border-2 select-none"
+                                                                style={{
+                                                                    background: `linear-gradient(135deg, rgba(0,0,0,0.85), ${col}18)`,
+                                                                    borderColor: col,
+                                                                    boxShadow: `0 0 12px ${col}44, inset 0 1px 0 ${col}22`,
+                                                                    width: '38px', height: '54px',
+                                                                }}
+                                                                title="Clique para devolver"
+                                                            >
+                                                                {/* Origin badge */}
+                                                                <div
+                                                                    className="absolute -top-1.5 -right-1.5 w-3.5 h-3.5 rounded-full flex items-center justify-center text-[7px] font-black border border-black/40"
+                                                                    style={{ background: isFromHand ? '#7c3aed' : '#0369a1' }}
+                                                                    title={isFromHand ? 'Da mão' : 'Da mesa'}
+                                                                >
+                                                                    {isFromHand ? '✋' : '🃏'}
+                                                                </div>
+                                                                <span style={{ color: col, fontWeight: 900, fontSize: '1rem', lineHeight: 1, textShadow: `0 0 8px ${col}88` }}>
+                                                                    {card.number === 'JOKER' ? '★' : card.number}
+                                                                </span>
+                                                                {/* Hover X hint */}
+                                                                <div className="absolute inset-0 rounded-xl bg-red-500/0 hover:bg-red-500/20 transition-colors flex items-center justify-center opacity-0 hover:opacity-100">
+                                                                    <X size={14} className="text-red-300" />
+                                                                </div>
+                                                            </motion.div>
+                                                        );
+                                                    })}
+                                                </AnimatePresence>
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    {/* Legend */}
+                                    <div className="flex items-center gap-3 px-3 pb-2">
+                                        <div className="flex items-center gap-1">
+                                            <div className="w-2 h-2 rounded-full bg-purple-500" />
+                                            <span className="text-[9px] text-gray-500 font-bold">Da mão</span>
                                         </div>
-                                    )}
+                                        <div className="flex items-center gap-1">
+                                            <div className="w-2 h-2 rounded-full bg-blue-500" />
+                                            <span className="text-[9px] text-gray-500 font-bold">Da mesa</span>
+                                        </div>
+                                        <span className="text-[9px] text-gray-600 ml-auto">Clique para devolver</span>
+                                    </div>
                                 </div>
                             </motion.div>
                         )}
