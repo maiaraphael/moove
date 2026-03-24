@@ -469,6 +469,8 @@ async function updatePlayersAfterGame(
         // overwrites (e.g. two tabs of the same user playing against each other)
         let mmrDelta = 0;
         let oldMmr = 0;
+        let oldLevel = 0;
+        let newLevelAfterGame = 0;
         try {
             await prisma.$transaction(async (tx) => {
                 const user = await tx.user.findUnique({
@@ -478,6 +480,7 @@ async function updatePlayersAfterGame(
                 if (!user) return;
 
                 oldMmr = user.mmr;
+                oldLevel = user.level;
 
                 // VIP bonus
                 const isVip = !!user.vipExpiresAt && user.vipExpiresAt > new Date();
@@ -501,6 +504,7 @@ async function updatePlayersAfterGame(
                         const baseXp = Math.max(0, 10 * (playerCount + 1 - position));
                         const xpGained = Math.round(baseXp * (1 + petXpBonus / 100 + vipXpBonus / 100));
                         const { newLevel, newXp } = calculateLevelProgression(user.level, user.xp, xpGained);
+                        newLevelAfterGame = newLevel;
                         updateData.level = newLevel;
                         updateData.xp = newXp;
                     }
@@ -521,15 +525,18 @@ async function updatePlayersAfterGame(
             console.error(`[updatePlayers] Failed to update ${player.username} (${player.userId}):`, err);
         }
 
-        // Notify the player's socket about their MMR change (ranked only)
-        if (isRanked && !forfeited && mmrDelta !== 0) {
+        // Notify the player's socket about MMR / level / rank changes (ranked only)
+        if (isRanked && !forfeited) {
             const pSkt = ioInstance?.sockets.sockets.get(player.socketId);
             if (pSkt) {
                 pSkt.emit('game:mmr_update', {
                     oldMmr,
                     newMmr: oldMmr + mmrDelta,
                     mmrDelta,
+                    oldRank: getRankFromMmr(oldMmr),
                     newRank: getRankFromMmr(oldMmr + mmrDelta),
+                    oldLevel,
+                    newLevel: newLevelAfterGame,
                 });
             }
         }

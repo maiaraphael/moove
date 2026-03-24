@@ -13,6 +13,19 @@ import { useTranslation } from 'react-i18next';
 
 const DEFAULT_SLEEVE = 'https://images.unsplash.com/photo-1462331940025-496dfbfc7564?q=80&w=200&auto=format&fit=crop';
 
+const RANK_COLORS: Record<string, { primary: string; glow: string; bg: string }> = {
+    IRON:        { primary: '#9ca3af', glow: 'rgba(156,163,175,0.4)', bg: 'rgba(156,163,175,0.15)' },
+    BRONZE:      { primary: '#cd7f32', glow: 'rgba(205,127,50,0.5)',  bg: 'rgba(205,127,50,0.15)'  },
+    SILVER:      { primary: '#e2e8f0', glow: 'rgba(226,232,240,0.4)', bg: 'rgba(226,232,240,0.12)' },
+    GOLD:        { primary: '#fbbf24', glow: 'rgba(251,191,36,0.6)',  bg: 'rgba(251,191,36,0.15)'  },
+    PLATINUM:    { primary: '#67e8f9', glow: 'rgba(103,232,249,0.5)', bg: 'rgba(103,232,249,0.14)' },
+    EMERALD:     { primary: '#34d399', glow: 'rgba(52,211,153,0.5)',  bg: 'rgba(52,211,153,0.14)'  },
+    RUBY:        { primary: '#fb7185', glow: 'rgba(251,113,133,0.6)', bg: 'rgba(251,113,133,0.15)' },
+    DIAMOND:     { primary: '#818cf8', glow: 'rgba(129,140,248,0.6)', bg: 'rgba(129,140,248,0.15)' },
+    MASTER:      { primary: '#c084fc', glow: 'rgba(192,132,252,0.6)', bg: 'rgba(192,132,252,0.15)' },
+    GRANDMASTER: { primary: '#f59e0b', glow: 'rgba(245,158,11,0.7)',  bg: 'rgba(245,158,11,0.16)'  },
+};
+
 type CardColor = 'blue' | 'green' | 'yellow' | 'red' | 'joker';
 
 interface GameCard {
@@ -388,8 +401,23 @@ export default function Game() {
             showToast(`Error: ${data.message}`);
         });
 
-        skt.on('game:mmr_update', (data: { oldMmr: number; newMmr: number; mmrDelta: number; newRank: string }) => {
+        skt.on('game:mmr_update', (data: { oldMmr: number; newMmr: number; mmrDelta: number; oldRank: string; newRank: string; oldLevel: number; newLevel: number }) => {
             setMmrDelta(data.mmrDelta);
+            const didLevelUp = data.newLevel > data.oldLevel;
+            const didRankUp = data.newRank !== data.oldRank;
+            if (didLevelUp) {
+                setTimeout(() => {
+                    setLevelUpInfo({ oldLevel: data.oldLevel, newLevel: data.newLevel });
+                    setTimeout(() => setLevelUpInfo(null), 4200);
+                }, 900);
+            }
+            if (didRankUp) {
+                // Delay rank-up until after level-up animation finishes (if both occur)
+                setTimeout(() => {
+                    setRankUpInfo({ oldRank: data.oldRank, newRank: data.newRank });
+                    setTimeout(() => setRankUpInfo(null), 5000);
+                }, didLevelUp ? 4800 : 900);
+            }
         });
 
         return () => { skt.disconnect(); mpSocketRef.current = null; };
@@ -409,6 +437,8 @@ export default function Game() {
     const myHand = allHands['p0'] || [];
     const [gameOver, setGameOver] = useState<{ winner: string, winnerId: string, ranks?: { name: string, score: number }[], reason?: string } | null>(null);
     const [mmrDelta, setMmrDelta] = useState<number | null>(null);
+    const [levelUpInfo, setLevelUpInfo] = useState<{ oldLevel: number; newLevel: number } | null>(null);
+    const [rankUpInfo, setRankUpInfo] = useState<{ oldRank: string; newRank: string } | null>(null);
     const [showSurrenderModal, setShowSurrenderModal] = useState(false);
     const [isEmoteOpen, setIsEmoteOpen] = useState(false);
     const [activeEmote, setActiveEmote] = useState<string | null>(null);
@@ -1616,6 +1646,128 @@ export default function Game() {
                                         </div>
                                     </div>
                                 </div>
+                            </motion.div>
+                        </motion.div>
+                    );
+                })()}
+            </AnimatePresence>
+
+            {/* --- LEVEL-UP OVERLAY --- */}
+            <AnimatePresence>
+                {levelUpInfo && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0, transition: { duration: 0.5 } }}
+                        className="fixed inset-0 z-[305] flex items-center justify-center"
+                        onClick={() => setLevelUpInfo(null)}
+                        style={{ background: 'radial-gradient(ellipse at 50% 50%, rgba(176,38,255,0.22) 0%, rgba(0,0,0,0.88) 65%)' }}
+                    >
+                        {/* Particle burst */}
+                        {[...Array(16)].map((_, i) => {
+                            const angle = (i / 16) * 360;
+                            const r = 140 + (i % 3) * 28;
+                            return (
+                                <motion.div key={i}
+                                    className="absolute rounded-full pointer-events-none"
+                                    style={{ width: i % 2 === 0 ? 7 : 4, height: i % 2 === 0 ? 7 : 4, background: i % 3 === 0 ? '#b026ff' : i % 3 === 1 ? '#e879f9' : '#fbbf24', top: '50%', left: '50%' }}
+                                    initial={{ x: -3, y: -3, scale: 0, opacity: 1 }}
+                                    animate={{ x: Math.cos((angle * Math.PI) / 180) * r - 3, y: Math.sin((angle * Math.PI) / 180) * r - 3, scale: [0, 1.8, 0], opacity: [1, 1, 0] }}
+                                    transition={{ duration: 1.2, delay: 0.1 + i * 0.03, ease: 'easeOut' }}
+                                />
+                            );
+                        })}
+                        <motion.div
+                            initial={{ scale: 0.6, y: 30, opacity: 0 }}
+                            animate={{ scale: 1, y: 0, opacity: 1 }}
+                            exit={{ scale: 1.06, opacity: 0 }}
+                            transition={{ type: 'spring', stiffness: 280, damping: 20, delay: 0.05 }}
+                            className="relative text-center px-10 py-10 rounded-3xl select-none"
+                            style={{ background: 'linear-gradient(160deg, rgba(20,8,36,0.97) 0%, rgba(10,4,20,0.99) 100%)', border: '1px solid rgba(176,38,255,0.35)', boxShadow: '0 0 80px rgba(176,38,255,0.3), inset 0 1px 0 rgba(176,38,255,0.2)', minWidth: 300 }}
+                        >
+                            <div className="absolute top-0 left-0 right-0 h-px" style={{ background: 'linear-gradient(90deg, transparent, rgba(176,38,255,0.9), transparent)' }} />
+                            <p className="text-[10px] font-black tracking-[0.45em] uppercase mb-5" style={{ color: 'rgba(176,38,255,0.75)' }}>✦ LEVEL UP ✦</p>
+                            <div className="flex items-center justify-center gap-6 mb-6">
+                                <span className="text-5xl font-black" style={{ color: 'rgba(255,255,255,0.22)' }}>{levelUpInfo.oldLevel}</span>
+                                <motion.span
+                                    animate={{ x: [0, 6, 0] }}
+                                    transition={{ repeat: Infinity, duration: 1.1, ease: 'easeInOut' }}
+                                    className="text-2xl" style={{ color: 'rgba(176,38,255,0.8)' }}
+                                >→</motion.span>
+                                <motion.span
+                                    initial={{ scale: 0.2, opacity: 0 }}
+                                    animate={{ scale: 1, opacity: 1 }}
+                                    transition={{ delay: 0.22, type: 'spring', stiffness: 320, damping: 18 }}
+                                    className="text-[88px] leading-none font-black"
+                                    style={{ color: '#fff', filter: 'drop-shadow(0 0 28px rgba(176,38,255,1)) drop-shadow(0 0 60px rgba(176,38,255,0.5))' }}
+                                >{levelUpInfo.newLevel}</motion.span>
+                            </div>
+                            <motion.div className="mx-auto rounded-full overflow-hidden" style={{ background: 'rgba(176,38,255,0.15)', width: 180, height: 3 }}>
+                                <motion.div className="h-full rounded-full" style={{ background: 'linear-gradient(90deg, #b026ff, #e879f9)' }}
+                                    initial={{ width: '0%' }} animate={{ width: '100%' }} transition={{ duration: 4.2, ease: 'linear' }}
+                                />
+                            </motion.div>
+                            <p className="text-[10px] text-white/25 mt-3 tracking-widest uppercase">Toque para continuar</p>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            {/* --- RANK-UP OVERLAY --- */}
+            <AnimatePresence>
+                {rankUpInfo && (() => {
+                    const rt = RANK_COLORS[rankUpInfo.newRank] ?? RANK_COLORS['IRON'];
+                    return (
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0, transition: { duration: 0.5 } }}
+                            className="fixed inset-0 z-[306] flex items-center justify-center"
+                            onClick={() => setRankUpInfo(null)}
+                            style={{ background: `radial-gradient(ellipse at 50% 50%, ${rt.bg} 0%, rgba(0,0,0,0.92) 65%)` }}
+                        >
+                            {/* Particle burst */}
+                            {[...Array(20)].map((_, i) => {
+                                const angle = (i / 20) * 360;
+                                const r = 160 + (i % 4) * 24;
+                                return (
+                                    <motion.div key={i}
+                                        className="absolute rounded-full pointer-events-none"
+                                        style={{ width: i % 3 === 0 ? 9 : 5, height: i % 3 === 0 ? 9 : 5, background: rt.primary, top: '50%', left: '50%' }}
+                                        initial={{ x: -4, y: -4, scale: 0, opacity: 1 }}
+                                        animate={{ x: Math.cos((angle * Math.PI) / 180) * r - 4, y: Math.sin((angle * Math.PI) / 180) * r - 4, scale: [0, 2, 0], opacity: [1, 0.8, 0] }}
+                                        transition={{ duration: 1.4, delay: 0.08 + i * 0.028, ease: 'easeOut' }}
+                                    />
+                                );
+                            })}
+                            <motion.div
+                                initial={{ scale: 0.55, y: 40, opacity: 0 }}
+                                animate={{ scale: 1, y: 0, opacity: 1 }}
+                                exit={{ scale: 1.06, opacity: 0 }}
+                                transition={{ type: 'spring', stiffness: 260, damping: 20, delay: 0.05 }}
+                                className="relative text-center px-12 py-10 rounded-3xl select-none"
+                                style={{ background: 'linear-gradient(160deg, rgba(14,6,24,0.98) 0%, rgba(8,3,15,0.99) 100%)', border: `1px solid ${rt.primary}50`, boxShadow: `0 0 100px ${rt.glow}, 0 0 200px ${rt.glow.replace('0.4','0.15').replace('0.5','0.15').replace('0.6','0.15').replace('0.7','0.15')}, inset 0 1px 0 ${rt.primary}35`, minWidth: 320 }}
+                            >
+                                <div className="absolute top-0 left-0 right-0 h-px" style={{ background: `linear-gradient(90deg, transparent, ${rt.primary}, transparent)` }} />
+                                <p className="text-[10px] font-black tracking-[0.45em] uppercase mb-3" style={{ color: `${rt.primary}bb` }}>✦ RANK UP ✦</p>
+                                <div className="flex items-center justify-center gap-3 mb-3">
+                                    <span className="text-xs font-bold tracking-widest uppercase opacity-40 text-white">{rankUpInfo.oldRank}</span>
+                                    <span className="text-base" style={{ color: `${rt.primary}80` }}>→</span>
+                                    <span className="text-xs font-bold tracking-widest uppercase" style={{ color: rt.primary }}>{rankUpInfo.newRank}</span>
+                                </div>
+                                <motion.h1
+                                    initial={{ letterSpacing: '0.9em', opacity: 0, scale: 0.7 }}
+                                    animate={{ letterSpacing: '0.1em', opacity: 1, scale: 1 }}
+                                    transition={{ delay: 0.15, duration: 0.65, ease: 'easeOut' }}
+                                    className="text-[70px] leading-none font-black uppercase mb-5"
+                                    style={{ color: rt.primary, filter: `drop-shadow(0 0 40px ${rt.glow}) drop-shadow(0 0 80px ${rt.glow})` }}
+                                >{rankUpInfo.newRank}</motion.h1>
+                                <motion.div className="mx-auto rounded-full overflow-hidden" style={{ background: `${rt.primary}20`, width: 200, height: 3 }}>
+                                    <motion.div className="h-full rounded-full" style={{ background: rt.primary }}
+                                        initial={{ width: '0%' }} animate={{ width: '100%' }} transition={{ duration: 5, ease: 'linear' }}
+                                    />
+                                </motion.div>
+                                <p className="text-[10px] mt-3 tracking-widest uppercase" style={{ color: 'rgba(255,255,255,0.2)' }}>Toque para continuar</p>
                             </motion.div>
                         </motion.div>
                     );
