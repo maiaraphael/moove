@@ -1940,7 +1940,7 @@ export default function Game() {
                                     <span className="text-[10px] font-bold text-gray-400">{t('game.myHand')}</span>
                                     <div className="flex items-center gap-1">
                                         <Layers size={12} className="text-[#b026ff]" />
-                                        <span className="text-xs font-black">{myHand.length} {t('game.cards')}</span>
+                                        <span className="text-xs font-black">{myHand.length + stagingCards.filter(s => s.origin === 'hand').length} {t('game.cards')}</span>
                                     </div>
                                 </div>
                             </div>
