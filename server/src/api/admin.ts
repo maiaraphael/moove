@@ -389,11 +389,12 @@ router.get('/battlepass/:id/tiers', async (req, res) => {
 router.post('/battlepass/:id/tiers', async (req, res) => {
     try {
         const { level, freeItemId, premiumItemId, freeGems, premiumGems } = req.body;
-        if (level === undefined) return res.status(400).json({ error: 'level is required' });
+        const parsedLevel = parseInt(String(level));
+        if (level == null || isNaN(parsedLevel)) return res.status(400).json({ error: 'level is required and must be a number' });
         const tier = await prisma.battlePassTier.create({
             data: {
                 battlePassId: req.params.id,
-                level: parseInt(String(level)),
+                level: parsedLevel,
                 freeItemId: freeItemId || null,
                 freeGems: parseInt(String(freeGems ?? 0)),
                 premiumItemId: premiumItemId || null,

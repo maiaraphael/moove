@@ -266,8 +266,8 @@ export default function AdminDashboard() {
                 : `${import.meta.env.VITE_API_URL}/api/admin/battlepass/${formData.battlePassId}/tiers`;
             try {
                 const body = isEditing
-                    ? { freeItemId: formData.freeItemId || null, premiumItemId: formData.premiumItemId || null }
-                    : { level: parseInt(String(formData.level)), freeItemId: formData.freeItemId || null, premiumItemId: formData.premiumItemId || null };
+                    ? { freeItemId: formData.freeItemId || null, freeGems: formData.freeGems ?? 0, premiumItemId: formData.premiumItemId || null, premiumGems: formData.premiumGems ?? 0 }
+                    : { level: parseInt(String(formData.level)) || 1, freeItemId: formData.freeItemId || null, freeGems: formData.freeGems ?? 0, premiumItemId: formData.premiumItemId || null, premiumGems: formData.premiumGems ?? 0 };
                 const res = await fetch(url, {
                     method: isEditing ? 'PUT' : 'POST',
                     headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
@@ -880,7 +880,7 @@ export default function AdminDashboard() {
                                             <h2 className="text-xl font-black text-white">Níveis — {bp?.name}</h2>
                                             <p className="text-sm text-gray-400">{bpTiers.length} níveis cadastrados</p>
                                         </div>
-                                        <button onClick={() => { setModalType('tier'); setFormData({ battlePassId: selectedBpId }); setModalOpen(true); }} className="bg-[#b026ff] hover:bg-[#c95bff] text-white px-4 py-2 rounded-lg font-bold text-sm flex items-center gap-2 transition-colors">
+                                        <button onClick={() => { setModalType('tier'); setFormData({ battlePassId: selectedBpId, level: (bpTiers.length > 0 ? Math.max(...bpTiers.map((t: any) => t.level)) + 1 : 1), freeGems: 0, premiumGems: 0 }); setModalOpen(true); }} className="bg-[#b026ff] hover:bg-[#c95bff] text-white px-4 py-2 rounded-lg font-bold text-sm flex items-center gap-2 transition-colors">
                                             <Plus size={16} /> Adicionar Nível
                                         </button>
                                     </div>
