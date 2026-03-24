@@ -49,12 +49,12 @@ router.post('/buy-premium', authenticateToken, async (req: AuthRequest, res) => 
         if (!battlePass) return res.status(404).json({ error: 'No active Battle Pass found' });
 
         if (battlePass.price > 0) {
-            if (user.gems < battlePass.price) {
-                return res.status(400).json({ error: 'Insufficient gems', required: battlePass.price, current: user.gems });
+            if (user.credits < battlePass.price) {
+                return res.status(400).json({ error: 'Saldo insuficiente', required: battlePass.price, current: user.credits });
             }
             await prisma.user.update({
                 where: { id: userId },
-                data: { gems: { decrement: battlePass.price }, isPremium: true }
+                data: { credits: { decrement: battlePass.price }, isPremium: true }
             });
         } else {
             await prisma.user.update({ where: { id: userId }, data: { isPremium: true } });

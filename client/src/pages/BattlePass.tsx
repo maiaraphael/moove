@@ -68,8 +68,10 @@ export default function BattlePass() {
     const handleBuyPremium = async () => {
         if (buyStatus === 'loading') return;
         setBuyError(null);
-        if (passPrice > 0 && (user?.gems ?? 0) < passPrice) {
-            setBuyError(`Gems insuficientes. Você precisa de ${passPrice} 💎 mas tem ${user?.gems ?? 0} 💎`);
+        if (passPrice > 0 && (user?.credits ?? 0) < passPrice) {
+            const formatted = `R$ ${(passPrice / 100).toFixed(2).replace('.', ',')}`;
+            const current = `R$ ${((user?.credits ?? 0) / 100).toFixed(2).replace('.', ',')}`;
+            setBuyError(`Saldo insuficiente. Necessário ${formatted}, você tem ${current}.`);
             setBuyStatus('error');
             setTimeout(() => setBuyStatus('idle'), 3000);
             return;
@@ -143,7 +145,7 @@ export default function BattlePass() {
                             className="bg-gradient-to-r from-yellow-500 to-yellow-600 text-black px-8 py-4 rounded-xl font-black tracking-widest uppercase hover:from-yellow-400 hover:to-yellow-500 transition-all shadow-[0_0_30px_rgba(234,179,8,0.3)] flex items-center gap-3 disabled:opacity-60"
                         >
                             <Crown size={24} />
-                            {buyStatus === 'loading' ? t('battlepass.buying') : passPrice > 0 ? `${t('battlepass.getPremiumPass')} — ${passPrice} 💎` : t('battlepass.getPremiumPass')}
+                            {buyStatus === 'loading' ? t('battlepass.buying') : passPrice > 0 ? `${t('battlepass.getPremiumPass')} — R$ ${(passPrice / 100).toFixed(2).replace('.', ',')}` : t('battlepass.getPremiumPass')}
                         </motion.button>
                     </div>
                 )}

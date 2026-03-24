@@ -247,7 +247,7 @@ export default function AdminDashboard() {
                 const res = await fetch(url, {
                     method: isEditing ? 'PUT' : 'POST',
                     headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ name: formData.name, season: parseInt(String(formData.season)) })
+                    body: JSON.stringify({ name: formData.name, season: parseInt(String(formData.season)), price: formData.price ?? 0 })
                 });
                 if (res.ok) { setModalOpen(false); setFormData({}); fetchAllData(); }
                 else { let msg = 'Erro'; try { const d = await res.json(); msg = d.error || msg; } catch {} alert(`Erro: ${msg}`); }
@@ -1418,8 +1418,8 @@ export default function AdminDashboard() {
                                             <input type="number" min="1" placeholder="Ex: 1" value={formData.season ?? ''} className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-[#b026ff] outline-none" onChange={e => setFormData({ ...formData, season: parseInt(e.target.value) || 1 })} />
                                         </div>
                                         <div className="flex flex-col gap-1">
-                                            <label className="text-xs text-gray-400 font-bold uppercase tracking-widest">Preço do Passe Premium <span className="text-gray-500 font-normal">(Gems)</span></label>
-                                            <input type="number" min="0" placeholder="Ex: 100" value={formData.price ?? 0} className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-[#b026ff] outline-none" onChange={e => setFormData({ ...formData, price: parseInt(e.target.value) || 0 })} />
+                                            <label className="text-xs text-gray-400 font-bold uppercase tracking-widest">Preço do Passe Premium <span className="text-gray-500 font-normal">(R$)</span></label>
+                                            <input type="number" min="0" step="0.01" placeholder="Ex: 19.90" value={formData.price !== undefined ? (formData.price / 100).toFixed(2) : ''} className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-[#b026ff] outline-none" onChange={e => setFormData({ ...formData, price: Math.round(parseFloat(e.target.value) * 100) || 0 })} />
                                         </div>
                                     </>
                                 )}
