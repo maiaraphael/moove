@@ -1,10 +1,11 @@
 import { useState, useEffect, useCallback } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Home, Gamepad2, Trophy, User, Layers, ShoppingBag, Medal, Target, ArrowRight, CheckCircle2, Users } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import TopHeader from '../components/ui/TopHeader';
 import { useUser } from '../hooks/useUser';
 import LoginBonusModal from '../components/ui/LoginBonusModal';
+import OnboardingModal from '../components/ui/OnboardingModal';
 import { DashboardSkeleton } from '../components/ui/PageLoader';
 import { useTranslation } from 'react-i18next';
 
@@ -28,6 +29,18 @@ export default function Dashboard() {
     const [missions, setMissions] = useState<any[]>([]);
     const [pendingFriends, setPendingFriends] = useState(0);
     const [loginBonus, setLoginBonus] = useState<{ xp: number; gems: number; streak: number } | null>(null);
+    const [showOnboarding, setShowOnboarding] = useState(false);
+
+    useEffect(() => {
+        if (!localStorage.getItem('tutorialSeen')) {
+            setShowOnboarding(true);
+        }
+    }, []);
+
+    const handleCloseOnboarding = () => {
+        localStorage.setItem('tutorialSeen', '1');
+        setShowOnboarding(false);
+    };
 
     useEffect(() => {
         const raw = sessionStorage.getItem('loginBonus');
@@ -126,6 +139,7 @@ export default function Dashboard() {
             {/* --- TOP HEADER --- */}
             <TopHeader user={user} />
             <LoginBonusModal bonus={loginBonus} onClose={() => setLoginBonus(null)} />
+            <AnimatePresence>{showOnboarding && <OnboardingModal onClose={handleCloseOnboarding} />}</AnimatePresence>
 
             {/* --- MAIN CONTENT --- */}
             <main className="max-w-7xl mx-auto px-6 pt-8 pb-12 relative z-10">
