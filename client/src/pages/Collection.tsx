@@ -4,6 +4,7 @@ import { Home, Gamepad2, Trophy, User, Layers, ShoppingBag, Image as ImageIcon, 
 import type { LucideIcon } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import TopHeader from '../components/ui/TopHeader';
+import { CardGridSkeleton } from '../components/ui/PageLoader';
 import FramedAvatar from '../components/ui/FramedAvatar';
 import { parseFrameConfig } from '../utils/frameUtils';
 import type { FrameConfig } from '../utils/frameUtils';
@@ -96,13 +97,7 @@ export default function Collection() {
         }
     }, [user, isLoading]);
 
-    if (isLoading || !user || isFetching) {
-        return (
-            <div className="min-h-screen bg-[#0f0814] flex flex-col items-center justify-center gap-4">
-                <div className="w-12 h-12 border-4 border-[#b026ff]/20 border-t-[#b026ff] rounded-full animate-spin"></div>
-            </div>
-        );
-    }
+    if (isLoading || !user || isFetching) return <CardGridSkeleton />;
 
     const handleEquip = async (itemId: string, itemImage: string, itemCategory: string) => {
         setEquipLoadingId(itemId);

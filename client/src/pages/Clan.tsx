@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import TopHeader from '../components/ui/TopHeader';
+import { ClanSkeleton } from '../components/ui/PageLoader';
 import { useUser } from '../hooks/useUser';
 import { useNotify } from '../components/ui/NotificationProvider';
 
@@ -115,7 +116,7 @@ export default function Clan() {
         setChatInput('');
     }
 
-    if (isUserLoading) return null;
+    if (isUserLoading) return <ClanSkeleton />;
 
     return (
         <div className="min-h-screen bg-[#0f0814] text-white font-sans pb-28 relative overflow-hidden">

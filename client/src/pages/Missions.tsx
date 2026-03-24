@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Home, Gamepad2, Trophy, User, Layers, ShoppingBag, Medal, Target, CheckCircle2, Clock, Swords, Zap } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import TopHeader from '../components/ui/TopHeader';
+import { MissionsSkeleton } from '../components/ui/PageLoader';
 import { useUser } from '../hooks/useUser';
 
 interface Mission {
@@ -97,13 +98,7 @@ export default function Missions() {
         }
     };
 
-    if (isLoading || !user) {
-        return (
-            <div className="min-h-screen bg-[#0f0814] flex items-center justify-center">
-                <div className="w-12 h-12 border-4 border-[#b026ff]/20 border-t-[#b026ff] rounded-full animate-spin" />
-            </div>
-        );
-    }
+    if (isLoading || !user) return <MissionsSkeleton />;
 
     const completedCount = missions.filter(m => m.completed).length;
 

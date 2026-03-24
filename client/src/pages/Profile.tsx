@@ -3,6 +3,7 @@ import { Home, Gamepad2, Trophy, User, Layers, ShoppingBag, Target, Clock, Calen
 import { Link } from 'react-router-dom';
 import TopHeader from '../components/ui/TopHeader';
 import FramedAvatar from '../components/ui/FramedAvatar';
+import { ProfileSkeleton } from '../components/ui/PageLoader';
 import { useUser } from '../hooks/useUser';
 
 // Map Trophies types to icons
@@ -27,13 +28,7 @@ const getTrophyStyle = (type: string) => {
 export default function Profile() {
     const { user, isLoading } = useUser();
 
-    if (isLoading || !user) {
-        return (
-            <div className="min-h-screen bg-[#0f0814] flex flex-col items-center justify-center gap-4">
-                <div className="w-12 h-12 border-4 border-[#b026ff]/20 border-t-[#b026ff] rounded-full animate-spin"></div>
-            </div>
-        );
-    }
+    if (isLoading || !user) return <ProfileSkeleton />;
 
     const history = user.recentMatches || [];
     const stats = user.stats;

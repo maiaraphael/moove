@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Home, Gamepad2, Trophy, User, Layers, ShoppingBag, Diamond, Users, X, CheckCircle2, Medal, Loader2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import TopHeader from '../components/ui/TopHeader';
+import { TournamentsSkeleton } from '../components/ui/PageLoader';
 import { useUser } from '../hooks/useUser';
 
 interface Tournament {
@@ -111,13 +112,7 @@ export default function Tournaments() {
 
     useEffect(() => { fetchTournaments(); }, []);
 
-    if (isLoading || !user) {
-        return (
-            <div className="min-h-screen bg-[#0f0814] flex flex-col items-center justify-center gap-4">
-                <div className="w-12 h-12 border-4 border-[#b026ff]/20 border-t-[#b026ff] rounded-full animate-spin"></div>
-            </div>
-        );
-    }
+    if (isLoading || !user) return <TournamentsSkeleton />;
 
     const isAdmin = user.role === 'ADMIN' || user.role === 'MODERATOR';
 

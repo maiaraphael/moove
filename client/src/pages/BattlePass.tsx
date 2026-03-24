@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { Lock, Check, Crown, Home, Gamepad2, Trophy, Medal, User, Layers, ShoppingBag, Package, Users } from 'lucide-react';
 import TopHeader from '../components/ui/TopHeader';
+import { BattlePassSkeleton } from '../components/ui/PageLoader';
 import { useUser } from '../hooks/useUser';
 import { useTranslation } from 'react-i18next';
 
@@ -97,13 +98,7 @@ export default function BattlePass() {
         }
     };
 
-    if (isLoading || !user || isFetching) {
-        return (
-            <div className="min-h-screen bg-[#0f0814] flex flex-col items-center justify-center gap-4">
-                <div className="w-12 h-12 border-4 border-[#b026ff]/20 border-t-[#b026ff] rounded-full animate-spin"></div>
-            </div>
-        );
-    }
+    if (isLoading || !user || isFetching) return <BattlePassSkeleton />;
 
     const CURRENT_LEVEL = user.level;
     const XP_FOR_NEXT = CURRENT_LEVEL * 100;

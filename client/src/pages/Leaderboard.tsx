@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { Home, Gamepad2, Trophy, User, Layers, ShoppingBag, Medal, TrendingUp } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import TopHeader from '../components/ui/TopHeader';
+import { LeaderboardSkeleton } from '../components/ui/PageLoader';
 import { useUser } from '../hooks/useUser';
 import PlayerProfileModal from '../components/ui/PlayerProfileModal';
 
@@ -51,13 +52,7 @@ export default function Leaderboard() {
         if (!isLoading) fetchLeaderboard();
     }, [isLoading, user?.id]);
 
-    if (isLoading || !user) {
-        return (
-            <div className="min-h-screen bg-[#0f0814] flex items-center justify-center">
-                <div className="w-12 h-12 border-4 border-[#b026ff]/20 border-t-[#b026ff] rounded-full animate-spin" />
-            </div>
-        );
-    }
+    if (isLoading || !user) return <LeaderboardSkeleton />;
 
     return (
         <div className="min-h-screen bg-[#0f0814] text-white font-sans pb-28 relative overflow-hidden">

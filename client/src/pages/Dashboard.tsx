@@ -5,6 +5,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import TopHeader from '../components/ui/TopHeader';
 import { useUser } from '../hooks/useUser';
 import LoginBonusModal from '../components/ui/LoginBonusModal';
+import { DashboardSkeleton } from '../components/ui/PageLoader';
 import { useTranslation } from 'react-i18next';
 
 interface Tournament {
@@ -114,16 +115,7 @@ export default function Dashboard() {
         }
     ];
 
-    if (isUserLoading || !user) {
-        return (
-            <div className="min-h-screen bg-[#0f0814] flex flex-col items-center justify-center gap-4">
-                <div className="w-12 h-12 border-4 border-[#b026ff]/20 border-t-[#b026ff] rounded-full animate-spin"></div>
-                <p className="text-[#b026ff] text-[10px] font-bold tracking-[0.2em] uppercase animate-pulse">
-                    {t('dashboard.syncing')}
-                </p>
-            </div>
-        );
-    }
+    if (isUserLoading || !user) return <DashboardSkeleton />;
 
     return (
         <div className="min-h-screen bg-[#0f0814] text-white font-sans selection:bg-[#b026ff] pb-24 relative overflow-hidden">

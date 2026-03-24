@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Users, UserPlus, Check, X, Trash2, Search, Loader2, UserMinus, Home, Gamepad2, Trophy, User, Layers, ShoppingBag, Medal, Swords, MessageCircle } from 'lucide-react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import TopHeader from '../components/ui/TopHeader';
+import { FriendsSkeleton } from '../components/ui/PageLoader';
 import { useUser } from '../hooks/useUser';
 import PlayerProfileModal from '../components/ui/PlayerProfileModal';
 import ChatModal from '../components/ui/ChatModal';
@@ -113,7 +114,7 @@ export default function Friends() {
         }
     }
 
-    if (isUserLoading) return null;
+    if (isUserLoading) return <FriendsSkeleton />;
 
     const totalPending = incoming.length;
 
