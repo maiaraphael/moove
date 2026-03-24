@@ -27,7 +27,7 @@ export default function Dashboard() {
     const [isLoadingTourns, setIsLoadingTourns] = useState(true);
     const [missions, setMissions] = useState<any[]>([]);
     const [pendingFriends, setPendingFriends] = useState(0);
-    const [loginBonus, setLoginBonus] = useState<{ xp: number; credits: number; gems: number; streak: number } | null>(null);
+    const [loginBonus, setLoginBonus] = useState<{ xp: number; gems: number; streak: number } | null>(null);
 
     useEffect(() => {
         const raw = sessionStorage.getItem('loginBonus');

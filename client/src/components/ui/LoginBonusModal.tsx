@@ -1,9 +1,8 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { CreditCard, Diamond, Zap, Flame } from 'lucide-react';
+import { Diamond, Zap, Flame } from 'lucide-react';
 
 interface LoginBonus {
     xp: number;
-    credits: number;
     gems: number;
     streak: number;
 }
@@ -77,7 +76,7 @@ export default function LoginBonusModal({ bonus, onClose }: Props) {
                             </div>
 
                             {/* Rewards */}
-                            <div className="grid grid-cols-3 gap-3 mb-6">
+                            <div className="grid grid-cols-2 gap-3 mb-6">
                                 <motion.div
                                     initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
                                     className="bg-blue-500/10 border border-blue-500/20 rounded-xl p-3 flex flex-col items-center gap-1.5"
@@ -88,21 +87,11 @@ export default function LoginBonusModal({ bonus, onClose }: Props) {
                                 </motion.div>
                                 <motion.div
                                     initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}
-                                    className="bg-yellow-500/10 border border-yellow-500/20 rounded-xl p-3 flex flex-col items-center gap-1.5"
+                                    className="bg-[#b026ff]/10 border border-[#b026ff]/20 rounded-xl p-3 flex flex-col items-center gap-1.5"
                                 >
-                                    <CreditCard size={18} className="text-yellow-400" />
-                                    <span className="text-lg font-black text-white">+{bonus.credits}</span>
-                                    <span className="text-[9px] text-yellow-400 font-bold uppercase tracking-wider">Credits</span>
-                                </motion.div>
-                                <motion.div
-                                    initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}
-                                    className={`border rounded-xl p-3 flex flex-col items-center gap-1.5 ${bonus.gems > 0 ? 'bg-[#b026ff]/10 border-[#b026ff]/20' : 'bg-white/3 border-white/5 opacity-40'}`}
-                                >
-                                    <Diamond size={18} className={bonus.gems > 0 ? 'text-[#b026ff]' : 'text-gray-600'} />
-                                    <span className="text-lg font-black text-white">{bonus.gems > 0 ? `+${bonus.gems}` : '–'}</span>
-                                    <span className={`text-[9px] font-bold uppercase tracking-wider ${bonus.gems > 0 ? 'text-[#b026ff]' : 'text-gray-600'}`}>
-                                        {bonus.gems > 0 ? 'Gems' : 'Day 3+'}
-                                    </span>
+                                    <Diamond size={18} className="text-[#b026ff]" />
+                                    <span className="text-lg font-black text-white">+{bonus.gems}</span>
+                                    <span className="text-[9px] text-[#b026ff] font-bold uppercase tracking-wider">Gems</span>
                                 </motion.div>
                             </div>
 

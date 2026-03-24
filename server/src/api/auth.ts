@@ -85,7 +85,7 @@ router.post('/login', async (req, res) => {
         const todayStr = now.toISOString().substring(0, 10);
         const lastStr = user.lastLogin ? user.lastLogin.toISOString().substring(0, 10) : null;
         let loginStreak = user.loginStreak ?? 0;
-        let loginBonus: { xp: number; credits: number; gems: number; streak: number } | null = null;
+        let loginBonus: { xp: number; gems: number; streak: number } | null = null;
 
         if (lastStr !== todayStr) {
             // Check if last login was yesterday (streak continues)
@@ -99,24 +99,22 @@ router.post('/login', async (req, res) => {
                 loginStreak = 1; // reset streak
             }
 
-            // Rewards scale with streak (caps at day 7)
+            // Rewards scale with streak (caps at day 7) — only virtual currency (gems), never credits
             const day = Math.min(loginStreak, 7);
-            const bonusXp       = day * 20;        // 20, 40, 60 ... 140
-            const bonusCredits  = day * 50;         // 50, 100, 150 ... 350
-            const bonusGems     = day >= 3 ? day * 2 : 0; // gems from day 3+
+            const bonusXp   = day * 20;   // 20, 40, 60 ... 140
+            const bonusGems = day * 5;    // 5, 10, 15 ... 35
 
             await prisma.user.update({
                 where: { id: user.id },
                 data: {
                     lastLogin: now,
                     loginStreak,
-                    xp:      { increment: bonusXp },
-                    credits: { increment: bonusCredits },
-                    gems:    { increment: bonusGems },
+                    xp:   { increment: bonusXp },
+                    gems: { increment: bonusGems },
                 },
             });
 
-            loginBonus = { xp: bonusXp, credits: bonusCredits, gems: bonusGems, streak: loginStreak };
+            loginBonus = { xp: bonusXp, gems: bonusGems, streak: loginStreak };
         } else {
             // Same day re-login — just update lastLogin timestamp
             await prisma.user.update({ where: { id: user.id }, data: { lastLogin: now } });
