@@ -454,20 +454,9 @@ async function updatePlayersAfterGame(
         const forfeited = forfeitedSlots.has(r.slot);
         const isWinner = r.slot === winnerSlot && !forfeited;
 
-        const user = await prisma.user.findUnique({
-            where: { id: player.userId },
-            select: { mmr: true, level: true, xp: true, gems: true, vipExpiresAt: true },
-        });
-        if (!user) return;
-
-        // VIP bonus
-        const isVip = !!user.vipExpiresAt && user.vipExpiresAt > new Date();
-        const vipXpBonus   = isVip ? (vipConfig?.xpBonus   ?? 0) : 0;
-        const vipGemsBonus = isVip ? (vipConfig?.gemsBonus ?? 0) : 0;
-
-        // Parse pet config to detect bonuses
-        let petXpBonus = 0;   // percentage, e.g. 20 => +20%
-        let petGemsBonus = 0; // percentage, e.g. 10 => +10%
+        // Parse pet config outside the transaction (no DB access needed)
+        let petXpBonus = 0;
+        let petGemsBonus = 0;
         if (player.pet) {
             try {
                 const pet = JSON.parse(player.pet);
@@ -476,50 +465,71 @@ async function updatePlayersAfterGame(
             } catch { /* malformed petConfig — ignore */ }
         }
 
-        const updateData: Record<string, unknown> = {};
-
+        // Wrap read + compute + write in a transaction to prevent concurrent
+        // overwrites (e.g. two tabs of the same user playing against each other)
         let mmrDelta = 0;
-        if (isRanked) {
-            // ── MMR (all ranked players, even forfeited — penalty already applied via applyMmrPenalty) ──
-            if (!forfeited) {
-                const newMmr = calculateNewMmr(user.mmr, position, playerCount, penaltyMinMmr);
-                const newRank = getRankFromMmr(newMmr);
-                mmrDelta = newMmr - user.mmr;
-                updateData.mmr = newMmr;
-                updateData.rank = newRank;
-            }
+        let oldMmr = 0;
+        try {
+            await prisma.$transaction(async (tx) => {
+                const user = await tx.user.findUnique({
+                    where: { id: player.userId },
+                    select: { mmr: true, level: true, xp: true, gems: true, vipExpiresAt: true },
+                });
+                if (!user) return;
 
-            // ── XP (only players who stayed to the end) ──
-            if (!forfeited) {
-                const baseXp = Math.max(0, 10 * (room.players.length + 1 - position));
-                const xpGained = Math.round(baseXp * (1 + petXpBonus / 100 + vipXpBonus / 100));
-                const { newLevel, newXp } = calculateLevelProgression(user.level, user.xp, xpGained);
-                updateData.level = newLevel;
-                updateData.xp = newXp;
-            }
+                oldMmr = user.mmr;
 
-            // ── Gems: 20 base for finishing, +10 bonus for winner ──
-            if (!forfeited) {
-                const baseGems = r.slot === winnerSlot ? 30 : 20;
-                const gemsGained = Math.round(baseGems * (1 + petGemsBonus / 100 + vipGemsBonus / 100));
-                updateData.gems = user.gems + gemsGained;
-            }
-        }
-        // Casual: no XP, no Gems — only MMR is not given either (casual has no ranking)
+                // VIP bonus
+                const isVip = !!user.vipExpiresAt && user.vipExpiresAt > new Date();
+                const vipXpBonus   = isVip ? (vipConfig?.xpBonus   ?? 0) : 0;
+                const vipGemsBonus = isVip ? (vipConfig?.gemsBonus ?? 0) : 0;
 
-        if (Object.keys(updateData).length > 0) {
-            await prisma.user.update({ where: { id: player.userId }, data: updateData });
+                const updateData: Record<string, unknown> = {};
+
+                if (isRanked) {
+                    // ── MMR (non-forfeited only; forfeited already penalised via applyMmrPenalty) ──
+                    if (!forfeited) {
+                        const newMmr = calculateNewMmr(user.mmr, position, playerCount, penaltyMinMmr);
+                        const newRank = getRankFromMmr(newMmr);
+                        mmrDelta = newMmr - user.mmr;
+                        updateData.mmr = newMmr;
+                        updateData.rank = newRank;
+                    }
+
+                    // ── XP — use playerCount (room.maxPlayers) so forfeit removals don't reduce XP ──
+                    if (!forfeited) {
+                        const baseXp = Math.max(0, 10 * (playerCount + 1 - position));
+                        const xpGained = Math.round(baseXp * (1 + petXpBonus / 100 + vipXpBonus / 100));
+                        const { newLevel, newXp } = calculateLevelProgression(user.level, user.xp, xpGained);
+                        updateData.level = newLevel;
+                        updateData.xp = newXp;
+                    }
+
+                    // ── Gems ──
+                    if (!forfeited) {
+                        const baseGems = r.slot === winnerSlot ? 30 : 20;
+                        const gemsGained = Math.round(baseGems * (1 + petGemsBonus / 100 + vipGemsBonus / 100));
+                        updateData.gems = user.gems + gemsGained;
+                    }
+                }
+
+                if (Object.keys(updateData).length > 0) {
+                    await tx.user.update({ where: { id: player.userId }, data: updateData });
+                }
+            });
+        } catch (err) {
+            console.error(`[updatePlayers] Failed to update ${player.username} (${player.userId}):`, err);
         }
 
         // Notify the player's socket about their MMR change (ranked only)
-        if (isRanked && !forfeited) {
+        if (isRanked && !forfeited && mmrDelta !== 0) {
             const pSkt = ioInstance?.sockets.sockets.get(player.socketId);
             if (pSkt) {
                 pSkt.emit('game:mmr_update', {
-                    oldMmr: user.mmr,
-                    newMmr: user.mmr + mmrDelta,
+                    oldMmr,
+                    newMmr: oldMmr + mmrDelta,
                     mmrDelta,
-                    newRank: getRankFromMmr(user.mmr + mmrDelta),
+                    newRank: getRankFromMmr(oldMmr + mmrDelta),
                 });
             }
         }

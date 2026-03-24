@@ -82,8 +82,16 @@ export function UserProvider({ children }: { children: ReactNode }) {
 
             if (res.ok) {
                 const userData = await res.json();
-                const xpNeed = userData.level * 100;
-                const xpProgress = Math.min((userData.xp / xpNeed) * 100, 100);
+                // Normalise any accumulated XP that exceeds the level threshold
+                // (safety net in case a server-side level-up wasn't persisted)
+                let displayLevel = userData.level as number;
+                let displayXp = userData.xp as number;
+                while (displayXp >= displayLevel * 100) {
+                    displayXp -= displayLevel * 100;
+                    displayLevel++;
+                }
+                const xpNeed = displayLevel * 100;
+                const xpProgress = Math.round((displayXp / xpNeed) * 100);
 
                 // Use DB avatarUrl, fallback to localStorage (set when user equips avatar)
                 const savedAvatar = localStorage.getItem(AVATAR_STORAGE_KEY);
@@ -92,7 +100,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
                 setUser({
                     id: userData.id,
                     name: userData.username,
-                    level: userData.level,
+                    level: displayLevel,
                     xpProgress: isNaN(xpProgress) ? 0 : xpProgress,
                     avatar: avatarToUse,
                     credits: userData.credits || 0,

@@ -88,6 +88,20 @@ router.get('/me', authenticateToken, async (req: AuthRequest, res) => {
             casual: { played: casualPlayed, won: casualWon, winRate: casualPlayed > 0 ? Math.round((casualWon / casualPlayed) * 100) : 0 },
         };
 
+        // Self-heal: if accumulated XP exceeds the current-level threshold (level-up
+        // not applied in a previous game), normalise and persist the correct values.
+        let healedLevel = user.level;
+        let healedXp = user.xp;
+        while (healedXp >= healedLevel * 100) {
+            healedXp -= healedLevel * 100;
+            healedLevel++;
+        }
+        if (healedLevel !== user.level || healedXp !== user.xp) {
+            await prisma.user.update({ where: { id: user.id }, data: { level: healedLevel, xp: healedXp } });
+            (user as any).level = healedLevel;
+            (user as any).xp = healedXp;
+        }
+
         const recentMatches = (user.matchHistory || []).map((m: any) => ({
             id: m.id,
             mode: m.mode,
