@@ -4,14 +4,14 @@ import { useNavigate } from 'react-router-dom';
 import {
     Users, Trophy, Package, Shield, LayoutDashboard,
     Search, Plus, Edit2, Trash2, Ban, Check, ArrowLeft, Star, Medal, Lock,
-    UserPlus, DollarSign, Crown, Target
+    UserPlus, DollarSign, Crown, Target, AlertTriangle
 } from 'lucide-react';
 import FramedAvatar from '../components/ui/FramedAvatar';
 import PetViewer, { PET_ANIMATION_LABELS, PET_EFFECT_LABELS, DEFAULT_PET_CONFIG } from '../components/ui/PetViewer';
 import type { PetConfig, PetAnimationType, PetEffectType } from '../components/ui/PetViewer';
 import { FRAME_EFFECTS, DEFAULT_FRAME_CONFIG_STR, parseFrameConfig } from '../utils/frameUtils';
 
-type Tab = 'overview' | 'users' | 'tournaments' | 'items' | 'ranks' | 'battlepass' | 'vip' | 'missions';
+type Tab = 'overview' | 'users' | 'tournaments' | 'items' | 'ranks' | 'battlepass' | 'vip' | 'missions' | 'smurf';
 
 // MOCK_RANKS removed, will fetch dynamically
 
@@ -37,6 +37,7 @@ export default function AdminDashboard() {
     const [bpTiers, setBpTiers] = useState<any[]>([]);
     const [vipConfigs, setVipConfigs] = useState<any[]>([]);
     const [missions, setMissions] = useState<any[]>([]);
+    const [smurfFlags, setSmurfFlags] = useState<any[]>([]);
 
     const [modalOpen, setModalOpen] = useState(false);
     const [modalType, setModalType] = useState<'item' | 'tournament' | 'rank' | 'user-create' | 'user-currency' | 'user-mmr' | 'battlepass' | 'tier' | 'vip' | 'mission'>('item');
@@ -72,6 +73,9 @@ export default function AdminDashboard() {
 
         fetch(`${import.meta.env.VITE_API_URL}/api/admin/missions`, { headers })
             .then(res => res.json()).then(d => { if (Array.isArray(d)) setMissions(d); }).catch(console.error);
+
+        fetch(`${import.meta.env.VITE_API_URL}/api/admin/smurf-flags`, { headers })
+            .then(res => res.json()).then(d => { if (Array.isArray(d)) setSmurfFlags(d); }).catch(console.error);
     };    useEffect(() => {
         fetchAllData();
     }, [navigate]);
@@ -362,8 +366,125 @@ export default function AdminDashboard() {
         }
     };
 
+    const handleClearSmurfFlag = async (userId: string, username: string) => {
+        const confirmed = window.confirm(`Limpar flag de smurf de "${username}"?\nIsso indica que a conta foi revisada e é legítima.`);
+        if (!confirmed) return;
+        const token = localStorage.getItem('token');
+        try {
+            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/users/${userId}/clear-smurf`, {
+                method: 'PUT',
+                headers: { 'Authorization': `Bearer ${token}` },
+            });
+            if (res.ok) {
+                setSmurfFlags(prev => prev.filter(u => u.id !== userId));
+            } else {
+                alert('Erro ao limpar flag.');
+            }
+        } catch {
+            alert('Erro de rede.');
+        }
+    };
+
     const renderTabContent = () => {
         switch (activeTab) {
+            case 'smurf':
+                return (
+                    <div className="flex flex-col gap-6">
+                        {/* Info banner */}
+                        <div className="bg-orange-500/10 border border-orange-500/30 rounded-2xl p-4 flex items-start gap-3">
+                            <AlertTriangle size={20} className="text-orange-400 shrink-0 mt-0.5" />
+                            <div>
+                                <p className="text-sm font-bold text-orange-300">Como funciona a detecção</p>
+                                <p className="text-xs text-orange-400/70 mt-0.5">
+                                    Contas são flagadas automaticamente quando: mínimo 5 vitórias ranked E mais de 70% vieram de "forfeit puro" (todos adversários desconectaram). O MMR destas vitórias já foi escalado automaticamente pela <strong>Regra A</strong> (duração &lt;30s = 0% MMR, 30–90s = 50%, &gt;90s = 100%).
+                                </p>
+                            </div>
+                        </div>
+
+                        {smurfFlags.length === 0 ? (
+                            <div className="bg-[#120a1f] border border-white/10 rounded-2xl p-12 flex flex-col items-center gap-3">
+                                <Check size={40} className="text-green-400" />
+                                <p className="text-lg font-black text-white">Nenhuma conta suspeita detectada</p>
+                                <p className="text-gray-500 text-sm">O sistema monitorará automaticamente padrões anômalos.</p>
+                            </div>
+                        ) : (
+                            <div className="bg-[#120a1f] border border-orange-500/20 rounded-2xl overflow-hidden">
+                                <div className="p-5 border-b border-white/10 flex items-center gap-3">
+                                    <AlertTriangle size={18} className="text-orange-400" />
+                                    <h2 className="text-lg font-black text-white">{smurfFlags.length} conta{smurfFlags.length !== 1 ? 's' : ''} suspeita{smurfFlags.length !== 1 ? 's' : ''}</h2>
+                                </div>
+                                <div className="overflow-x-auto">
+                                    <table className="w-full text-left">
+                                        <thead className="bg-white/5 border-b border-white/10">
+                                            <tr>
+                                                <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest">Usuário</th>
+                                                <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest">Rank / MMR</th>
+                                                <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest">Vitórias Ranked</th>
+                                                <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest">Forfeit Wins</th>
+                                                <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest">Ratio</th>
+                                                <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest text-right">Ações</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {smurfFlags.map((u) => (
+                                                <tr key={u.id} className="border-b border-white/5 hover:bg-orange-500/5 transition-colors">
+                                                    <td className="px-6 py-4">
+                                                        <div className="flex flex-col">
+                                                            <div className="flex items-center gap-2">
+                                                                <span className="font-bold text-white">{u.username}</span>
+                                                                <span className="px-1.5 py-0.5 rounded-md bg-orange-500/20 text-orange-400 text-[9px] font-black uppercase border border-orange-500/30">⚠ SMURF</span>
+                                                            </div>
+                                                            <span className="text-xs text-gray-500">{u.email}</span>
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-6 py-4">
+                                                        <div className="flex flex-col">
+                                                            <span className="font-bold text-purple-400">{u.rank}</span>
+                                                            <span className="text-xs text-gray-500">{u.mmr} MMR</span>
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-6 py-4">
+                                                        <span className="font-bold text-white">{u.totalRankedWins}</span>
+                                                        <span className="text-xs text-gray-500 ml-1">/ {u.totalRankedGames} jogos</span>
+                                                    </td>
+                                                    <td className="px-6 py-4">
+                                                        <span className="font-bold text-orange-400">{u.forfeitRankedWins}</span>
+                                                    </td>
+                                                    <td className="px-6 py-4">
+                                                        <div className="flex items-center gap-2">
+                                                            <div className="flex-1 max-w-[80px] h-2 bg-white/10 rounded-full overflow-hidden">
+                                                                <div className="h-full bg-orange-500 rounded-full" style={{ width: `${u.forfeitRatio}%` }} />
+                                                            </div>
+                                                            <span className={`text-xs font-black ${u.forfeitRatio >= 90 ? 'text-red-400' : 'text-orange-400'}`}>{u.forfeitRatio}%</span>
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-6 py-4 text-right">
+                                                        <div className="flex items-center justify-end gap-2">
+                                                            <button
+                                                                onClick={() => handleClearSmurfFlag(u.id, u.username)}
+                                                                title="Marcar como revisado / conta legítima"
+                                                                className="px-3 py-1.5 bg-green-500/10 hover:bg-green-500/30 border border-green-500/30 text-green-400 hover:text-green-300 text-xs font-bold rounded-lg transition-colors flex items-center gap-1"
+                                                            >
+                                                                <Check size={12} /> Limpar Flag
+                                                            </button>
+                                                            <button
+                                                                onClick={() => handleToggleStatus(u.id, u.status)}
+                                                                title="Banir conta"
+                                                                className="px-3 py-1.5 bg-red-500/10 hover:bg-red-500/30 border border-red-500/30 text-red-400 hover:text-red-300 text-xs font-bold rounded-lg transition-colors flex items-center gap-1"
+                                                            >
+                                                                <Ban size={12} /> Banir
+                                                            </button>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                );
             case 'overview':
                 return (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -927,6 +1048,7 @@ export default function AdminDashboard() {
                         { id: 'battlepass', icon: Medal, label: 'Battle Pass' },
                         { id: 'vip', icon: Crown, label: 'VIP Plans' },
                         { id: 'missions', icon: Target, label: 'Missões' },
+                        { id: 'smurf', icon: AlertTriangle, label: `Anti-Smurf${smurfFlags.length > 0 ? ` (${smurfFlags.length})` : ''}` },
                     ].map((item) => (
                         <button
                             key={item.id}

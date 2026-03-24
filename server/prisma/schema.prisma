@@ -27,6 +27,7 @@ model User {
   updatedAt      DateTime       @updatedAt
   lastLogin      DateTime?
   loginStreak    Int       @default(0)
+  smurfFlag      Boolean   @default(false)  // flagged for suspicious forfeit-win pattern
 
   matchHistory   MatchHistory[] @relation("UserMatches")
   inventory      Inventory[]
@@ -70,6 +71,7 @@ model MatchHistory {
   players        User[]    @relation("UserMatches")
   winnerId       String?
   duration       Int?      // in seconds
+  isForfeitWin   Boolean   @default(false)  // winner won because all opponents disconnected/forfeited
   createdAt      DateTime  @default(now())
 }
 

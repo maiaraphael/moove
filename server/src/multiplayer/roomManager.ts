@@ -436,13 +436,22 @@ async function updatePlayersAfterGame(
     const winnerSlot = ranked[0]?.slot;
     const vipConfig = isRanked ? await prisma.vipConfig.findFirst({ where: { isActive: true } }) : null;
 
+    // ── Ideia A: calcular duração da partida e escalar MMR do vencedor ──
+    // Se todos os adversários desconectaram muito rápido → o winner recebe menos MMR
+    const gameDurationSecs = Math.floor((Date.now() - room.createdAt) / 1000);
+    const mmrTimeMultiplier = gameDurationSecs < 30 ? 0 : gameDurationSecs < 90 ? 0.5 : 1.0;
+
+    // ── Ideia D: detectar vitória por forfeit puro (todos adversários desconectaram) ──
+    const isPureForfeitWin = forfeitedSlots.size > 0 && forfeitedSlots.size >= room.maxPlayers - 1;
+
     // Create a single MatchHistory record for this game
     const winnerUserId = room.players.find(p => p.slot === winnerSlot)?.userId ?? null;
     await prisma.matchHistory.create({
         data: {
             mode: isRanked ? 'RANKED' : 'CASUAL',
             winnerId: winnerUserId,
-            duration: Math.floor((Date.now() - room.createdAt) / 1000),
+            duration: gameDurationSecs,
+            isForfeitWin: isPureForfeitWin,
             players: { connect: room.players.map(p => ({ id: p.userId })) },
         }
     }).catch(err => console.error('MatchHistory create error:', err));
@@ -492,9 +501,16 @@ async function updatePlayersAfterGame(
                 if (isRanked) {
                     // ── MMR (non-forfeited only; forfeited already penalised via applyMmrPenalty) ──
                     if (!forfeited) {
-                        const newMmr = calculateNewMmr(user.mmr, position, playerCount, penaltyMinMmr);
+                        const rawNewMmr = calculateNewMmr(user.mmr, position, playerCount, penaltyMinMmr);
+                        const rawDelta = rawNewMmr - user.mmr;
+                        // Ideia A: escalar ganho do winner baseado na duração da partida
+                        // Perdedores legítimos ainda tomam penalidade normal — só o ganho do winner é escalado
+                        const scaledDelta = position === 1
+                            ? Math.round(rawDelta * mmrTimeMultiplier)
+                            : rawDelta;
+                        const newMmr = Math.max(0, user.mmr + scaledDelta);
                         const newRank = getRankFromMmr(newMmr);
-                        mmrDelta = newMmr - user.mmr;
+                        mmrDelta = scaledDelta;
                         updateData.mmr = newMmr;
                         updateData.rank = newRank;
                     }
@@ -553,6 +569,27 @@ async function updatePlayersAfterGame(
                 prisma.matchHistory.count({ where: { players: { some: { id: player.userId } }, winnerId: player.userId, mode: 'RANKED' } }),
             ]).catch(() => [0, 0] as [number, number]);
             checkAchievements(player.userId, rankedWins as number, totalWins as number);
+
+            // ── Ideia D: detectar padrão smurf pós-jogo ──
+            // Se o winner venceu por forfeit puro E é ranked, verificar ratio nas últimas 10+ vitórias
+            if (isRanked && isPureForfeitWin) {
+                try {
+                    const totalRankedWins = await prisma.matchHistory.count({
+                        where: { winnerId: player.userId, mode: 'RANKED' },
+                    });
+                    const forfeitRankedWins = await prisma.matchHistory.count({
+                        where: { winnerId: player.userId, mode: 'RANKED', isForfeitWin: true },
+                    });
+                    // Flag se: mínimo 5 vitórias ranked E mais de 70% vieram de forfeit puro
+                    if (totalRankedWins >= 5 && (forfeitRankedWins / totalRankedWins) >= 0.7) {
+                        await prisma.user.update({
+                            where: { id: player.userId },
+                            data: { smurfFlag: true },
+                        }).catch(() => {});
+                        console.log(`[anti-smurf] Flagged ${player.username} — ${forfeitRankedWins}/${totalRankedWins} forfeit wins`);
+                    }
+                } catch { /* non-blocking */ }
+            }
         }
     }));
 }

@@ -591,4 +591,47 @@ router.delete('/missions/:id', async (req, res) => {
     }
 });
 
+// ── Anti-Smurf: lista usuários flagged ──
+router.get('/smurf-flags', async (req, res) => {
+    try {
+        const flagged = await prisma.user.findMany({
+            where: { smurfFlag: true },
+            select: { id: true, username: true, email: true, mmr: true, rank: true, status: true, createdAt: true },
+        });
+
+        // Para cada usuário flagged, buscar estatísticas de forfeit
+        const withStats = await Promise.all(flagged.map(async (u) => {
+            const [totalRankedWins, forfeitRankedWins, totalRankedGames] = await Promise.all([
+                prisma.matchHistory.count({ where: { winnerId: u.id, mode: 'RANKED' } }),
+                prisma.matchHistory.count({ where: { winnerId: u.id, mode: 'RANKED', isForfeitWin: true } }),
+                prisma.matchHistory.count({ where: { players: { some: { id: u.id } }, mode: 'RANKED' } }),
+            ]);
+            return {
+                ...u,
+                totalRankedWins,
+                forfeitRankedWins,
+                totalRankedGames,
+                forfeitRatio: totalRankedWins > 0
+                    ? Math.round((forfeitRankedWins / totalRankedWins) * 100)
+                    : 0,
+            };
+        }));
+
+        res.json(withStats);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Failed to fetch smurf flags' });
+    }
+});
+
+// ── Anti-Smurf: limpar flag de um usuário (após revisão manual) ──
+router.put('/users/:id/clear-smurf', async (req, res) => {
+    try {
+        await prisma.user.update({ where: { id: req.params.id }, data: { smurfFlag: false } });
+        res.json({ success: true });
+    } catch (err) {
+        res.status(500).json({ error: 'Failed to clear smurf flag' });
+    }
+});
+
 export default router;
