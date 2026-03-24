@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, ChevronRight, ChevronLeft, Layers, GitMerge, Shuffle, Trophy, Star, Zap } from 'lucide-react';
+import { X, ChevronRight, ChevronLeft, Layers, GitMerge, Shuffle, Trophy, Star, Zap, Combine } from 'lucide-react';
 
 interface Props {
     onClose: () => void;
@@ -122,6 +122,30 @@ const slides = [
                     <div className="flex justify-between"><span>🏆 Vitória Ranked</span><span className="text-green-400">+MMR & XP</span></div>
                     <div className="flex justify-between"><span>💀 Derrota Ranked</span><span className="text-red-400">-MMR</span></div>
                     <div className="flex justify-between"><span>🎮 Casual & vs IA</span><span className="text-blue-400">+XP, sem MMR</span></div>
+                </div>
+            </div>
+        ),
+    },
+    {
+        icon: <Combine size={36} className="text-[#b026ff]" />,
+        title: 'Multi Jogadas',
+        subtitle: 'Reorganize tudo de uma vez só',
+        body: (
+            <div className="text-gray-300 text-sm leading-relaxed space-y-3">
+                <p>
+                    O botão <strong className="text-white">Multi Jogadas</strong> permite que você selecione cartas de <strong className="text-white">vários grupos da mesa e da sua mão ao mesmo tempo</strong>, reorganizando tudo em novos grupos com um único clique.
+                </p>
+                <div className="bg-[#b026ff]/10 border border-[#b026ff]/30 rounded-xl p-4 space-y-2">
+                    <p className="text-xs font-bold text-[#d47fff] uppercase tracking-wider">Como usar:</p>
+                    <ol className="space-y-1.5 text-xs text-gray-300 list-decimal pl-4">
+                        <li>Clique no botão <strong className="text-white">Multi Jogadas</strong> durante seu turno</li>
+                        <li>Clique nas cartas da mesa que você quer pegar (elas vão para a área de staging)</li>
+                        <li>Clique nas cartas da sua mão para adicioná-las também</li>
+                        <li>Clique em <strong className="text-white">Confirmar</strong> — o sistema forma os grupos válidos automaticamente</li>
+                    </ol>
+                </div>
+                <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-xl p-3 text-xs text-yellow-200">
+                    ⚠️ Você deve incluir pelo menos <strong>1 carta da sua mão</strong> e o resultado final precisa formar grupos válidos. Se não der, você pode cancelar sem penalidade.
                 </div>
             </div>
         ),
