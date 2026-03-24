@@ -5,6 +5,7 @@ import TopHeader from '../components/ui/TopHeader';
 import FramedAvatar from '../components/ui/FramedAvatar';
 import { ProfileSkeleton } from '../components/ui/PageLoader';
 import { useUser } from '../hooks/useUser';
+import { useEffect } from 'react';
 
 // Map Trophies types to icons
 const getTrophyIcon = (type: string) => {
@@ -26,7 +27,10 @@ const getTrophyStyle = (type: string) => {
 };
 
 export default function Profile() {
-    const { user, isLoading } = useUser();
+    const { user, isLoading, refreshUser } = useUser();
+
+    // Always fetch fresh data when the page is opened (e.g. after a ranked game)
+    useEffect(() => { refreshUser(); }, []);
 
     if (isLoading || !user) return <ProfileSkeleton />;
 

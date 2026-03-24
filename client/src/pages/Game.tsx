@@ -403,6 +403,8 @@ export default function Game() {
 
         skt.on('game:mmr_update', (data: { oldMmr: number; newMmr: number; mmrDelta: number; oldRank: string; newRank: string; oldLevel: number; newLevel: number }) => {
             setMmrDelta(data.mmrDelta);
+            // Sync user context with the updated DB values so Profile/Dashboard show fresh data
+            refreshUser();
             const didLevelUp = data.newLevel > data.oldLevel;
             const didRankUp = data.newRank !== data.oldRank;
             if (didLevelUp) {
