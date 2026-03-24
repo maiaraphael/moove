@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { Lock, Check, Crown, Home, Gamepad2, Trophy, Medal, User, Layers, ShoppingBag, Package, Users } from 'lucide-react';
+import { Lock, Check, Crown, Home, Gamepad2, Trophy, Medal, User, Layers, ShoppingBag, Package, Users, Gift } from 'lucide-react';
 import TopHeader from '../components/ui/TopHeader';
 import { BattlePassSkeleton } from '../components/ui/PageLoader';
 import { useUser } from '../hooks/useUser';
@@ -41,6 +41,9 @@ export default function BattlePass() {
     const [isFetching, setIsFetching] = useState(true);
     const [buyStatus, setBuyStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
     const [buyError, setBuyError] = useState<string | null>(null);
+    const [claimedTiers, setClaimedTiers] = useState<{ tierId: string; track: string }[]>([]);
+    const [claimingKey, setClaimingKey] = useState<string | null>(null); // "tierId:track"
+    const [claimToast, setClaimToast] = useState<string | null>(null);
 
     useEffect(() => {
         const fetchBP = async () => {
@@ -52,6 +55,7 @@ export default function BattlePass() {
                 if (res.ok) {
                     const data = await res.json();
                     setBattlePass(data);
+                    setClaimedTiers(data.claimedTiers ?? []);
                 }
             } catch (err) {
                 console.error('Failed to fetch Battle Pass', err);
@@ -64,6 +68,36 @@ export default function BattlePass() {
             fetchBP();
         }
     }, [user, isLoading]);
+
+    const handleClaim = async (tierId: string, track: 'free' | 'premium') => {
+        const key = `${tierId}:${track}`;
+        if (claimingKey === key) return;
+        setClaimingKey(key);
+        try {
+            const token = localStorage.getItem('token');
+            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/battlepass/claim/${tierId}`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ track })
+            });
+            const data = await res.json();
+            if (res.ok) {
+                setClaimedTiers(prev => [...prev, { tierId, track }]);
+                const msg = [data.gems > 0 ? `+${data.gems} 💎` : null, data.itemName ? data.itemName : null].filter(Boolean).join(' + ');
+                setClaimToast(`Resgatado! ${msg}`);
+                setTimeout(() => setClaimToast(null), 3000);
+                if (refreshUser) refreshUser();
+            } else {
+                setClaimToast(data.error || 'Erro ao resgatar');
+                setTimeout(() => setClaimToast(null), 3000);
+            }
+        } catch {
+            setClaimToast('Erro de conexão');
+            setTimeout(() => setClaimToast(null), 3000);
+        } finally {
+            setClaimingKey(null);
+        }
+    };
 
     const handleBuyPremium = async () => {
         if (buyStatus === 'loading') return;
@@ -107,6 +141,7 @@ export default function BattlePass() {
     const xpPercent = Math.min(100, Math.round(user.xpProgress));
     const CURRENT_XP = Math.round(user.xpProgress / 100 * XP_FOR_NEXT);
     const IS_PREMIUM = user.isPremium;
+    const isClaimed = (tierId: string, track: string) => claimedTiers.some(c => c.tierId === tierId && c.track === track);
     const passName = battlePass?.name || 'Nexus Protocol';
     const season = battlePass?.season || 1;
     const passPrice = battlePass?.price ?? 0;
@@ -120,6 +155,18 @@ export default function BattlePass() {
             <div className="fixed bottom-0 right-[-10%] w-[50%] h-[50%] bg-yellow-500/10 rounded-full blur-[150px] pointer-events-none" />
 
             <TopHeader user={user} />
+
+            {/* Claim Toast */}
+            {claimToast && (
+                <motion.div
+                    initial={{ opacity: 0, y: -20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0 }}
+                    className="fixed top-24 left-1/2 -translate-x-1/2 z-50 bg-green-500/90 backdrop-blur-md text-white font-bold px-6 py-3 rounded-xl shadow-2xl text-sm border border-green-400/30"
+                >
+                    {claimToast}
+                </motion.div>
+            )}
 
             {/* Header Section */}
             <header className="relative z-10 w-full max-w-7xl mx-auto px-6 py-12 flex flex-col md:flex-row items-center justify-between gap-6">
@@ -271,7 +318,23 @@ const ItemCard = ({ item, gems, isPremium }: { item: { name: string; type: strin
                                     <div className="relative overflow-hidden group rounded-xl bg-[#120a1f] border border-white/5 flex items-center p-4 gap-3">
                                         <ItemCard item={tier.freeItem} gems={tier.freeGems} isPremium={false} />
                                         <div className="shrink-0">
-                                            {isCompleted ? <Check className="text-green-500" size={22} /> : <Lock className="text-gray-600" size={18} />}
+                                            {isLocked ? (
+                                                <Lock className="text-gray-600" size={18} />
+                                            ) : isClaimed(tier.id, 'free') ? (
+                                                <Check className="text-green-500" size={22} />
+                                            ) : (tier.freeGems > 0 || tier.freeItem) ? (
+                                                <motion.button
+                                                    whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
+                                                    onClick={() => handleClaim(tier.id, 'free')}
+                                                    disabled={claimingKey === `${tier.id}:free`}
+                                                    className="flex items-center gap-1.5 px-3 py-1.5 bg-[#b026ff] hover:bg-[#c95bff] text-white font-bold text-xs rounded-lg transition-all shadow-[0_0_12px_rgba(176,38,255,0.4)] disabled:opacity-50"
+                                                >
+                                                    <Gift size={13} />
+                                                    {claimingKey === `${tier.id}:free` ? '...' : 'Resgatar'}
+                                                </motion.button>
+                                            ) : (
+                                                <Check className="text-gray-600" size={18} />
+                                            )}
                                         </div>
                                         <span className="absolute bottom-1.5 left-4 text-[9px] text-gray-600 font-black uppercase tracking-widest">Free</span>
                                     </div>
@@ -280,10 +343,25 @@ const ItemCard = ({ item, gems, isPremium }: { item: { name: string; type: strin
                                     <div className={`relative overflow-hidden group rounded-xl border flex items-center p-4 gap-3 ${IS_PREMIUM ? 'bg-[#1a0f00] border-yellow-500/20' : 'bg-[#120a1f] border-white/5'}`}>
                                         <ItemCard item={tier.premiumItem} gems={tier.premiumGems} isPremium={true} />
                                         <div className="shrink-0">
-                                            {isCompleted && IS_PREMIUM
-                                                ? <Check className="text-yellow-500" size={22} />
-                                                : <Lock className={IS_PREMIUM && isLocked ? 'text-gray-600' : 'text-red-500/50'} size={18} />
-                                            }
+                                            {isLocked ? (
+                                                <Lock className="text-gray-600" size={18} />
+                                            ) : !IS_PREMIUM ? (
+                                                <Lock className="text-red-500/50" size={18} />
+                                            ) : isClaimed(tier.id, 'premium') ? (
+                                                <Check className="text-yellow-500" size={22} />
+                                            ) : (tier.premiumGems > 0 || tier.premiumItem) ? (
+                                                <motion.button
+                                                    whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
+                                                    onClick={() => handleClaim(tier.id, 'premium')}
+                                                    disabled={claimingKey === `${tier.id}:premium`}
+                                                    className="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-400 hover:to-yellow-500 text-black font-bold text-xs rounded-lg transition-all shadow-[0_0_12px_rgba(234,179,8,0.4)] disabled:opacity-50"
+                                                >
+                                                    <Gift size={13} />
+                                                    {claimingKey === `${tier.id}:premium` ? '...' : 'Resgatar'}
+                                                </motion.button>
+                                            ) : (
+                                                <Check className="text-yellow-600" size={18} />
+                                            )}
                                         </div>
                                         <span className="absolute bottom-1.5 left-4 text-[9px] text-yellow-700 font-black uppercase tracking-widest">Premium</span>
                                         {/* Overlay if not premium */}

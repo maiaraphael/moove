@@ -134,8 +134,20 @@ model BattlePassTier {
   premiumGems    Int        @default(0)  // gems rewarded on premium track
   battlePassId   String
   battlePass     BattlePass @relation(fields: [battlePassId], references: [id], onDelete: Cascade)
+  claims         BattlePassClaim[]
 
   @@unique([battlePassId, level])
+}
+
+model BattlePassClaim {
+  id        String   @id @default(uuid())
+  userId    String
+  tierId    String
+  track     String   // "free" | "premium"
+  claimedAt DateTime @default(now())
+  tier      BattlePassTier @relation(fields: [tierId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, tierId, track])
 }
 
 model Inventory {
