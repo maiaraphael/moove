@@ -170,7 +170,7 @@ export default function Play() {
             icon: Bot,
             color: '#10b981',
             description: t('play.vsAiDesc2'),
-            bgImage: 'https://lh3.googleusercontent.com/aida-public/AB6AXuA32P4pFVTwedoAMwXGPJUyhu2xPOCHgKK6P9_s0jIQ8PRiBajI8bB3bprJrn2UmuqY_9g8opii992SkeeoQIpnQBeEXpn3B8Z0FzjWgn26IGpQYjynUWqdhkTjfKqUEJhkG1pe1SOUzRpPFkUZIC1ndZxp-CICGEEr5R0oZmA_eiVX_GV9QV5HAa-cTS7JcViGaAOq8MMityqtxNW1I4oJO2F0ItvmAHcDIwaZu0QUFS_Utn5_sjHUFIu94n_7zd4yKz91fWxVpA'
+            bgImage: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDv2jMzVGBdsK02qVloqAo_eY30uARJsZPXLkkum4ZBfcCtv0KYzlE42juLsyLsbI_apV2_5SQBN6REm2Xiy-pZ-uYVbOl3eb6MWO5p7jvGf6coB5SLlF_XyeMHQec5WngdsHpmiKmpxvzMj9PjY47Tgs7WaN_QXiFv-WQQ1Zc2ZnlY64wh39mF13sUc_m0v6Vc0PhGM1q8OWUiqUgZfc9B8HptWYSjzb_Nn-Wj9vN-fvLK7UN_y3mxQoOYa_WK4ExsvOPjDQ1C7A'
         }
     ];
 
