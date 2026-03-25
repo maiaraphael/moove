@@ -246,7 +246,7 @@ export default function Dashboard() {
                                 </div>
                                 <div className="flex items-center gap-1.5">
                                     <Flame size={14} className="text-orange-400" />
-                                    <span className="font-bold">{user.stats?.wins ?? 0}</span>
+                                    <span className="font-bold">{user.stats?.ranked.won ?? 0}</span>
                                     <span className="text-gray-500 text-xs">vitÃ³rias</span>
                                 </div>
                                 <div className="flex items-center gap-1.5">
