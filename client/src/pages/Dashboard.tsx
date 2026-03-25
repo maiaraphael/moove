@@ -12,6 +12,11 @@ import LoginBonusModal from '../components/ui/LoginBonusModal';
 import OnboardingModal from '../components/ui/OnboardingModal';
 import { DashboardSkeleton } from '../components/ui/PageLoader';
 import { useTranslation } from 'react-i18next';
+import FramedAvatar from '../components/ui/FramedAvatar';
+import PetViewer from '../components/ui/PetViewer';
+import type { PetConfig } from '../components/ui/PetViewer';
+import { parseFrameConfig } from '../utils/frameUtils';
+import type { FrameConfig } from '../utils/frameUtils';
 
 interface Tournament {
     id: number;
@@ -44,6 +49,8 @@ interface StoreItem {
     currency: string;
     imageUrl: string | null;
     isFeatured: boolean;
+    frameConfig?: FrameConfig | null;
+    petConfig?: PetConfig | null;
 }
 
 const RARITY_STYLES: Record<string, { label: string; color: string; bg: string; glow: string }> = {
@@ -139,7 +146,12 @@ export default function Dashboard() {
                 setTop3(data.slice(0, 3));
             }
             if (storeRes.status === 'fulfilled' && storeRes.value.ok) {
-                const items: StoreItem[] = await storeRes.value.json();
+                const rawItems: any[] = await storeRes.value.json();
+                const items: StoreItem[] = rawItems.map(i => ({
+                    ...i,
+                    frameConfig: i.type === 'FRAME' ? parseFrameConfig(i.frameConfig) : null,
+                    petConfig: i.type === 'PET' ? (() => { try { return typeof i.petConfig === 'string' ? JSON.parse(i.petConfig) : i.petConfig; } catch { return null; } })() : null,
+                }));
                 // Prefer featured, fallback to random Legendary/Epic
                 const featured = items.filter(i => i.isFeatured);
                 const fallback = items.filter(i => ['Legendary', 'Epic'].includes(i.rarity));
@@ -466,7 +478,15 @@ export default function Dashboard() {
                                         )}
 
                                         <div className="w-full aspect-square rounded-xl overflow-hidden mb-3 bg-white/5 flex items-center justify-center relative">
-                                            {item.imageUrl ? (
+                                            {item.type === 'PET' && item.petConfig ? (
+                                                <PetViewer petConfig={item.petConfig} size={80} withBackground={false} />
+                                            ) : item.type === 'FRAME' && item.frameConfig ? (
+                                                <FramedAvatar
+                                                    src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${item.id}`}
+                                                    size={80}
+                                                    frameConfig={item.frameConfig}
+                                                />
+                                            ) : item.imageUrl ? (
                                                 <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover" />
                                             ) : (
                                                 <Star size={28} className={rs.color} />
