@@ -559,12 +559,6 @@ export default function Dashboard() {
 }
 
 
-    useEffect(() => {
-        if (!localStorage.getItem('tutorialSeen')) {
-            setShowOnboarding(true);
-        }
-    }, []);
-
     const handleCloseOnboarding = () => {
         localStorage.setItem('tutorialSeen', '1');
         setShowOnboarding(false);
