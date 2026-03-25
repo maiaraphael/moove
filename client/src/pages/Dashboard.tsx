@@ -47,24 +47,24 @@ interface StoreItem {
 }
 
 const RARITY_STYLES: Record<string, { label: string; color: string; bg: string; glow: string }> = {
-    Legendary: { label: 'LendÃ¡rio', color: 'text-yellow-300', bg: 'bg-yellow-500/10 border-yellow-500/30', glow: 'shadow-[0_0_20px_rgba(234,179,8,0.25)]' },
-    Epic:      { label: 'Ã‰pico',    color: 'text-purple-300', bg: 'bg-purple-500/10 border-purple-500/30', glow: 'shadow-[0_0_20px_rgba(168,85,247,0.2)]' },
-    Rare:      { label: 'Raro',     color: 'text-blue-300',   bg: 'bg-blue-500/10 border-blue-500/30',   glow: '' },
-    Common:    { label: 'Comum',    color: 'text-gray-400',   bg: 'bg-white/5 border-white/10',          glow: '' },
+    Legendary: { label: 'Legendary', color: 'text-yellow-300', bg: 'bg-yellow-500/10 border-yellow-500/30', glow: 'shadow-[0_0_20px_rgba(234,179,8,0.25)]' },
+    Epic:      { label: 'Epic',      color: 'text-purple-300', bg: 'bg-purple-500/10 border-purple-500/30', glow: 'shadow-[0_0_20px_rgba(168,85,247,0.2)]' },
+    Rare:      { label: 'Rare',      color: 'text-blue-300',   bg: 'bg-blue-500/10 border-blue-500/30',   glow: '' },
+    Common:    { label: 'Common',    color: 'text-gray-400',   bg: 'bg-white/5 border-white/10',          glow: '' },
 };
 
 const PODIUM_STYLES = [
-    { badge: 'ðŸ¥ˆ', border: 'border-gray-400/40', label: 'text-gray-300', offset: 'translate-y-3' },
-    { badge: 'ðŸ‘‘', border: 'border-yellow-400/50', label: 'text-yellow-300', offset: '' },
-    { badge: 'ðŸ¥‰', border: 'border-amber-600/40', label: 'text-amber-500', offset: 'translate-y-5' },
+    { badge: '🥈', border: 'border-gray-400/40', label: 'text-gray-300', offset: 'translate-y-3' },
+    { badge: '👑', border: 'border-yellow-400/50', label: 'text-yellow-300', offset: '' },
+    { badge: '🥉', border: 'border-amber-600/40', label: 'text-amber-500', offset: 'translate-y-5' },
 ];
 const PODIUM_ORDER = [1, 0, 2]; // silver center-left, gold center, bronze center-right
 
 const GREETING = () => {
     const h = new Date().getHours();
-    if (h < 12) return 'Bom dia';
-    if (h < 18) return 'Boa tarde';
-    return 'Boa noite';
+    if (h < 12) return 'Good morning';
+    if (h < 18) return 'Good afternoon';
+    return 'Good evening';
 };
 
 export default function Dashboard() {
@@ -225,7 +225,7 @@ export default function Dashboard() {
 
                             {/* XP bar */}
                             <div className="flex items-center gap-3 mb-3">
-                                <span className="text-xs text-gray-500 shrink-0">NÃ­vel {user.level}</span>
+                                <span className="text-xs text-gray-500 shrink-0">Level {user.level}</span>
                                 <div className="flex-1 h-2 bg-white/10 rounded-full overflow-hidden max-w-xs">
                                     <motion.div
                                         initial={{ width: 0 }}
@@ -247,12 +247,12 @@ export default function Dashboard() {
                                 <div className="flex items-center gap-1.5">
                                     <Flame size={14} className="text-orange-400" />
                                     <span className="font-bold">{user.stats?.ranked.won ?? 0}</span>
-                                    <span className="text-gray-500 text-xs">vitÃ³rias</span>
+                                    <span className="text-gray-500 text-xs">wins</span>
                                 </div>
                                 <div className="flex items-center gap-1.5">
                                     <Target size={14} className="text-green-400" />
                                     <span className="font-bold">{completedMissions}/{missions.length || '?'}</span>
-                                    <span className="text-gray-500 text-xs">missÃµes</span>
+                                    <span className="text-gray-500 text-xs">missions</span>
                                 </div>
                             </div>
                         </div>
@@ -266,13 +266,13 @@ export default function Dashboard() {
                                 className="flex items-center gap-3 px-8 py-4 rounded-2xl font-black text-lg tracking-wider uppercase bg-gradient-to-r from-[#b026ff] to-[#7c3aed] text-white shadow-[0_0_40px_rgba(176,38,255,0.4)] hover:shadow-[0_0_60px_rgba(176,38,255,0.6)] transition-shadow"
                             >
                                 <Play size={22} className="fill-white" />
-                                JOGAR
+                                PLAY
                             </motion.button>
                             <button
                                 onClick={() => navigate('/profile')}
                                 className="text-xs text-gray-500 hover:text-white transition-colors text-center"
                             >
-                                Ver perfil completo â†’
+                                View full profile →
                             </button>
                         </div>
                     </div>
@@ -290,10 +290,10 @@ export default function Dashboard() {
                         <div className="flex items-center justify-between mb-4">
                             <div className="flex items-center gap-2">
                                 <Trophy size={14} className="text-yellow-400" />
-                                <h3 className="text-xs font-bold text-gray-400 tracking-[0.2em] uppercase">Top Ranking Global</h3>
+                                <h3 className="text-xs font-bold text-gray-400 tracking-[0.2em] uppercase">Top Global Ranking</h3>
                             </div>
                             <Link to="/leaderboard" className="flex items-center gap-1 text-[10px] font-bold text-[#b026ff] tracking-widest uppercase hover:text-[#d685ff] transition-colors">
-                                Ver todos <ChevronRight size={12} />
+                                View all <ChevronRight size={12} />
                             </Link>
                         </div>
 
@@ -344,10 +344,10 @@ export default function Dashboard() {
                         <div className="flex items-center justify-between mb-4">
                             <div className="flex items-center gap-2">
                                 <Target size={14} className="text-[#b026ff]" />
-                                <h3 className="text-xs font-bold text-gray-400 tracking-[0.2em] uppercase">MissÃµes DiÃ¡rias</h3>
+                                <h3 className="text-xs font-bold text-gray-400 tracking-[0.2em] uppercase">Daily Missions</h3>
                             </div>
                             <Link to="/missions" className="flex items-center gap-1 text-[10px] font-bold text-[#b026ff] tracking-widest uppercase hover:text-[#d685ff] transition-colors">
-                                Ver todas <ChevronRight size={12} />
+                                View all <ChevronRight size={12} />
                             </Link>
                         </div>
 
@@ -355,7 +355,7 @@ export default function Dashboard() {
                             {missions.length === 0 ? (
                                 <Link to="/missions"
                                     className="flex items-center justify-center gap-2 bg-[#160d26]/60 border border-white/5 rounded-xl py-5 text-xs font-bold text-gray-500 hover:border-[#b026ff]/20 hover:text-[#b026ff] transition-all">
-                                    <Target size={14} /> Ver missÃµes de hoje
+                                    <Target size={14} /> See today's missions
                                 </Link>
                             ) : (
                                 missions.slice(0, 3).map((um: any) => {
@@ -392,10 +392,10 @@ export default function Dashboard() {
                         <div className="flex items-center justify-between mb-4">
                             <div className="flex items-center gap-2">
                                 <Swords size={14} className="text-[#b026ff]" />
-                                <h3 className="text-xs font-bold text-gray-400 tracking-[0.2em] uppercase">Torneios Ativos</h3>
+                                <h3 className="text-xs font-bold text-gray-400 tracking-[0.2em] uppercase">Active Tournaments</h3>
                             </div>
                             <Link to="/tournaments" className="flex items-center gap-1 text-[10px] font-bold text-[#b026ff] tracking-widest uppercase hover:text-[#d685ff] transition-colors">
-                                Ver todos <ChevronRight size={12} />
+                                View all <ChevronRight size={12} />
                             </Link>
                         </div>
 
@@ -403,8 +403,8 @@ export default function Dashboard() {
                             {tournaments.length === 0 ? (
                                 <div className="flex flex-col items-center justify-center gap-2 bg-[#160d26]/60 border border-white/5 rounded-xl py-8 text-center">
                                     <Swords size={28} className="text-gray-700" />
-                                    <p className="text-xs font-bold text-gray-500">Nenhum torneio ativo no momento</p>
-                                    <Link to="/tournaments" className="text-[10px] text-[#b026ff] hover:text-[#d685ff] transition-colors">Verificar mais tarde</Link>
+                                    <p className="text-xs font-bold text-gray-500">No active tournaments right now</p>
+                                    <Link to="/tournaments" className="text-[10px] text-[#b026ff] hover:text-[#d685ff] transition-colors">Check back later</Link>
                                 </div>
                             ) : (
                                 tournaments.slice(0, 3).map((tourney) => (
@@ -437,10 +437,10 @@ export default function Dashboard() {
                         <div className="flex items-center justify-between mb-4">
                             <div className="flex items-center gap-2">
                                 <Sparkles size={14} className="text-yellow-400" />
-                                <h3 className="text-xs font-bold text-gray-400 tracking-[0.2em] uppercase">Itens em Destaque</h3>
+                                <h3 className="text-xs font-bold text-gray-400 tracking-[0.2em] uppercase">Featured Items</h3>
                             </div>
                             <Link to="/store" className="flex items-center gap-1 text-[10px] font-bold text-[#b026ff] tracking-widest uppercase hover:text-[#d685ff] transition-colors">
-                                Ir Ã  loja <ChevronRight size={12} />
+                                Go to shop <ChevronRight size={12} />
                             </Link>
                         </div>
 
@@ -477,7 +477,7 @@ export default function Dashboard() {
                                         <div className="flex items-center justify-between mt-1.5">
                                             <span className={`text-[9px] font-black uppercase tracking-wider ${rs.color}`}>{rs.label}</span>
                                             <span className="text-xs font-black text-white">
-                                                {item.currency === 'Gems' ? 'ðŸ’Ž' : 'ðŸª™'} {item.price.toLocaleString()}
+                                            {item.currency === 'Gems' ? '💎' : '🪙'} {item.price.toLocaleString()}
                                             </span>
                                         </div>
                                     </motion.div>
@@ -491,15 +491,15 @@ export default function Dashboard() {
                 {/* ATALHOS RÃPIDOS                                     */}
                 {/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
                 <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}>
-                    <h3 className="text-xs font-bold text-gray-400 tracking-[0.2em] uppercase mb-4">Acesso RÃ¡pido</h3>
+                    <h3 className="text-xs font-bold text-gray-400 tracking-[0.2em] uppercase mb-4">Quick Access</h3>
                     <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
                         {[
-                            { icon: Gamepad2, label: 'Jogar', link: '/play', color: '#b026ff', bg: 'bg-[#b026ff]/10 border-[#b026ff]/20' },
+                            { icon: Gamepad2, label: 'Play', link: '/play', color: '#b026ff', bg: 'bg-[#b026ff]/10 border-[#b026ff]/20' },
                             { icon: Trophy, label: 'Ranking', link: '/leaderboard', color: '#eab308', bg: 'bg-yellow-500/10 border-yellow-500/20' },
                             { icon: Medal, label: 'Battle Pass', link: '/battlepass', color: '#f97316', bg: 'bg-orange-500/10 border-orange-500/20' },
-                            { icon: Layers, label: 'ColeÃ§Ã£o', link: '/collection', color: '#3b82f6', bg: 'bg-blue-500/10 border-blue-500/20' },
-                            { icon: Users, label: 'Amigos', link: '/friends', color: '#10b981', bg: 'bg-green-500/10 border-green-500/20', badge: pendingFriends },
-                            { icon: ShoppingBag, label: 'Loja', link: '/store', color: '#ec4899', bg: 'bg-pink-500/10 border-pink-500/20' },
+                            { icon: Layers, label: 'Collection', link: '/collection', color: '#3b82f6', bg: 'bg-blue-500/10 border-blue-500/20' },
+                            { icon: Users, label: 'Friends', link: '/friends', color: '#10b981', bg: 'bg-green-500/10 border-green-500/20', badge: pendingFriends },
+                            { icon: ShoppingBag, label: 'Shop', link: '/store', color: '#ec4899', bg: 'bg-pink-500/10 border-pink-500/20' },
                         ].map((item) => {
                             const Icon = item.icon;
                             return (
