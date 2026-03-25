@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Home, Gamepad2, Trophy, User, Layers, ShoppingBag, Users, User as UserIcon, Swords, Globe, Bot, ChevronLeft, Search, Plus, Medal, Lock, Crown, UserX, Play as PlayIcon, Clock, Shield, X, Loader2 } from 'lucide-react';
+import { Home, Gamepad2, Trophy, User, Layers, ShoppingBag, Users, User as UserIcon, Swords, Globe, Bot, ChevronLeft, ChevronRight, Search, Plus, Medal, Lock, Crown, UserX, Play as PlayIcon, Clock, Shield, X, Loader2 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { io as createSocket, Socket } from 'socket.io-client';
 import TopHeader from '../components/ui/TopHeader';
@@ -185,6 +185,13 @@ export default function Play() {
                     selectedMode === 'ai' ? 'bg-green-600/10' :
                         'bg-[#b026ff]/5'
                 }`} />
+            <div className={`fixed bottom-[-20%] right-[-10%] w-[50%] h-[50%] rounded-full blur-[120px] pointer-events-none transition-colors duration-1000 ${selectedMode === 'ranked' ? 'bg-orange-600/5' :
+                selectedMode === 'casual' ? 'bg-indigo-600/5' :
+                    selectedMode === 'ai' ? 'bg-teal-600/5' :
+                        'bg-purple-800/5'
+                }`} />
+            {/* Subtle grid overlay */}
+            <div className="fixed inset-0 pointer-events-none" style={{ backgroundImage: 'linear-gradient(rgba(176,38,255,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(176,38,255,0.04) 1px, transparent 1px)', backgroundSize: '60px 60px' }} />
 
             {/* --- TOP HEADER --- */}
             <TopHeader user={user} />
@@ -193,28 +200,30 @@ export default function Play() {
             <main className="max-w-6xl mx-auto px-6 pt-8 pb-12 relative z-10">
 
                 {/* Header Section */}
-                <div className="flex items-center justify-between mb-8">
-                    <div>
-                        <h1 className="text-3xl font-black italic tracking-tighter uppercase drop-shadow-md">
-                            SELECT <span className="text-[#b026ff]">PROTOCOL</span>
-                        </h1>
-                        <p className="text-sm text-gray-400 font-medium mt-1">{t('play.initializeBattle')}</p>
+                <div className="mb-10">
+                    <div className="flex items-center gap-3 mb-3">
+                        <div className="h-[2px] w-8 rounded-full bg-gradient-to-r from-[#b026ff] to-transparent" />
+                        <span className="text-[10px] font-black tracking-[0.35em] uppercase text-[#b026ff]/70">{t('play.initializeBattle')}</span>
                     </div>
-
-                    {/* Back button if a mode is selected */}
-                    <AnimatePresence>
-                        {selectedMode && (
-                            <motion.button
-                                initial={{ opacity: 0, x: 20 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                exit={{ opacity: 0, x: 20 }}
-                                onClick={() => { setSelectedMode(null); setPlayerCount(null); }}
-                                className="flex items-center gap-2 text-sm font-bold tracking-widest uppercase text-gray-400 hover:text-white transition-colors border border-white/10 bg-white/5 px-4 py-2 rounded-lg"
-                            >
-                                <ChevronLeft size={16} /> {t('play.changeProtocol')}
-                            </motion.button>
-                        )}
-                    </AnimatePresence>
+                    <div className="flex items-end justify-between">
+                        <h1 className="text-5xl md:text-6xl font-black italic tracking-tighter uppercase leading-none drop-shadow-md">
+                            SELECT <span className="text-[#b026ff]" style={{ textShadow: '0 0 40px rgba(176,38,255,0.45)' }}>PROTOCOL</span>
+                        </h1>
+                        {/* Back button if a mode is selected */}
+                        <AnimatePresence>
+                            {selectedMode && (
+                                <motion.button
+                                    initial={{ opacity: 0, x: 20 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    exit={{ opacity: 0, x: 20 }}
+                                    onClick={() => { setSelectedMode(null); setPlayerCount(null); }}
+                                    className="flex items-center gap-2 text-sm font-bold tracking-widest uppercase text-gray-400 hover:text-white transition-colors border border-white/10 bg-white/5 px-4 py-2 rounded-lg"
+                                >
+                                    <ChevronLeft size={16} /> {t('play.changeProtocol')}
+                                </motion.button>
+                            )}
+                        </AnimatePresence>
+                    </div>
                 </div>
 
                 {/* DYNAMIC VIEW LAYER */}
@@ -231,35 +240,57 @@ export default function Play() {
                                 transition={{ duration: 0.3 }}
                                 className="grid grid-cols-1 md:grid-cols-3 gap-6"
                             >
-                                {modes.map((mode) => {
+                                {modes.map((mode, modeIndex) => {
                                     const Icon = mode.icon;
                                     return (
                                         <div
                                             key={mode.id}
                                             onClick={() => setSelectedMode(mode.id)}
-                                            className="group relative h-[450px] rounded-2xl overflow-hidden cursor-pointer border border-white/10 transition-all duration-500 hover:border-white/30"
-                                            style={{ boxShadow: `0 0 40px inset ${mode.color}15` }}
+                                            className="group relative h-[460px] rounded-2xl overflow-hidden cursor-pointer border border-white/10 transition-all duration-500 hover:border-white/20 hover:-translate-y-1"
+                                            style={{ boxShadow: `0 0 40px inset ${mode.color}10` }}
                                         >
+                                            {/* Background image */}
                                             <div className="absolute inset-0">
-                                                <img src={mode.bgImage} className="w-full h-full object-cover opacity-30 group-hover:opacity-60 transition-opacity duration-700 group-hover:scale-105" />
-                                                <div className="absolute inset-0 bg-gradient-to-t from-[#0f0814] via-[#0f0814]/80 to-transparent" />
-                                                <div className="absolute inset-0 opacity-40 group-hover:opacity-60 transition-opacity duration-500" style={{ backgroundImage: `linear-gradient(to bottom, ${mode.color}20, transparent)` }} />
+                                                <img src={mode.bgImage} className="w-full h-full object-cover opacity-25 group-hover:opacity-55 transition-all duration-700 group-hover:scale-110" />
+                                                <div className="absolute inset-0 bg-gradient-to-t from-[#0f0814] via-[#0f0814]/75 to-[#0f0814]/20" />
+                                                <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500" style={{ background: `radial-gradient(ellipse at bottom left, ${mode.color}18 0%, transparent 70%)` }} />
                                             </div>
 
+                                            {/* Large background number */}
+                                            <div className="absolute top-3 right-4 text-[110px] font-black italic leading-none select-none pointer-events-none transition-all duration-500 text-white/[0.03] group-hover:text-white/[0.06]">
+                                                {String(modeIndex + 1).padStart(2, '0')}
+                                            </div>
+
+                                            {/* Top accent line on hover */}
+                                            <div className="absolute top-0 left-0 right-0 h-[2px] opacity-0 group-hover:opacity-100 transition-opacity duration-500" style={{ background: `linear-gradient(to right, transparent, ${mode.color}, transparent)` }} />
+
+                                            {/* Content */}
                                             <div className="absolute inset-0 p-8 flex flex-col justify-end">
-                                                <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-6 bg-black/40 backdrop-blur-md border border-white/10 shadow-xl group-hover:scale-110 transition-transform duration-500" style={{ boxShadow: `0 0 20px ${mode.color}40` }}>
-                                                    <Icon size={32} style={{ color: mode.color }} />
+                                                {/* Icon */}
+                                                <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-5 bg-black/50 backdrop-blur-md border transition-all duration-500 group-hover:scale-110 group-hover:rotate-3" style={{ borderColor: `${mode.color}35`, boxShadow: `0 0 20px ${mode.color}35` }}>
+                                                    <Icon size={28} style={{ color: mode.color }} />
                                                 </div>
-                                                <h4 className="text-[10px] font-bold tracking-[0.3em] uppercase mb-2" style={{ color: mode.color }}>{mode.subtitle}</h4>
-                                                <h2 className="text-3xl font-black italic tracking-tighter uppercase mb-3 text-white drop-shadow-lg">{mode.title}</h2>
-                                                <p className="text-sm text-gray-400 font-medium leading-relaxed">{mode.description}</p>
 
-                                                <div className="mt-8 flex items-center justify-between border-t border-white/10 pt-4">
-                                                    <span className="text-xs font-bold tracking-widest text-white uppercase flex items-center gap-2">
-                                                        {t('play.initiate')} <Swords size={14} className="opacity-0 group-hover:opacity-100 transition-opacity translate-x-[-10px] group-hover:translate-x-0 duration-300" />
+                                                {/* Subtitle chip */}
+                                                <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border w-fit mb-3 text-[9px] font-black tracking-[0.25em] uppercase" style={{ borderColor: `${mode.color}35`, color: mode.color, backgroundColor: `${mode.color}12` }}>
+                                                    <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ backgroundColor: mode.color }} />
+                                                    {mode.subtitle}
+                                                </div>
+
+                                                <h2 className="text-3xl font-black italic tracking-tighter uppercase mb-2 text-white drop-shadow-lg">{mode.title}</h2>
+                                                <p className="text-xs text-gray-500 font-medium leading-relaxed">{mode.description}</p>
+
+                                                <div className="mt-6 flex items-center justify-between border-t border-white/[0.08] pt-4">
+                                                    <span className="text-xs font-black tracking-widest text-white/70 group-hover:text-white uppercase transition-colors duration-300 flex items-center gap-2">
+                                                        {t('play.initiate')}
+                                                        <Swords size={12} className="opacity-0 group-hover:opacity-100 transition-all -translate-x-2 group-hover:translate-x-0 duration-300" style={{ color: mode.color }} />
                                                     </span>
+                                                    <ChevronRight size={16} className="text-white/20 group-hover:text-white/50 group-hover:translate-x-1 transition-all duration-300" />
                                                 </div>
                                             </div>
+
+                                            {/* Hover glow overlay */}
+                                            <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" style={{ boxShadow: `inset 0 0 40px ${mode.color}08, 0 0 40px ${mode.color}15` }} />
                                         </div>
                                     );
                                 })}
