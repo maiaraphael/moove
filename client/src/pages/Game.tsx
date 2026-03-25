@@ -1573,7 +1573,7 @@ export default function Game() {
                                 textShadow: '0 0 20px rgba(196,181,253,0.9)',
                             }}
                         >
-                            Sua vez!
+                            {t('game.yourTurn')}
                         </div>
                     </motion.div>
                 )}

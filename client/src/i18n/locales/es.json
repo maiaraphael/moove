@@ -426,7 +426,8 @@
     "matchResult": "— RESULTADO DE LA PARTIDA —",
     "handCleared": "— MANO DESPEJADA —",
     "tieBreaker": "— DESEMPATE —",
-    "forfeited": "— ABANDONADO —"
+    "forfeited": "— ABANDONADO —",
+    "yourTurn": "¡TU TURNO!"
   },
   "common": {
     "loading": "Cargando...",

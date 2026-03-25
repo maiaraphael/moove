@@ -426,7 +426,8 @@
     "matchResult": "— MATCH RESULT —",
     "handCleared": "— HAND CLEARED —",
     "tieBreaker": "— TIE BREAKER —",
-    "forfeited": "— FORFEITED —"
+    "forfeited": "— FORFEITED —",
+    "yourTurn": "YOUR TURN!"
   },
   "common": {
     "loading": "Loading...",
