@@ -2370,6 +2370,36 @@ export default function Game() {
                     {/* ── CARDS ROW ── */}
                     {(() => {
                         const compact = isMobile && myHand.length > 8;
+                        const multiRow = isMobile && myHand.length > 9;
+
+                        if (multiRow) {
+                            const numRows = myHand.length > 20 ? 3 : 2;
+                            const rowSize = Math.ceil(myHand.length / numRows);
+                            const rows = Array.from({ length: numRows }, (_, r) =>
+                                myHand.slice(r * rowSize, (r + 1) * rowSize)
+                            );
+                            const overlap = -Math.min(10, Math.max(4, myHand.length - 8));
+                            return (
+                                <div className="flex flex-col gap-1 pt-1 pb-2 pointer-events-auto">
+                                    {rows.map((row, rowIdx) => (
+                                        <div key={rowIdx} className="flex items-end justify-center px-2">
+                                            <AnimatePresence>
+                                                {row.map((card, i) => (
+                                                    <div
+                                                        key={card.id}
+                                                        style={{ marginLeft: i === 0 ? 0 : overlap }}
+                                                        onClick={multiCombineActive && isMyTurn ? () => stageHandCard(card) : undefined}
+                                                    >
+                                                        {renderCard(card, !multiCombineActive, false, true)}
+                                                    </div>
+                                                ))}
+                                            </AnimatePresence>
+                                        </div>
+                                    ))}
+                                </div>
+                            );
+                        }
+
                         return (
                         <div className="relative overflow-x-auto custom-scrollbar pb-3 pt-2 pointer-events-auto">
                             {/* Right-fade scroll hint when compact */}
