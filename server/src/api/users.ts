@@ -8,7 +8,7 @@ const router = Router();
 router.get('/leaderboard', authenticateToken, async (_req, res) => {
     try {
         const users = await prisma.user.findMany({
-            where: { status: 'ACTIVE' },
+            where: { status: 'ACTIVE', role: 'USER' },
             select: { id: true, username: true, avatarUrl: true, mmr: true, rank: true, level: true },
             orderBy: { mmr: 'desc' },
             take: 1000,
