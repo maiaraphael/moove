@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
     Home, Gamepad2, Trophy, User, Layers, ShoppingBag, Medal, Users,
     Shield, Plus, LogOut, Crown, ChevronRight, Send, Hash, X, Loader2,
-    TrendingUp, MessageSquare
+    TrendingUp, MessageSquare, Swords
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import TopHeader from '../components/ui/TopHeader';
@@ -371,6 +371,7 @@ export default function Clan() {
                         { id: 'dashboard', icon: Home, link: '/dashboard' },
                         { id: 'play', icon: Gamepad2, link: '/play' },
                         { id: 'leaderboard', icon: Trophy, link: '/leaderboard' },
+                        { id: 'tourney', icon: Swords, link: '/tournaments' },
                         { id: 'battlepass', icon: Medal, link: '/battlepass' },
                         { id: 'friends', icon: Users, link: '/friends' },
                         { id: 'clan', icon: Shield, link: '/clan' },

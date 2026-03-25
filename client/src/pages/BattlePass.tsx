@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { Lock, Check, Crown, Home, Gamepad2, Trophy, Medal, User, Layers, ShoppingBag, Package, Users, Gift, Shield } from 'lucide-react';
+import { Lock, Check, Crown, Home, Gamepad2, Trophy, Medal, User, Layers, ShoppingBag, Package, Users, Gift, Shield, Swords } from 'lucide-react';
 import TopHeader from '../components/ui/TopHeader';
 import { BattlePassSkeleton } from '../components/ui/PageLoader';
 import { useUser } from '../hooks/useUser';
@@ -388,6 +388,7 @@ const ItemCard = ({ item, gems, isPremium }: { item: { name: string; type: strin
                         { id: 'dashboard', icon: Home, link: '/dashboard' },
                         { id: 'play', icon: Gamepad2, link: '/play' },
                         { id: 'leaderboard', icon: Trophy, link: '/leaderboard' },
+                        { id: 'tourney', icon: Swords, link: '/tournaments' },
                         { id: 'battlepass', icon: Medal, link: '/battlepass' },
                         { id: 'friends', icon: Users, link: '/friends' },
                         { id: 'clan', icon: Shield, link: '/clan' },

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Home, Gamepad2, Trophy, User, Layers, ShoppingBag, Image as ImageIcon, Frame, Smile, Star, Lock, CheckCircle2, Medal, Users, Shield } from 'lucide-react';
+import { Home, Gamepad2, Trophy, User, Layers, ShoppingBag, Image as ImageIcon, Frame, Smile, Star, Lock, CheckCircle2, Medal, Users, Shield, Swords } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import TopHeader from '../components/ui/TopHeader';
@@ -332,6 +332,7 @@ export default function Collection() {
                         { id: 'dashboard', icon: Home, link: '/dashboard' },
                         { id: 'play', icon: Gamepad2, link: '/play' },
                         { id: 'leaderboard', icon: Trophy, link: '/leaderboard' },
+                        { id: 'tourney', icon: Swords, link: '/tournaments' },
                         { id: 'battlepass', icon: Medal, link: '/battlepass' },
                         { id: 'friends', icon: Users, link: '/friends' },
                         { id: 'clan', icon: Shield, link: '/clan' },

@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     Home, Gamepad2, Trophy, User, Layers, ShoppingBag, Medal,
-    TrendingUp, Search, Shield, Users, ChevronLeft, ChevronRight,
+    TrendingUp, Search, Shield, Users, ChevronLeft, ChevronRight, Swords,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import TopHeader from '../components/ui/TopHeader';
@@ -288,6 +288,7 @@ export default function Leaderboard() {
                         { id: 'dashboard', icon: Home, link: '/dashboard' },
                         { id: 'play', icon: Gamepad2, link: '/play' },
                         { id: 'leaderboard', icon: Trophy, link: '/leaderboard' },
+                        { id: 'tourney', icon: Swords, link: '/tournaments' },
                         { id: 'battlepass', icon: Medal, link: '/battlepass' },
                         { id: 'clan', icon: Shield, link: '/clan' },
                         { id: 'friends', icon: Users, link: '/friends' },
