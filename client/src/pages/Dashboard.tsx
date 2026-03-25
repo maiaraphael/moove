@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+﻿import { useState, useEffect, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     Home, Gamepad2, Trophy, User, Layers, ShoppingBag, Medal, Target, ArrowRight,
@@ -47,16 +47,16 @@ interface StoreItem {
 }
 
 const RARITY_STYLES: Record<string, { label: string; color: string; bg: string; glow: string }> = {
-    Legendary: { label: 'Lendário', color: 'text-yellow-300', bg: 'bg-yellow-500/10 border-yellow-500/30', glow: 'shadow-[0_0_20px_rgba(234,179,8,0.25)]' },
-    Epic:      { label: 'Épico',    color: 'text-purple-300', bg: 'bg-purple-500/10 border-purple-500/30', glow: 'shadow-[0_0_20px_rgba(168,85,247,0.2)]' },
+    Legendary: { label: 'LendÃ¡rio', color: 'text-yellow-300', bg: 'bg-yellow-500/10 border-yellow-500/30', glow: 'shadow-[0_0_20px_rgba(234,179,8,0.25)]' },
+    Epic:      { label: 'Ã‰pico',    color: 'text-purple-300', bg: 'bg-purple-500/10 border-purple-500/30', glow: 'shadow-[0_0_20px_rgba(168,85,247,0.2)]' },
     Rare:      { label: 'Raro',     color: 'text-blue-300',   bg: 'bg-blue-500/10 border-blue-500/30',   glow: '' },
     Common:    { label: 'Comum',    color: 'text-gray-400',   bg: 'bg-white/5 border-white/10',          glow: '' },
 };
 
 const PODIUM_STYLES = [
-    { badge: '🥈', border: 'border-gray-400/40', label: 'text-gray-300', offset: 'translate-y-3' },
-    { badge: '👑', border: 'border-yellow-400/50', label: 'text-yellow-300', offset: '' },
-    { badge: '🥉', border: 'border-amber-600/40', label: 'text-amber-500', offset: 'translate-y-5' },
+    { badge: 'ðŸ¥ˆ', border: 'border-gray-400/40', label: 'text-gray-300', offset: 'translate-y-3' },
+    { badge: 'ðŸ‘‘', border: 'border-yellow-400/50', label: 'text-yellow-300', offset: '' },
+    { badge: 'ðŸ¥‰', border: 'border-amber-600/40', label: 'text-amber-500', offset: 'translate-y-5' },
 ];
 const PODIUM_ORDER = [1, 0, 2]; // silver center-left, gold center, bronze center-right
 
@@ -180,9 +180,9 @@ export default function Dashboard() {
 
             <main className="max-w-7xl mx-auto px-4 sm:px-6 pt-6 pb-12 relative z-10 space-y-10">
 
-                {/* ═══════════════════════════════════════════════════ */}
-                {/* HERO — Player Card + Play CTA                       */}
-                {/* ═══════════════════════════════════════════════════ */}
+                {/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
+                {/* HERO â€” Player Card + Play CTA                       */}
+                {/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
                 <motion.section
                     initial={{ opacity: 0, y: 24 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -226,7 +226,7 @@ export default function Dashboard() {
 
                             {/* XP bar */}
                             <div className="flex items-center gap-3 mb-3">
-                                <span className="text-xs text-gray-500 shrink-0">Nível {user.level}</span>
+                                <span className="text-xs text-gray-500 shrink-0">NÃ­vel {user.level}</span>
                                 <div className="flex-1 h-2 bg-white/10 rounded-full overflow-hidden max-w-xs">
                                     <motion.div
                                         initial={{ width: 0 }}
@@ -248,12 +248,12 @@ export default function Dashboard() {
                                 <div className="flex items-center gap-1.5">
                                     <Flame size={14} className="text-orange-400" />
                                     <span className="font-bold">{user.wins ?? 0}</span>
-                                    <span className="text-gray-500 text-xs">vitórias</span>
+                                    <span className="text-gray-500 text-xs">vitÃ³rias</span>
                                 </div>
                                 <div className="flex items-center gap-1.5">
                                     <Target size={14} className="text-green-400" />
                                     <span className="font-bold">{completedMissions}/{missions.length || '?'}</span>
-                                    <span className="text-gray-500 text-xs">missões</span>
+                                    <span className="text-gray-500 text-xs">missÃµes</span>
                                 </div>
                             </div>
                         </div>
@@ -273,15 +273,15 @@ export default function Dashboard() {
                                 onClick={() => navigate('/profile')}
                                 className="text-xs text-gray-500 hover:text-white transition-colors text-center"
                             >
-                                Ver perfil completo →
+                                Ver perfil completo â†’
                             </button>
                         </div>
                     </div>
                 </motion.section>
 
-                {/* ═══════════════════════════════════════════════════ */}
+                {/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
                 {/* TOP 3 DO RANKING                                    */}
-                {/* ═══════════════════════════════════════════════════ */}
+                {/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
                 {top3.length === 3 && (
                     <motion.section
                         initial={{ opacity: 0, y: 20 }}
@@ -336,16 +336,16 @@ export default function Dashboard() {
                     </motion.section>
                 )}
 
-                {/* ═══════════════════════════════════════════════════ */}
-                {/* MISSÕES + TORNEIOS (grid 2-col)                     */}
-                {/* ═══════════════════════════════════════════════════ */}
+                {/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
+                {/* MISSÃ•ES + TORNEIOS (grid 2-col)                     */}
+                {/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     {/* DAILY MISSIONS */}
                     <motion.section initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.25 }}>
                         <div className="flex items-center justify-between mb-4">
                             <div className="flex items-center gap-2">
                                 <Target size={14} className="text-[#b026ff]" />
-                                <h3 className="text-xs font-bold text-gray-400 tracking-[0.2em] uppercase">Missões Diárias</h3>
+                                <h3 className="text-xs font-bold text-gray-400 tracking-[0.2em] uppercase">MissÃµes DiÃ¡rias</h3>
                             </div>
                             <Link to="/missions" className="flex items-center gap-1 text-[10px] font-bold text-[#b026ff] tracking-widest uppercase hover:text-[#d685ff] transition-colors">
                                 Ver todas <ChevronRight size={12} />
@@ -356,7 +356,7 @@ export default function Dashboard() {
                             {missions.length === 0 ? (
                                 <Link to="/missions"
                                     className="flex items-center justify-center gap-2 bg-[#160d26]/60 border border-white/5 rounded-xl py-5 text-xs font-bold text-gray-500 hover:border-[#b026ff]/20 hover:text-[#b026ff] transition-all">
-                                    <Target size={14} /> Ver missões de hoje
+                                    <Target size={14} /> Ver missÃµes de hoje
                                 </Link>
                             ) : (
                                 missions.slice(0, 3).map((um: any) => {
@@ -430,9 +430,9 @@ export default function Dashboard() {
                     </motion.section>
                 </div>
 
-                {/* ═══════════════════════════════════════════════════ */}
+                {/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
                 {/* ITENS EM DESTAQUE DA LOJA                           */}
-                {/* ═══════════════════════════════════════════════════ */}
+                {/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
                 {featuredItems.length > 0 && (
                     <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
                         <div className="flex items-center justify-between mb-4">
@@ -441,7 +441,7 @@ export default function Dashboard() {
                                 <h3 className="text-xs font-bold text-gray-400 tracking-[0.2em] uppercase">Itens em Destaque</h3>
                             </div>
                             <Link to="/store" className="flex items-center gap-1 text-[10px] font-bold text-[#b026ff] tracking-widest uppercase hover:text-[#d685ff] transition-colors">
-                                Ir à loja <ChevronRight size={12} />
+                                Ir Ã  loja <ChevronRight size={12} />
                             </Link>
                         </div>
 
@@ -478,7 +478,7 @@ export default function Dashboard() {
                                         <div className="flex items-center justify-between mt-1.5">
                                             <span className={`text-[9px] font-black uppercase tracking-wider ${rs.color}`}>{rs.label}</span>
                                             <span className="text-xs font-black text-white">
-                                                {item.currency === 'Gems' ? '💎' : '🪙'} {item.price.toLocaleString()}
+                                                {item.currency === 'Gems' ? 'ðŸ’Ž' : 'ðŸª™'} {item.price.toLocaleString()}
                                             </span>
                                         </div>
                                     </motion.div>
@@ -488,17 +488,17 @@ export default function Dashboard() {
                     </motion.section>
                 )}
 
-                {/* ═══════════════════════════════════════════════════ */}
-                {/* ATALHOS RÁPIDOS                                     */}
-                {/* ═══════════════════════════════════════════════════ */}
+                {/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
+                {/* ATALHOS RÃPIDOS                                     */}
+                {/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
                 <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}>
-                    <h3 className="text-xs font-bold text-gray-400 tracking-[0.2em] uppercase mb-4">Acesso Rápido</h3>
+                    <h3 className="text-xs font-bold text-gray-400 tracking-[0.2em] uppercase mb-4">Acesso RÃ¡pido</h3>
                     <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
                         {[
                             { icon: Gamepad2, label: 'Jogar', link: '/play', color: '#b026ff', bg: 'bg-[#b026ff]/10 border-[#b026ff]/20' },
                             { icon: Trophy, label: 'Ranking', link: '/leaderboard', color: '#eab308', bg: 'bg-yellow-500/10 border-yellow-500/20' },
                             { icon: Medal, label: 'Battle Pass', link: '/battlepass', color: '#f97316', bg: 'bg-orange-500/10 border-orange-500/20' },
-                            { icon: Layers, label: 'Coleção', link: '/collection', color: '#3b82f6', bg: 'bg-blue-500/10 border-blue-500/20' },
+                            { icon: Layers, label: 'ColeÃ§Ã£o', link: '/collection', color: '#3b82f6', bg: 'bg-blue-500/10 border-blue-500/20' },
                             { icon: Users, label: 'Amigos', link: '/friends', color: '#10b981', bg: 'bg-green-500/10 border-green-500/20', badge: pendingFriends },
                             { icon: ShoppingBag, label: 'Loja', link: '/store', color: '#ec4899', bg: 'bg-pink-500/10 border-pink-500/20' },
                         ].map((item) => {
@@ -554,307 +554,6 @@ export default function Dashboard() {
                     })}
                 </div>
             </div>
-        </div>
-    );
-}
-
-
-    const handleCloseOnboarding = () => {
-        localStorage.setItem('tutorialSeen', '1');
-        setShowOnboarding(false);
-    };
-
-    useEffect(() => {
-        const raw = sessionStorage.getItem('loginBonus');
-        if (raw) {
-            try { setLoginBonus(JSON.parse(raw)); } catch {}
-            sessionStorage.removeItem('loginBonus');
-        }
-    }, []);
-
-    const fetchMissions = useCallback(async () => {
-        try {
-            const token = localStorage.getItem('token');
-            if (!token) return;
-            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/missions/daily`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            if (res.ok) setMissions(await res.json());
-        } catch { /* ignore */ }
-    }, []);
-
-    const fetchPendingFriends = useCallback(async () => {
-        try {
-            const token = localStorage.getItem('token');
-            if (!token) return;
-            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/friends/requests/incoming`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            if (res.ok) { const d = await res.json(); setPendingFriends(d.length); }
-        } catch { /* ignore */ }
-    }, []);
-
-    useEffect(() => {
-        const fetchTournaments = async () => {
-            try {
-                const token = localStorage.getItem('token');
-                if (!token) return;
-
-                const tRes = await fetch(`${import.meta.env.VITE_API_URL}/api/tournaments`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                
-                if (tRes.ok) {
-                    const dynamicTournaments = await tRes.json();
-                    setTournaments(dynamicTournaments);
-                } else {
-                    setTournaments([]);
-                }
-            } catch (error) {
-                console.error("Failed to load tournaments from database:", error);
-            } finally {
-                setIsLoadingTourns(false);
-            }
-        };
-
-        fetchTournaments();
-        fetchMissions();
-        fetchPendingFriends();
-    }, [fetchMissions, fetchPendingFriends]);
-
-    const protocols = [
-        {
-            id: "ranked",
-            title: t('dashboard.ranked'),
-            subtitle: t('dashboard.rankedSub'),
-            description: t('dashboard.rankedDesc'),
-            accent: "#ef4444",
-            badge: t('dashboard.liveNow'),
-            bgImage: "https://lh3.googleusercontent.com/aida-public/AB6AXuD2wSi-PcPJKU4p1xZ8dN475FDznpKYyJEAH9HdMQFcGQnu0Lomn3zhCDyLts1IR3xN0Tac3TLhuWjDEQPB2ovCgjaFM7oGuWJolBctnOjD0uXIaMFhI00jo6e7jbtJQxQGWOAmeYuOTDrjdHNVwRaC2HcIv7m6LllOPSO-6tSRTMXal7GKo9TrQ0Pi3rcTU_GTSkzJEBm5YGQs1_na13VE5lA6Ay9J6Y1KKcrUNv5ZYBpk5F6hxgKCeoaD_gAER4fXkK2aod7V8g",
-        },
-        {
-            id: "casual",
-            title: t('dashboard.casual'),
-            subtitle: t('dashboard.casualSub'),
-            description: t('dashboard.casualDesc'),
-            accent: "#3b82f6",
-            bgImage: "https://lh3.googleusercontent.com/aida-public/AB6AXuAeQ4moVmnmZ1Dxj7G2UPNtPdBNimArNEv1pm07VeQs-GuEzc-sV6j_OjHoLMdBrmId-ILAWoyIPX2y7LLyawwD7xMolGpPqScndQV3uefWHcD3KjOGl-6RzUrE1soCj-N3-GWpM8uhor4bj-5_cL25jfVyjv0KPGFCaBt3DeXTFY4b9MGVIyhn4nzhX18ihR2FEJZs2Z0f7OTBcMdTGLuEwoqe9056eItGlZ_TeB5W6pKUWtzZrDBjn9O7BqMBeTvUGZ1L_HC_fw",
-        },
-        {
-            id: "ai",
-            title: t('dashboard.vsAI'),
-            subtitle: t('dashboard.vsAISub'),
-            description: t('dashboard.vsAIDesc'),
-            accent: "#10b981",
-            bgImage: "https://lh3.googleusercontent.com/aida-public/AB6AXuDv2jMzVGBdsK02qVloqAo_eY30uARJsZPXLkkum4ZBfcCtv0KYzlE42juLsyLsbI_apV2_5SQBN6REm2Xiy-pZ-uYVbOl3eb6MWO5p7jvGf6coB5SLlF_XyeMHQec5WngdsHpmiKmpxvzMj9PjY47Tgs7WaN_QXiFv-WQQ1Zc2ZnlY64wh39mF13sUc_m0v6Vc0PhGM1q8OWUiqUgZfc9B8HptWYSjzb_Nn-Wj9vN-fvLK7UN_y3mxQoOYa_WK4ExsvOPjDQ1C7A",
-        }
-    ];
-
-    if (isUserLoading || !user) return <DashboardSkeleton />;
-
-    return (
-        <div className="min-h-screen bg-[#0f0814] text-white font-sans selection:bg-[#b026ff] pb-24 relative overflow-hidden">
-            {/* Dark gradient ambient backgrounds */}
-            <div className="fixed top-[-10%] left-[-10%] w-[50%] h-[50%] bg-[#b026ff]/5 rounded-full blur-[150px] pointer-events-none" />
-            <div className="fixed bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-blue-600/5 rounded-full blur-[150px] pointer-events-none" />
-
-            {/* --- TOP HEADER --- */}
-            <TopHeader user={user} />
-            <LoginBonusModal bonus={loginBonus} onClose={() => setLoginBonus(null)} />
-            <AnimatePresence>{showOnboarding && <OnboardingModal onClose={handleCloseOnboarding} />}</AnimatePresence>
-
-            {/* --- MAIN CONTENT --- */}
-            <main className="max-w-7xl mx-auto px-6 pt-8 pb-12 relative z-10">
-
-                {/* SELECT PROTOCOL */}
-                <section className="mb-12">
-                    <h3 className="text-xs font-bold text-gray-400 tracking-[0.2em] uppercase mb-6">{t('dashboard.selectProtocol')}</h3>
-
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        {protocols.map((protocol, index) => (
-                            <motion.div
-                                key={protocol.id}
-                                onClick={() => navigate('/play')}
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ duration: 0.5, delay: index * 0.1 }}
-                                className="group relative h-[360px] rounded-2xl overflow-hidden cursor-pointer border border-white/10 transition-all hover:border-white/30"
-                                style={{ boxShadow: `0 0 40px inset ${protocol.accent}15` }}
-                            >
-                                {/* Background Image & Overlay */}
-                                <div className="absolute inset-0">
-                                    <img src={protocol.bgImage} alt={protocol.title} className="w-full h-full object-cover opacity-40 group-hover:opacity-60 transition-opacity duration-500 group-hover:scale-105" />
-                                    <div className="absolute inset-0 bg-gradient-to-t from-[#0f0814] via-[#0f0814]/60 to-transparent" />
-                                    <div
-                                        className="absolute inset-0 opacity-50 transition-colors"
-                                        style={{ background: `linear-gradient(to bottom, ${protocol.accent}1A, transparent)` }}
-                                    />
-                                </div>
-
-                                {/* Content */}
-                                <div className="absolute inset-0 p-6 flex flex-col justify-end">
-                                    {protocol.badge && (
-                                        <div className="absolute top-4 right-4 px-3 py-1 rounded-full bg-red-500/20 border border-red-500/50 text-red-500 text-[9px] font-black tracking-widest uppercase">
-                                            {protocol.badge}
-                                        </div>
-                                    )}
-
-                                    <h4 className="text-[10px] font-bold tracking-[0.2em] uppercase mb-1" style={{ color: protocol.accent }}>
-                                        {protocol.subtitle}
-                                    </h4>
-                                    <h2 className="text-2xl font-black italic tracking-tighter uppercase mb-2 drop-shadow-lg">
-                                        {protocol.title}
-                                    </h2>
-                                    <p className="text-sm text-gray-400 font-medium">
-                                        {protocol.description}
-                                    </p>
-                                </div>
-
-                                {/* Hover Glow Effect */}
-                                <div
-                                    className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
-                                    style={{ boxShadow: `0 0 50px inset ${protocol.accent}40` }}
-                                />
-                            </motion.div>
-                        ))}
-                    </div>
-                </section>
-
-                {/* DAILY MISSIONS */}
-                <section>
-                    <div className="flex items-center justify-between mb-4">
-                        <div className="flex items-center gap-2">
-                            <Target size={14} className="text-[#b026ff]" />
-                            <h3 className="text-xs font-bold text-gray-400 tracking-[0.2em] uppercase">{t('dashboard.missions')}</h3>
-                        </div>
-                        <Link to="/missions" className="flex items-center gap-1 text-[10px] font-bold text-[#b026ff] tracking-[0.15em] uppercase hover:text-[#d685ff] transition-colors">
-                            {t('dashboard.viewAll')} <ArrowRight size={10} />
-                        </Link>
-                    </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-8">
-                        {missions.length === 0 ? (
-                            <Link to="/missions" className="col-span-3 flex items-center justify-center gap-2 bg-[#160d26]/60 border border-white/5 rounded-xl py-4 text-xs font-bold text-gray-500 hover:border-[#b026ff]/20 hover:text-[#b026ff] transition-all">
-                                <Target size={14} /> {t('dashboard.seeMissionsToday')}
-                            </Link>
-                        ) : (
-                            missions.map((um: any) => {
-                                const pct = Math.min(100, Math.round((um.progress / um.mission.requirement) * 100));
-                                return (
-                                    <Link key={um.id} to="/missions"
-                                        className={`relative bg-[#160d26]/60 border rounded-xl p-3 hover:opacity-90 transition-all overflow-hidden ${
-                                            um.completed && um.claimed ? 'border-green-500/20 opacity-60' :
-                                            um.completed ? 'border-[#b026ff]/40' : 'border-white/5'
-                                        }`}
-                                    >
-                                        <div className="flex items-center justify-between mb-1.5">
-                                            <p className="text-xs font-bold text-white truncate flex-1">{um.mission.title}</p>
-                                            {um.completed && (
-                                                <CheckCircle2 size={12} className={um.claimed ? 'text-green-400' : 'text-[#b026ff]'} />
-                                            )}
-                                        </div>
-                                        <div className="h-1 bg-white/5 rounded-full overflow-hidden">
-                                            <div className="h-full bg-gradient-to-r from-[#b026ff] to-[#d685ff] rounded-full transition-all" style={{ width: `${pct}%` }} />
-                                        </div>
-                                        <p className="text-[10px] text-gray-500 mt-1">{um.progress}/{um.mission.requirement}</p>
-                                    </Link>
-                                );
-                            })
-                        )}
-                    </div>
-                </section>
-
-                {/* ACTIVE TOURNAMENTS */}
-                <section>
-                    <div className="flex items-center justify-between mb-6">
-                        <h3 className="text-xs font-bold text-gray-400 tracking-[0.2em] uppercase">{t('dashboard.tournaments')}</h3>
-                        <button className="text-[10px] font-bold text-[#b026ff] tracking-[0.15em] uppercase hover:text-[#d685ff] transition-colors">
-                            {t('dashboard.viewAll')}
-                        </button>
-                    </div>
-
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                        {tournaments.length === 0 ? (
-                            <div className="col-span-2 text-center py-8 text-gray-500 text-sm">{t('dashboard.noTournaments')}</div>
-                        ) : (
-                            tournaments.map((tourney, index) => (
-                                <motion.div
-                                    key={tourney.id}
-                                    initial={{ opacity: 0, x: -20 }}
-                                    animate={{ opacity: 1, x: 0 }}
-                                    transition={{ duration: 0.5, delay: index * 0.1 + 0.3 }}
-                                    className="flex items-center gap-4 bg-[#160d26]/60 border border-white/5 rounded-2xl p-4 hover:bg-[#1a0f2e] transition-colors group"
-                                >
-                                    {/* Thumbnail */}
-                                    <div className="w-16 h-16 rounded-xl overflow-hidden relative shrink-0">
-                                        <img src={tourney.img} alt={tourney.title} className="w-full h-full object-cover" />
-                                        <div className="absolute inset-0 ring-1 ring-inset ring-white/10 rounded-xl" />
-                                    </div>
-
-                                    {/* Info */}
-                                    <div className="flex-1 min-w-0">
-                                        <h4 className="font-bold text-white truncate text-base mb-1">{tourney.title}</h4>
-                                        <p className="text-xs text-gray-400 font-medium truncate mb-2">{tourney.prize}</p>
-                                        <div className="flex items-center gap-2">
-                                            <span className="px-2 py-0.5 rounded text-[9px] font-bold bg-[#b026ff]/10 text-[#b026ff] border border-[#b026ff]/20 uppercase">
-                                                {tourney.scope}
-                                            </span>
-                                            <span className="px-2 py-0.5 rounded text-[9px] font-bold bg-white/5 text-gray-400 border border-white/10 uppercase">
-                                                {tourney.time}
-                                            </span>
-                                        </div>
-                                    </div>
-
-                                    {/* Action Button */}
-                                    <button className={`px-5 py-2.5 rounded-lg text-xs font-black tracking-widest uppercase transition-all shrink-0 ${tourney.actionColor} ${tourney.actionColor.includes('bg-[#b026ff]') ? 'hover:bg-[#9d1ce6] text-white shadow-[0_0_15px_rgba(176,38,255,0.3)]' : 'hover:bg-white/5 text-[#b026ff]'}`}>
-                                        {tourney.action}
-                                    </button>
-                                </motion.div>
-                            ))
-                        )}
-                    </div>
-                </section>
-
-            </main>
-
-            {/* --- BOTTOM NAVIGATION BAR --- */}
-            <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50">
-                <div className="flex items-center gap-2 px-4 py-3 bg-[#120a1f]/90 backdrop-blur-xl border border-white/10 rounded-full shadow-[0_20px_40px_rgba(0,0,0,0.8)]">
-                    {[
-                        { id: 'dashboard', icon: Home, link: '/dashboard', badge: 0 },
-                        { id: 'play', icon: Gamepad2, link: '/play', badge: 0 },
-                        { id: 'leaderboard', icon: Trophy, link: '/leaderboard', badge: 0 },
-                        { id: 'tourney', icon: Swords, link: '/tournaments', badge: 0 },
-                        { id: 'battlepass', icon: Medal, link: '/battlepass', badge: 0 },
-                        { id: 'friends', icon: Users, link: '/friends', badge: pendingFriends },
-                        { id: 'clan', icon: Shield, link: '/clan', badge: 0 },
-                        { id: 'profile', icon: User, link: '/profile', badge: 0 },
-                        { id: 'cards', icon: Layers, link: '/collection', badge: 0 },
-                        { id: 'shop', icon: ShoppingBag, link: '/shop', badge: 0 },
-                    ].map((item) => {
-                        const Icon = item.icon;
-                        const isActive = item.id === 'dashboard';
-
-                        return (
-                            <Link
-                                to={item.link}
-                                key={item.id}
-                                className={`relative w-12 h-12 rounded-full flex items-center justify-center transition-all ${isActive
-                                    ? 'bg-[#b026ff] text-white shadow-[0_0_20px_rgba(176,38,255,0.5)]'
-                                    : 'text-gray-400 hover:text-white hover:bg-white/5'
-                                    }`}
-                            >
-                                <Icon size={20} className={isActive ? 'fill-white/20' : ''} />
-                                {item.badge > 0 && (
-                                    <span className="absolute top-0.5 right-0.5 w-4 h-4 rounded-full bg-red-500 text-white text-[8px] font-black flex items-center justify-center border border-[#120a1f]">
-                                        {item.badge > 9 ? '9+' : item.badge}
-                                    </span>
-                                )}
-                            </Link>
-                        );
-                    })}
-                </div>
-            </div>
-
         </div>
     );
 }
