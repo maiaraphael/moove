@@ -270,6 +270,9 @@ export default function Game() {
             setTableSets(data.tableSets);
             setActivePlayerIndex(slotMap[data.activeSlot] ?? 0);
             setHasPlayedThisTurn(data.hasPlayedThisTurn);
+            // Save session so auto-reconnect works after page refresh
+            const gameType = searchParams.get('type') || 'casual';
+            localStorage.setItem('moove_active_game', JSON.stringify({ roomId: data.roomId, slot: data.slot, type: gameType }));
         });
 
         // Spectator join handler — no hand data, all players at same visual priority
@@ -370,6 +373,7 @@ export default function Game() {
         });
 
         skt.on('game:over', (data: { winnerSlot: string; winnerUsername: string; ranks: any[]; reason: string; forceDefeat?: boolean }) => {
+            localStorage.removeItem('moove_active_game');
             if (data.forceDefeat) {
                 setGameOver({ winner: '', winnerId: 'nobody', reason: data.reason });
                 return;
@@ -388,6 +392,24 @@ export default function Game() {
             showToast(`${data.username} ${reasonText}`);
             const li = slotToLocalRef.current[data.slot];
             if (li != null) setPlayers(prev => prev.map(p => p.id === `p${li}` ? { ...p, cardCount: 0, isActive: false } : p));
+            // Remove from disconnected banner if present
+            setDisconnectedPlayers(prev => { const next = { ...prev }; delete next[data.slot]; return next; });
+        });
+
+        skt.on('game:player_disconnected', (data: { slot: string; username: string; secondsLeft: number }) => {
+            setDisconnectedPlayers(prev => ({ ...prev, [data.slot]: { username: data.username, secondsLeft: data.secondsLeft } }));
+        });
+
+        skt.on('game:reconnect_countdown', (data: { slot: string; secondsLeft: number }) => {
+            setDisconnectedPlayers(prev => {
+                if (!prev[data.slot]) return prev;
+                return { ...prev, [data.slot]: { ...prev[data.slot], secondsLeft: data.secondsLeft } };
+            });
+        });
+
+        skt.on('game:player_reconnected', (data: { slot: string; username: string }) => {
+            setDisconnectedPlayers(prev => { const next = { ...prev }; delete next[data.slot]; return next; });
+            showToast(`${data.username} reconectou!`);
         });
 
         skt.on('game:emote_received', (data: { slot: string; username: string; emoji: string }) => {
@@ -430,6 +452,36 @@ export default function Game() {
     // Reconnect if user loads after mount (e.g. slower auth)
     }, [isMultiplayer, roomId, user?.id]);
 
+    // ── Auto-rejoin: if no URL params but user has an active game, navigate to it ──
+    useEffect(() => {
+        if (isMultiplayer || !user?.id) return; // already in a multiplayer game or user not ready
+        const saved = localStorage.getItem('moove_active_game');
+        if (!saved) return;
+        try {
+            const { roomId: savedRoomId, slot: savedSlot, type: savedType } = JSON.parse(saved);
+            if (!savedRoomId || !savedSlot) { localStorage.removeItem('moove_active_game'); return; }
+            // Use a one-shot socket purely to check whether the session is still alive
+            const skt = createSocket(import.meta.env.VITE_API_URL, { transports: ['websocket'] });
+            skt.on('connect', () => {
+                skt.emit('game:check_active', { userId: user.id });
+            });
+            skt.on('game:active_found', (data: { roomId: string; slot: string; type: string } | null) => {
+                skt.disconnect();
+                if (data) {
+                    // Session is alive — navigate to the proper URL to trigger the full rejoin flow
+                    navigate(`/game?roomId=${data.roomId}&slot=${data.slot}&type=${data.type}`);
+                } else {
+                    localStorage.removeItem('moove_active_game');
+                }
+            });
+            skt.on('connect_error', () => { skt.disconnect(); });
+            // Cleanup if component unmounts while checking
+            return () => { skt.disconnect(); };
+        } catch {
+            localStorage.removeItem('moove_active_game');
+        }
+    }, [isMultiplayer, user?.id, navigate]);
+
     // Once sleeve is fetched, inform the server so opponents see the correct sleeve
     useEffect(() => {
         if (!isMultiplayer || !mpSocketRef.current?.connected) return;
@@ -462,6 +514,8 @@ export default function Game() {
     const opponentEmoteTimeoutsRef = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
     const [toastMessage, setToastMessage] = useState<string | null>(null);
     const toastTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    // slot → secondsLeft for players currently in grace-period disconnect
+    const [disconnectedPlayers, setDisconnectedPlayers] = useState<Record<string, { username: string; secondsLeft: number }>>({});
 
     const showToast = (msg: string) => {
         setToastMessage(msg);
@@ -1483,6 +1537,28 @@ export default function Game() {
                     </motion.div>
                 )}
             </AnimatePresence>
+
+            {/* --- DISCONNECTED PLAYER BANNERS --- */}
+            <div className="fixed top-16 left-1/2 -translate-x-1/2 z-[90] flex flex-col gap-2 w-[90%] max-w-sm pointer-events-none">
+                <AnimatePresence>
+                    {Object.entries(disconnectedPlayers).map(([slot, info]) => (
+                        <motion.div
+                            key={slot}
+                            initial={{ opacity: 0, y: -20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -20 }}
+                            className="px-4 py-3 bg-yellow-950/90 backdrop-blur-xl border border-yellow-500/40 rounded-xl shadow-[0_0_20px_rgba(234,179,8,0.3)] flex items-center gap-3"
+                        >
+                            <div className="w-6 h-6 rounded-full bg-yellow-500/20 border border-yellow-500/50 flex items-center justify-center shrink-0">
+                                <span className="text-yellow-400 text-xs font-bold">!</span>
+                            </div>
+                            <p className="text-yellow-200 text-xs font-bold leading-tight flex-1">
+                                {info.username} desconectou — reconectando… {info.secondsLeft}s
+                            </p>
+                        </motion.div>
+                    ))}
+                </AnimatePresence>
+            </div>
 
             {/* --- GAME OVER MODAL --- */}
             <AnimatePresence>

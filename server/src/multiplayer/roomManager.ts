@@ -45,6 +45,8 @@ interface Room {
     gameState?: GameState;
     turnIntervalId?: ReturnType<typeof setInterval>;
     spectators?: Map<string, { userId: string; username: string }>;
+    // Reconnection grace: userId → { slot, timeoutId, countdownInterval }
+    gracePlayers?: Map<string, { slot: string; timeoutId: ReturnType<typeof setTimeout>; countdownInterval: ReturnType<typeof setInterval> }>;
 }
 
 interface GameState {
@@ -807,13 +809,39 @@ export const setupMultiplayer = (io: Server) => {
             if (!room) return;
             const user = getUser();
 
-            // In-game disconnect: handle as forfeit (penalty + proper game continuation)
+            // In-game disconnect: start a grace period instead of immediate forfeit
             if (room.status === 'in-game' && room.gameState) {
                 const player = room.players.find(p => p.socketId === socket.id);
                 if (player) {
+                    // Don't forfeit if already in grace (re-disconnect during grace period)
+                    if (room.gracePlayers?.has(player.userId)) return;
+
+                    if (!room.gracePlayers) room.gracePlayers = new Map();
+                    const GRACE_SECONDS = 60;
+                    let remaining = GRACE_SECONDS;
+
+                    // Notify all players that this player is disconnected
+                    io.to(room.id).emit('game:player_disconnected', {
+                        slot: player.slot, username: player.username, secondsLeft: GRACE_SECONDS
+                    });
+
+                    // Countdown tick every second
+                    const countdownInterval = setInterval(() => {
+                        remaining--;
+                        io.to(room.id).emit('game:reconnect_countdown', { slot: player.slot, secondsLeft: remaining });
+                    }, 1000);
+
+                    // Forfeit after grace period
+                    const timeoutId = setTimeout(() => {
+                        clearInterval(countdownInterval);
+                        room.gracePlayers?.delete(player.userId);
+                        if (user) socketUsers.set(socket.id, { ...user, currentRoomId: undefined });
+                        forfeitPlayerInGame(io, room, player.slot, 'disconnect').catch(err => console.error('Grace forfeit error:', err));
+                    }, GRACE_SECONDS * 1000);
+
+                    room.gracePlayers.set(player.userId, { slot: player.slot, timeoutId, countdownInterval });
+                    // Remove from socketUsers so this socket is no longer tied to the room
                     if (user) socketUsers.set(socket.id, { ...user, currentRoomId: undefined });
-                    socket.leave(room.id);
-                    forfeitPlayerInGame(io, room, player.slot, 'disconnect').catch(err => console.error('Disconnect forfeit error:', err));
                     return;
                 }
             }
@@ -991,6 +1019,17 @@ export const setupMultiplayer = (io: Server) => {
             if (!player) player = room.players.find(p => p.slot === data.slot);
             if (!player) player = room.players.find(p => p.userId === data.userId);
             if (!player) { socket.emit('game:error', { message: 'You are not in this game' }); return; }
+
+            // Cancel grace period if this player was disconnected
+            const grace = room.gracePlayers?.get(player.userId);
+            if (grace) {
+                clearTimeout(grace.timeoutId);
+                clearInterval(grace.countdownInterval);
+                room.gracePlayers!.delete(player.userId);
+                // Notify everyone the player is back
+                io.to(room.id).emit('game:player_reconnected', { slot: player.slot, username: player.username });
+            }
+
             // Update sleeve if provided
             if (data.sleeve) player.sleeve = data.sleeve;
             // Mark old socket as transitioning to prevent leaveRoom on its disconnect
@@ -999,6 +1038,7 @@ export const setupMultiplayer = (io: Server) => {
             const oldUser = socketUsers.get(player.socketId);
             if (oldUser) { socketUsers.delete(player.socketId); socketUsers.set(socket.id, { ...oldUser, currentRoomId: room.id }); }
             else { socketUsers.set(socket.id, { userId: player.userId, username: player.username, avatar: player.avatar, currentRoomId: room.id }); }
+            userSockets.set(player.userId, socket.id);
             player.socketId = socket.id;
             socket.join(room.id);
             const gs = room.gameState;
@@ -1007,6 +1047,7 @@ export const setupMultiplayer = (io: Server) => {
                 players: room.players.map(p => ({ slot: p.slot, username: p.username, avatar: p.avatar, sleeve: p.sleeve, frame: p.frame, pet: p.pet, cardCount: (gs.hands[p.slot] || []).length })),
                 deckCount: gs.deck.length, tableSets: gs.tableSets, activeSlot: gs.activeSlot,
                 hasPlayedThisTurn: gs.hasPlayedThisTurn, slotTimers: gs.slotTimers, turnTime: room.turnTime,
+                slotTurnTime: gs.slotTurnTime,
             });
             // Fetch frame and pet from DB in background and rebroadcast once ready
             Promise.all([fetchPlayerFrame(player.userId), fetchPlayerPet(player.userId)]).then(([frame, pet]) => {
@@ -1014,6 +1055,25 @@ export const setupMultiplayer = (io: Server) => {
                 if (pet !== undefined) player!.pet = pet;
                 if (room.gameState) broadcastGameState(io, room);
             }).catch(() => {});
+        });
+
+        // ── GAME: CHECK ACTIVE (for auto-reconnect after page refresh) ──
+        socket.on('game:check_active', (data: { userId: string }) => {
+            for (const room of rooms.values()) {
+                if (room.status === 'in-game' && room.gameState) {
+                    const player = room.players.find(p => p.userId === data.userId);
+                    if (player && !room.gameState.forfeitedSlots.has(player.slot)) {
+                        socket.emit('game:active_found', {
+                            roomId: room.id,
+                            slot: player.slot,
+                            type: room.ranked ? 'ranked' : 'casual',
+                            turnTime: room.turnTime,
+                        });
+                        return;
+                    }
+                }
+            }
+            socket.emit('game:active_found', null);
         });
 
         // ── GAME: UPDATE SLEEVE (sent after equipped sleeve is fetched) ──
