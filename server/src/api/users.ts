@@ -4,14 +4,14 @@ import { authenticateToken, AuthRequest } from '../middleware/auth';
 
 const router = Router();
 
-// GET /api/users/leaderboard — top 100 players by MMR
+// GET /api/users/leaderboard — top 1000 players by MMR
 router.get('/leaderboard', authenticateToken, async (_req, res) => {
     try {
         const users = await prisma.user.findMany({
             where: { status: 'ACTIVE' },
             select: { id: true, username: true, avatarUrl: true, mmr: true, rank: true, level: true },
             orderBy: { mmr: 'desc' },
-            take: 100,
+            take: 1000,
         });
         const configs = await prisma.rankingConfig.findMany();
         const result = users.map((u, idx) => {
