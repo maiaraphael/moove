@@ -68,6 +68,16 @@ router.get('/me', authenticateToken, async (req: AuthRequest, res) => {
             }
         }
 
+        // Resolve equippedSleeveUrl (CARD_BACK)
+        const equippedSleeveInv = user.inventory.find(
+            (inv: any) => inv.itemType === 'CARD_BACK' && inv.isEquipped
+        );
+        let equippedSleeveUrl: string | null = null;
+        if (equippedSleeveInv) {
+            const sleeveItem = await prisma.storeItem.findUnique({ where: { id: equippedSleeveInv.itemId } });
+            if (sleeveItem?.imageUrl) equippedSleeveUrl = sleeveItem.imageUrl;
+        }
+
         const { passwordHash, ...safeUser } = user;
 
         // Resolve the rank config matching the user's current MMR
@@ -111,7 +121,7 @@ router.get('/me', authenticateToken, async (req: AuthRequest, res) => {
             createdAt: m.createdAt,
         }));
         
-        res.json({ ...safeUser, achievements, equippedFrameConfig, rankConfig: rankConfig ?? null, stats, recentMatches });
+        res.json({ ...safeUser, achievements, equippedFrameConfig, equippedSleeveUrl, rankConfig: rankConfig ?? null, stats, recentMatches });
     } catch (err) {
         console.error('Profile fetch error:', err);
         res.status(500).json({ error: 'Internal server error' });
@@ -171,6 +181,7 @@ router.get('/profile/:username', authenticateToken, async (req: AuthRequest, res
                     include: { players: { select: { id: true, username: true } } },
                 },
                 achievements: { orderBy: { date: 'desc' } },
+                inventory: { where: { isEquipped: true } },
             },
         });
 
@@ -180,6 +191,16 @@ router.get('/profile/:username', authenticateToken, async (req: AuthRequest, res
             where: { minMmr: { lte: user.mmr } },
             orderBy: { minMmr: 'desc' },
         });
+
+        // Resolve equipped sleeve URL for public profile
+        const pubSleeveInv = (user as any).inventory?.find(
+            (inv: any) => inv.itemType === 'CARD_BACK' && inv.isEquipped
+        );
+        let pubEquippedSleeveUrl: string | null = null;
+        if (pubSleeveInv) {
+            const sleeveItem = await prisma.storeItem.findUnique({ where: { id: pubSleeveInv.itemId } });
+            if (sleeveItem?.imageUrl) pubEquippedSleeveUrl = sleeveItem.imageUrl;
+        }
 
         const [wins, games, casualWins, casualGames] = await Promise.all([
             prisma.matchHistory.count({ where: { players: { some: { id: user.id } }, mode: 'RANKED', winnerId: user.id } }),
@@ -211,6 +232,7 @@ router.get('/profile/:username', authenticateToken, async (req: AuthRequest, res
                 createdAt: m.createdAt,
             })),
             stats: { wins: totalWins, games: totalGames, losses: totalGames - totalWins, winRate: totalGames > 0 ? Math.round((totalWins / totalGames) * 100) : 0 },
+            equippedSleeveUrl: pubEquippedSleeveUrl,
         });
     } catch (err) {
         console.error('Public profile error:', err);

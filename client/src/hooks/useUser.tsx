@@ -44,6 +44,7 @@ export interface UserProfile {
     isPremium?: boolean;
     vipExpiresAt?: string | null;
     equippedFrame?: FrameConfig | null;
+    equippedSleeveUrl?: string | null;
     rankConfig?: RankConfig | null;
     stats?: UserStats;
     recentMatches?: MatchRecord[];
@@ -113,6 +114,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
                     isPremium: userData.isPremium || false,
                     vipExpiresAt: userData.vipExpiresAt || null,
                     equippedFrame: userData.equippedFrameConfig || null,
+                    equippedSleeveUrl: userData.equippedSleeveUrl || null,
                     rankConfig: userData.rankConfig || null,
                     stats: userData.stats || null,
                     recentMatches: userData.recentMatches || [],

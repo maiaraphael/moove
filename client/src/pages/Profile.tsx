@@ -133,6 +133,38 @@ export default function Profile() {
                             </div>
                         </div>
                     </div>
+
+                    {/* Showcase: Rank + Card Sleeve */}
+                    <div className="shrink-0 flex flex-row md:flex-col items-center justify-center gap-4 z-10">
+                        {/* Rank Icon */}
+                        {user.rankConfig?.iconUrl && (
+                            <div className="flex flex-col items-center gap-2">
+                                <div className="w-24 h-24 rounded-2xl bg-black/40 border border-white/10 flex items-center justify-center shadow-[0_0_30px_rgba(176,38,255,0.2)]">
+                                    <img
+                                        src={user.rankConfig.iconUrl}
+                                        alt={user.rankConfig.name}
+                                        className="w-20 h-20 object-contain"
+                                        style={{ transform: `scale(${user.rankConfig.iconScale ?? 1})`, transformOrigin: 'center' }}
+                                    />
+                                </div>
+                                <span className="text-[11px] font-black uppercase tracking-widest" style={{ color: user.rankConfig.color || '#b026ff' }}>
+                                    {user.rankConfig.name}
+                                </span>
+                            </div>
+                        )}
+                        {/* Card Sleeve */}
+                        {user.equippedSleeveUrl && (
+                            <div className="flex flex-col items-center gap-2">
+                                <div
+                                    className="rounded-xl overflow-hidden border-2 border-white/20 shadow-[0_4px_20px_rgba(0,0,0,0.5)]"
+                                    style={{ width: 56, height: 84 }}
+                                >
+                                    <img src={user.equippedSleeveUrl} alt="Card Sleeve" className="w-full h-full object-cover" />
+                                </div>
+                                <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Sleeve</span>
+                            </div>
+                        )}
+                    </div>
                 </motion.div>
 
                 {/* Game Stats Grid */}

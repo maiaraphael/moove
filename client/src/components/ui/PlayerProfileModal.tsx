@@ -16,6 +16,7 @@ interface PublicProfile {
     achievements: { id: string; type: string; title: string; date: string }[];
     recentMatches: { id: string; mode: string; won: boolean; players: string[]; createdAt: string }[];
     stats: { wins: number; games: number; losses: number; winRate: number };
+    equippedSleeveUrl?: string | null;
 }
 
 interface Props {
@@ -107,6 +108,44 @@ export default function PlayerProfileModal({ username, onClose }: Props) {
                                         </div>
                                     </div>
                                 </div>
+
+                                {/* Rank + Sleeve showcase */}
+                                {(profile.rankConfig?.iconUrl || profile.equippedSleeveUrl) && (
+                                    <div className="flex items-center gap-4 mb-5 bg-black/30 border border-white/8 rounded-2xl p-4">
+                                        {profile.rankConfig?.iconUrl && (
+                                            <div className="flex flex-col items-center gap-2 shrink-0">
+                                                <div className="w-20 h-20 rounded-2xl bg-black/40 border border-white/10 flex items-center justify-center shadow-[0_0_24px_rgba(176,38,255,0.25)]">
+                                                    <img
+                                                        src={profile.rankConfig.iconUrl}
+                                                        alt={profile.rankConfig.name}
+                                                        className="w-16 h-16 object-contain"
+                                                        style={{ transform: `scale(${profile.rankConfig.iconScale ?? 1})`, transformOrigin: 'center' }}
+                                                    />
+                                                </div>
+                                                <span className="text-[10px] font-black uppercase tracking-wider" style={{ color: profile.rankConfig.color || '#b026ff' }}>
+                                                    {profile.rankConfig.name}
+                                                </span>
+                                                <span className="text-[9px] text-gray-500 font-bold">{profile.mmr} MMR</span>
+                                            </div>
+                                        )}
+                                        {profile.equippedSleeveUrl && (
+                                            <div className="flex flex-col items-center gap-2 shrink-0">
+                                                <div
+                                                    className="rounded-xl overflow-hidden border-2 border-white/20 shadow-[0_4px_16px_rgba(0,0,0,0.5)]"
+                                                    style={{ width: 52, height: 78 }}
+                                                >
+                                                    <img src={profile.equippedSleeveUrl} alt="Card Sleeve" className="w-full h-full object-cover" />
+                                                </div>
+                                                <span className="text-[9px] font-bold text-gray-500 uppercase tracking-widest">Sleeve</span>
+                                            </div>
+                                        )}
+                                        {!profile.equippedSleeveUrl && profile.rankConfig?.iconUrl && (
+                                            <div className="flex-1">
+                                                <p className="text-[10px] text-gray-600 italic">No sleeve equipped</p>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
 
                                 {/* Stats row */}
                                 <div className="grid grid-cols-4 gap-2 mb-5">
