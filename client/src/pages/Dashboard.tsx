@@ -300,7 +300,7 @@ export default function Dashboard() {
                     {[
                         { id: 'dashboard', icon: Home, link: '/dashboard', badge: 0 },
                         { id: 'play', icon: Gamepad2, link: '/play', badge: 0 },
-                        { id: 'tourney', icon: Trophy, link: '/tournaments', badge: 0 },
+                        { id: 'leaderboard', icon: Trophy, link: '/leaderboard', badge: 0 },
                         { id: 'battlepass', icon: Medal, link: '/battlepass', badge: 0 },
                         { id: 'friends', icon: Users, link: '/friends', badge: pendingFriends },
                         { id: 'clan', icon: Shield, link: '/clan', badge: 0 },

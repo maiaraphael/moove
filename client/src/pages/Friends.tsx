@@ -289,7 +289,7 @@ export default function Friends() {
                     {[
                         { id: 'dashboard', icon: Home, link: '/dashboard' },
                         { id: 'play', icon: Gamepad2, link: '/play' },
-                        { id: 'tourney', icon: Trophy, link: '/tournaments' },
+                        { id: 'leaderboard', icon: Trophy, link: '/leaderboard' },
                         { id: 'battlepass', icon: Medal, link: '/battlepass' },
                         { id: 'friends', icon: Users, link: '/friends' },
                         { id: 'clan', icon: Shield, link: '/clan' },

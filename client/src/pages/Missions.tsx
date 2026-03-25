@@ -249,7 +249,7 @@ export default function Missions() {
                     {[
                         { id: 'dashboard', icon: Home, link: '/dashboard' },
                         { id: 'play', icon: Gamepad2, link: '/play' },
-                        { id: 'tourney', icon: Trophy, link: '/tournaments' },
+                        { id: 'leaderboard', icon: Trophy, link: '/leaderboard' },
                         { id: 'battlepass', icon: Medal, link: '/battlepass' },
                         { id: 'profile', icon: User, link: '/profile' },
                         { id: 'cards', icon: Layers, link: '/collection' },
