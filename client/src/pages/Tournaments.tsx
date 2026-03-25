@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Home, Gamepad2, Trophy, User, Layers, ShoppingBag, Diamond, Users, X, CheckCircle2, Medal, Loader2 } from 'lucide-react';
+import { Home, Gamepad2, Trophy, User, Layers, ShoppingBag, Diamond, Users, X, CheckCircle2, Medal, Loader2, Shield } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import TopHeader from '../components/ui/TopHeader';
 import { TournamentsSkeleton } from '../components/ui/PageLoader';
@@ -494,6 +494,7 @@ export default function Tournaments() {
                         { id: 'tourney', icon: Trophy, link: '/tournaments' },
                         { id: 'battlepass', icon: Medal, link: '/battlepass' },
                         { id: 'friends', icon: Users, link: '/friends' },
+                        { id: 'clan', icon: Shield, link: '/clan' },
                         { id: 'profile', icon: User, link: '/profile' },
                         { id: 'cards', icon: Layers, link: '/collection' },
                         { id: 'shop', icon: ShoppingBag, link: '/shop' },

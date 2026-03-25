@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Users, UserPlus, Check, X, Trash2, Search, Loader2, UserMinus, Home, Gamepad2, Trophy, User, Layers, ShoppingBag, Medal, Swords, MessageCircle } from 'lucide-react';
+import { Users, UserPlus, Check, X, Trash2, Search, Loader2, UserMinus, Home, Gamepad2, Trophy, User, Layers, ShoppingBag, Medal, Swords, MessageCircle, Shield } from 'lucide-react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import TopHeader from '../components/ui/TopHeader';
 import { FriendsSkeleton } from '../components/ui/PageLoader';
@@ -292,6 +292,7 @@ export default function Friends() {
                         { id: 'tourney', icon: Trophy, link: '/tournaments' },
                         { id: 'battlepass', icon: Medal, link: '/battlepass' },
                         { id: 'friends', icon: Users, link: '/friends' },
+                        { id: 'clan', icon: Shield, link: '/clan' },
                         { id: 'profile', icon: User, link: '/profile' },
                         { id: 'cards', icon: Layers, link: '/collection' },
                         { id: 'shop', icon: ShoppingBag, link: '/shop' },

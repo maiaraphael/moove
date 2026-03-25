@@ -348,6 +348,7 @@ export default function Profile() {
                         { id: 'tourney', icon: Trophy, link: '/tournaments' },
                         { id: 'battlepass', icon: Medal, link: '/battlepass' },
                         { id: 'friends', icon: Users, link: '/friends' },
+                        { id: 'clan', icon: Shield, link: '/clan' },
                         { id: 'profile', icon: User, link: '/profile' },
                         { id: 'cards', icon: Layers, link: '/collection' },
                         { id: 'shop', icon: ShoppingBag, link: '/shop' },

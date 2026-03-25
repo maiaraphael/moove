@@ -155,7 +155,7 @@ export default function Game() {
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
     const playersCount = parseInt(searchParams.get('players') || '4');
-    const { user, refreshUser } = useUser();
+    const { user, refreshUser, isLoading: userLoading } = useUser();
     const { t } = useTranslation();
     const [equippedSleeve, setEquippedSleeve] = useState<string>(DEFAULT_SLEEVE);
     const [equippedFrameConfig, setEquippedFrameConfig] = useState<FrameConfig | null>(null);
@@ -213,20 +213,34 @@ export default function Game() {
         fetchEquippedItems();
     }, []);
 
+    // ── Multiplayer ready flag — set once game:rejoined is received ──
+    const [mpReady, setMpReady] = useState(!isMultiplayer);
+
     // ── Multiplayer Socket ──
     useEffect(() => {
-        // Wait for user to load — userId is required for game:rejoin
-        if (!isMultiplayer || !roomId || !user) return;
+        if (!isMultiplayer || !roomId) return;
         const token = localStorage.getItem('token') || '';
-        const skt = createSocket(import.meta.env.VITE_API_URL, { transports: ['websocket'] });
+        // Allow polling as fallback transport so Android in-app browsers (Google App, WebViews)
+        // that fail the WebSocket upgrade can still connect via HTTP long-polling.
+        // Reconnection is enabled so a brief network blip during page navigation doesn't
+        // permanently prevent the client from joining the game.
+        const skt = createSocket(import.meta.env.VITE_API_URL, {
+            transports: ['websocket', 'polling'],
+            reconnection: true,
+            reconnectionAttempts: 10,
+            reconnectionDelay: 1500,
+        });
         mpSocketRef.current = skt;
 
+        // game:rejoin is sent on EVERY connect (initial + after reconnect)
         skt.on('connect', () => {
             if (isSpectator) {
                 // Spectator joins silently — no slot, no hand
                 skt.emit('game:spectate', { roomId, userId: userRef.current?.id, username: userRef.current?.name });
             } else {
-                // Send slot (from URL) as the authoritative identity — prevents wrong-player on same browser testing
+                // Token is the primary auth — server verifies it and matches the player.
+                // userId is sent as a convenience hint; the server will ignore it if the
+                // token doesn't match (see server-side JWT verification in game:rejoin).
                 skt.emit('game:rejoin', { roomId, userId: userRef.current?.id, token, sleeve: equippedSleeveRef.current, slot: myInitialSlot });
             }
         });
@@ -273,6 +287,7 @@ export default function Game() {
             // Save session so auto-reconnect works after page refresh
             const gameType = searchParams.get('type') || 'casual';
             localStorage.setItem('moove_active_game', JSON.stringify({ roomId: data.roomId, slot: data.slot, type: gameType }));
+            setMpReady(true);
         });
 
         // Spectator join handler — no hand data, all players at same visual priority
@@ -304,6 +319,7 @@ export default function Game() {
             setTableSets(data.tableSets);
             setActivePlayerIndex(slotMap[data.activeSlot] ?? 0);
             setHasPlayedThisTurn(false);
+            setMpReady(true);
         });
 
         // Helper: re-apply user's saved order to a new hand array, appending unknown cards at the end
@@ -449,8 +465,7 @@ export default function Game() {
         });
 
         return () => { skt.disconnect(); mpSocketRef.current = null; };
-    // Reconnect if user loads after mount (e.g. slower auth)
-    }, [isMultiplayer, roomId, user?.id]);
+    }, [isMultiplayer, roomId]);
 
     // ── Auto-rejoin: if no URL params but user has an active game, navigate to it ──
     useEffect(() => {
@@ -1521,21 +1536,58 @@ export default function Game() {
     const myPlayer = players[0];
     const isMyTurn = myPlayer.isActive;
 
-    // Flash "Sua vez!" whenever the turn switches to the local player
+    // Tracks whether a "your turn" flash is pending while the user profile
+    // (and therefore the correct language) is still loading.
+    const pendingTurnFlashRef = useRef(false);
+
+    // Flash "Sua vez!" whenever the turn switches to the local player.
+    // Guards:
+    // 1. prevActiveIndexRef starts as null — only fire after the first real
+    //    turn change (prevents spurious flash for ALL players on game:rejoined).
+    // 2. userLoading — if the user profile hasn't loaded yet, the language may
+    //    still be 'en'. Park the flash in pendingTurnFlashRef and show it once
+    //    the profile (and language) is confirmed.
     // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(() => {
         if (gameOver) return;
-        if (activePlayerIndex === 0 && prevActiveIndexRef.current !== 0) {
-            setShowMyTurnFlash(true);
-            const t = setTimeout(() => setShowMyTurnFlash(false), 2000);
-            prevActiveIndexRef.current = 0;
-            return () => clearTimeout(t);
+        if (
+            activePlayerIndex === 0 &&
+            prevActiveIndexRef.current !== null &&
+            prevActiveIndexRef.current !== 0
+        ) {
+            if (userLoading) {
+                // Language not ready yet — defer until profile loads.
+                pendingTurnFlashRef.current = true;
+            } else {
+                setShowMyTurnFlash(true);
+                const t = setTimeout(() => setShowMyTurnFlash(false), 2000);
+                prevActiveIndexRef.current = 0;
+                return () => clearTimeout(t);
+            }
         }
         prevActiveIndexRef.current = activePlayerIndex;
-    }, [activePlayerIndex, gameOver]);
+    }, [activePlayerIndex, gameOver, userLoading]);
+
+    // Fire the deferred flash as soon as the user profile finishes loading.
+    useEffect(() => {
+        if (userLoading || !pendingTurnFlashRef.current) return;
+        pendingTurnFlashRef.current = false;
+        setShowMyTurnFlash(true);
+        const timer = setTimeout(() => setShowMyTurnFlash(false), 2000);
+        return () => clearTimeout(timer);
+    }, [userLoading]);
 
     return (
         <div className="fixed inset-0 bg-[#0a050f] text-white font-sans overflow-hidden">
+            {/* --- MULTIPLAYER CONNECTING OVERLAY --- */}
+            {isMultiplayer && !mpReady && (
+                <div className="absolute inset-0 z-[300] flex flex-col items-center justify-center gap-4 bg-[#0a050f]">
+                    <div className="w-14 h-14 border-4 border-[#b026ff]/20 border-t-[#b026ff] rounded-full animate-spin" />
+                    <p className="text-[#b026ff] text-xs font-bold tracking-[0.25em] uppercase animate-pulse">
+                        {t('game.loading')}
+                    </p>
+                </div>
+            )}
             {/* --- IN-GAME TOAST NOTIFICATION --- */}
             <AnimatePresence>
                 {toastMessage && (

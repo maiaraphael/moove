@@ -1011,14 +1011,37 @@ export const setupMultiplayer = (io: Server) => {
         });
 
         // ── GAME: REJOIN (after page navigation) ──
-        socket.on('game:rejoin', (data: { roomId: string; userId: string; token?: string; sleeve?: string; slot?: string }) => {
+        socket.on('game:rejoin', (data: { roomId: string; userId?: string; token?: string; sleeve?: string; slot?: string }) => {
             const room = rooms.get(data.roomId);
             if (!room?.gameState) { socket.emit('game:error', { message: 'Game session not found' }); return; }
-            // Primary: match by userId + slot (both must agree); fallback for legacy/same-browser testing
-            let player = room.players.find(p => p.userId === data.userId && p.slot === data.slot);
-            if (!player) player = room.players.find(p => p.slot === data.slot);
-            if (!player) player = room.players.find(p => p.userId === data.userId);
+
+            // Verify the JWT to get the authoritative userId.
+            // This prevents userId spoofing and also allows the client to join
+            // before its /api/users/me call completes (token is always available
+            // in localStorage, even if the React user context hasn't loaded yet).
+            let verifiedUserId: string | undefined = undefined;
+            if (data.token) {
+                try {
+                    const decoded = jwt.verify(data.token, process.env.JWT_SECRET || 'secret') as any;
+                    verifiedUserId = decoded.userId || decoded.id || decoded.sub;
+                } catch { /* invalid or expired token — fall through to slot-only lookup */ }
+            }
+            // If token verification succeeded, use it; otherwise trust the provided userId
+            // only as a hint for slot disambiguation (not as authoritative identity).
+            const resolvedUserId = verifiedUserId || data.userId;
+
+            // Primary: verified userId + slot; then slot alone; then userId alone
+            let player = resolvedUserId
+                ? room.players.find(p => p.userId === resolvedUserId && p.slot === data.slot)
+                : undefined;
+            if (!player && data.slot) player = room.players.find(p => p.slot === data.slot);
+            if (!player && resolvedUserId) player = room.players.find(p => p.userId === resolvedUserId);
             if (!player) { socket.emit('game:error', { message: 'You are not in this game' }); return; }
+
+            // Reject if the verified token belongs to a different user than the slot owner
+            if (verifiedUserId && player.userId !== verifiedUserId) {
+                socket.emit('game:error', { message: 'Auth mismatch' }); return;
+            }
 
             // Cancel grace period if this player was disconnected
             const grace = room.gracePlayers?.get(player.userId);

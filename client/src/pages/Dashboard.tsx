@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Home, Gamepad2, Trophy, User, Layers, ShoppingBag, Medal, Target, ArrowRight, CheckCircle2, Users } from 'lucide-react';
+import { Home, Gamepad2, Trophy, User, Layers, ShoppingBag, Medal, Target, ArrowRight, CheckCircle2, Users, Shield } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import TopHeader from '../components/ui/TopHeader';
 import { useUser } from '../hooks/useUser';
@@ -303,6 +303,7 @@ export default function Dashboard() {
                         { id: 'tourney', icon: Trophy, link: '/tournaments', badge: 0 },
                         { id: 'battlepass', icon: Medal, link: '/battlepass', badge: 0 },
                         { id: 'friends', icon: Users, link: '/friends', badge: pendingFriends },
+                        { id: 'clan', icon: Shield, link: '/clan', badge: 0 },
                         { id: 'profile', icon: User, link: '/profile', badge: 0 },
                         { id: 'cards', icon: Layers, link: '/collection', badge: 0 },
                         { id: 'shop', icon: ShoppingBag, link: '/shop', badge: 0 },
