@@ -157,8 +157,7 @@ export default function Dashboard() {
 
     const xpProgress = useMemo(() => {
         if (!user) return 0;
-        const xpForLevel = (user.level || 1) * 100;
-        return Math.min(100, Math.round(((user.xp || 0) % xpForLevel) / xpForLevel * 100));
+        return Math.min(100, Math.round(user.xpProgress ?? 0));
     }, [user]);
 
     const completedMissions = useMemo(() => missions.filter(m => m.completed).length, [missions]);
@@ -202,8 +201,8 @@ export default function Dashboard() {
                             <div className="w-24 h-24 md:w-28 md:h-28 rounded-2xl overflow-hidden border-2 shadow-xl"
                                 style={{ borderColor: rankStyle?.color || '#b026ff', boxShadow: `0 0 30px ${rankStyle?.color || '#b026ff'}40` }}>
                                 <img
-                                    src={user.avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.username}`}
-                                    alt={user.username}
+                                    src={user.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name}`}
+                                    alt={user.name}
                                     className="w-full h-full object-cover"
                                 />
                             </div>
@@ -215,7 +214,7 @@ export default function Dashboard() {
                         <div className="flex-1 text-center md:text-left">
                             <p className="text-sm text-gray-400 mb-1">{GREETING()},</p>
                             <h1 className="text-3xl md:text-4xl font-black tracking-tight mb-2">
-                                {user.username}
+                                {user.name}
                                 {rankStyle && (
                                     <span className="ml-3 text-sm font-black px-2 py-0.5 rounded-lg align-middle"
                                         style={{ color: rankStyle.color, background: `${rankStyle.color}20` }}>
@@ -247,7 +246,7 @@ export default function Dashboard() {
                                 </div>
                                 <div className="flex items-center gap-1.5">
                                     <Flame size={14} className="text-orange-400" />
-                                    <span className="font-bold">{user.wins ?? 0}</span>
+                                    <span className="font-bold">{user.stats?.wins ?? 0}</span>
                                     <span className="text-gray-500 text-xs">vitÃ³rias</span>
                                 </div>
                                 <div className="flex items-center gap-1.5">
