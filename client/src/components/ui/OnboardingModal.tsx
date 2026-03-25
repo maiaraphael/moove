@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, ChevronRight, ChevronLeft, Layers, GitMerge, Shuffle, Trophy, Star, Zap, Combine } from 'lucide-react';
 
@@ -22,162 +23,189 @@ const Card = ({ num, color }: { num: string | number; color: string }) => {
     );
 };
 
-const slides = [
-    {
-        icon: <Star size={36} className="text-[#b026ff]" />,
-        title: 'Bem-vindo ao Moove!',
-        subtitle: 'Um jogo de cartas estratégico para 2–4 jogadores',
-        body: (
-            <div className="text-gray-300 text-sm leading-relaxed space-y-3">
-                <p>O objetivo é simples: <strong className="text-white">esvaziar sua mão</strong> antes dos outros jogadores.</p>
-                <p>O baralho tem <strong className="text-white">cartas numeradas de 1 a 13</strong> em 4 cores — vermelho, azul, verde e amarelo — além de <strong className="text-[#d47fff]">Coringas (Jokers)</strong>.</p>
-                <div className="flex items-center gap-2 mt-4 justify-center flex-wrap">
-                    <Card num={7} color="red" />
-                    <Card num={7} color="blue" />
-                    <Card num={7} color="green" />
-                    <Card num={7} color="yellow" />
-                    <Card num="★" color="joker" />
-                </div>
-                <p className="text-center text-xs text-gray-500 mt-2">Cada número existe nas 4 cores + 2 coringas</p>
-            </div>
-        ),
-    },
-    {
-        icon: <Layers size={36} className="text-blue-400" />,
-        title: 'Sets (Grupos)',
-        subtitle: 'Mesmo número, cores diferentes',
-        body: (
-            <div className="text-gray-300 text-sm leading-relaxed space-y-3">
-                <p>Um <strong className="text-white">Set</strong> é formado por <strong className="text-white">3 ou 4 cartas com o mesmo número</strong>, mas cada uma de uma cor diferente.</p>
-                <div className="bg-black/40 rounded-xl p-4 border border-white/10 flex flex-col items-center gap-3">
-                    <div className="flex gap-2">
-                        <Card num={8} color="red" />
-                        <Card num={8} color="blue" />
-                        <Card num={8} color="green" />
-                    </div>
-                    <span className="text-xs text-green-400 font-bold">✓ Set Válido — três 8s em cores diferentes</span>
-                </div>
-                <div className="bg-black/40 rounded-xl p-4 border border-red-500/20 flex flex-col items-center gap-3">
-                    <div className="flex gap-2">
-                        <Card num={5} color="red" />
-                        <Card num={5} color="red" />
-                        <Card num={5} color="blue" />
-                    </div>
-                    <span className="text-xs text-red-400 font-bold">✗ Inválido — cores repetidas</span>
-                </div>
-            </div>
-        ),
-    },
-    {
-        icon: <GitMerge size={36} className="text-green-400" />,
-        title: 'Runs (Sequências)',
-        subtitle: 'Números consecutivos, mesma cor',
-        body: (
-            <div className="text-gray-300 text-sm leading-relaxed space-y-3">
-                <p>Um <strong className="text-white">Run</strong> é formado por <strong className="text-white">3 ou mais cartas consecutivas</strong> da mesma cor.</p>
-                <div className="bg-black/40 rounded-xl p-4 border border-white/10 flex flex-col items-center gap-3">
-                    <div className="flex gap-2">
-                        <Card num={4} color="yellow" />
-                        <Card num={5} color="yellow" />
-                        <Card num={6} color="yellow" />
-                        <Card num={7} color="yellow" />
-                    </div>
-                    <span className="text-xs text-green-400 font-bold">✓ Run Válido — amarelo 4, 5, 6, 7</span>
-                </div>
-                <div className="bg-black/40 rounded-xl p-4 border border-red-500/20 flex flex-col items-center gap-3">
-                    <div className="flex gap-2">
-                        <Card num={3} color="blue" />
-                        <Card num={4} color="green" />
-                        <Card num={5} color="blue" />
-                    </div>
-                    <span className="text-xs text-red-400 font-bold">✗ Inválido — cores misturadas</span>
-                </div>
-            </div>
-        ),
-    },
-    {
-        icon: <Shuffle size={36} className="text-[#b026ff]" />,
-        title: 'A Regra do Moove',
-        subtitle: 'O diferencial do jogo',
-        body: (
-            <div className="text-gray-300 text-sm leading-relaxed space-y-3">
-                <p>Depois que um grupo está na mesa, <strong className="text-white">ele pertence ao grid</strong> e qualquer jogador pode usá-lo.</p>
-                <p>No seu turno, você pode <strong className="text-[#d47fff]">pegar cartas de grupos já na mesa</strong>, combiná-las com cartas da sua mão, e formar grupos novos.</p>
-                <div className="bg-[#b026ff]/10 border border-[#b026ff]/30 rounded-xl p-4 text-xs font-mono text-[#d47fff]">
-                    ⚠️ Regra crucial: ao fim do seu turno, <strong>todas</strong> as cartas na mesa devem estar em grupos válidos de 3+. Se não conseguir, você pega 3 cartas do baralho como penalidade.
-                </div>
-                <p className="text-xs text-gray-500">O Coringa pode substituir qualquer carta em qualquer grupo!</p>
-            </div>
-        ),
-    },
-    {
-        icon: <Trophy size={36} className="text-yellow-400" />,
-        title: 'Vitória & Ranking',
-        subtitle: 'Como ganhar e subir de rank',
-        body: (
-            <div className="text-gray-300 text-sm leading-relaxed space-y-3">
-                <p><strong className="text-white">Você vence</strong> quando esvazia a mão completamente. Se o baralho acabar, vence quem tiver a menor soma de cartas na mão.</p>
-                <p>⚠️ Coringa na mão no fim = <strong className="text-red-400">20 pontos de penalidade</strong>.</p>
-                <div className="bg-black/40 rounded-xl p-3 border border-white/10 space-y-2 text-xs">
-                    <div className="flex justify-between"><span>🏆 Vitória Ranked</span><span className="text-green-400">+MMR & XP</span></div>
-                    <div className="flex justify-between"><span>💀 Derrota Ranked</span><span className="text-red-400">-MMR</span></div>
-                    <div className="flex justify-between"><span>🎮 Casual & vs IA</span><span className="text-blue-400">+XP, sem MMR</span></div>
-                </div>
-            </div>
-        ),
-    },
-    {
-        icon: <Combine size={36} className="text-[#b026ff]" />,
-        title: 'Multi Jogadas',
-        subtitle: 'Reorganize tudo de uma vez só',
-        body: (
-            <div className="text-gray-300 text-sm leading-relaxed space-y-3">
-                <p>
-                    O botão <strong className="text-white">Multi Jogadas</strong> permite que você selecione cartas de <strong className="text-white">vários grupos da mesa e da sua mão ao mesmo tempo</strong>, reorganizando tudo em novos grupos com um único clique.
-                </p>
-                <div className="bg-[#b026ff]/10 border border-[#b026ff]/30 rounded-xl p-4 space-y-2">
-                    <p className="text-xs font-bold text-[#d47fff] uppercase tracking-wider">Como usar:</p>
-                    <ol className="space-y-1.5 text-xs text-gray-300 list-decimal pl-4">
-                        <li>Clique no botão <strong className="text-white">Multi Jogadas</strong> durante seu turno</li>
-                        <li>Clique nas cartas da mesa que você quer pegar (elas vão para a área de staging)</li>
-                        <li>Clique nas cartas da sua mão para adicioná-las também</li>
-                        <li>Clique em <strong className="text-white">Confirmar</strong> — o sistema forma os grupos válidos automaticamente</li>
-                    </ol>
-                </div>
-                <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-xl p-3 text-xs text-yellow-200">
-                    ⚠️ Você deve incluir pelo menos <strong>1 carta da sua mão</strong> e o resultado final precisa formar grupos válidos. Se não der, você pode cancelar sem penalidade.
-                </div>
-            </div>
-        ),
-    },
-    {
-        icon: <Zap size={36} className="text-yellow-300" />,
-        title: 'Pronto para jogar!',
-        subtitle: 'Dicas rápidas para começar',
-        body: (
-            <div className="text-gray-300 text-sm leading-relaxed space-y-3">
-                <ul className="space-y-2">
-                    {[
-                        ['🃏', 'Comece pela partida vs IA para praticar sem pressão'],
-                        ['👀', 'Observe as cartas na mesa — você pode reorganizá-las a seu favor'],
-                        ['⚡', 'Jokers são poderosos, mas cuidado: valem 20 pts de penalidade se sobrarem'],
-                        ['🎯', 'Tente esvaziar a mão em poucos turnos para maximizar XP'],
-                        ['📚', 'Consulte as Regras completas a qualquer momento no menu'],
-                    ].map(([emoji, tip]) => (
-                        <li key={tip as string} className="flex items-start gap-2">
-                            <span>{emoji}</span>
-                            <span>{tip}</span>
-                        </li>
-                    ))}
-                </ul>
-            </div>
-        ),
-    },
-];
-
 export default function OnboardingModal({ onClose }: Props) {
+    const { t } = useTranslation();
     const [step, setStep] = useState(0);
     const [dir, setDir] = useState(1);
+
+    const slides = [
+        {
+            icon: <Star size={36} className="text-[#b026ff]" />,
+            title: t('onboarding.s0_title'),
+            subtitle: t('onboarding.s0_sub'),
+            body: (
+                <div className="text-gray-300 text-sm leading-relaxed space-y-3">
+                    <p dangerouslySetInnerHTML={{ __html:
+                        t('onboarding.s0_p1')
+                            .replace(/(empty your hand|esvaziar sua mão|vaciar tu mano)/i, '<strong class="text-white">$1</strong>')
+                    }} />
+                    <p dangerouslySetInnerHTML={{ __html:
+                        t('onboarding.s0_p2')
+                            .replace(/(numbered cards from 1 to 13|cartas numeradas de 1 a 13|cartas numeradas del 1 al 13)/i, '<strong class="text-white">$1</strong>')
+                            .replace(/(Jokers?(?:\s*\(Wildcards?\))?|Coringas?\s*\(Jokers?\)?)/i, '<strong class="text-[#d47fff]">$1</strong>')
+                    }} />
+                    <div className="flex items-center gap-2 mt-4 justify-center flex-wrap">
+                        <Card num={7} color="red" />
+                        <Card num={7} color="blue" />
+                        <Card num={7} color="green" />
+                        <Card num={7} color="yellow" />
+                        <Card num="★" color="joker" />
+                    </div>
+                    <p className="text-center text-xs text-gray-500 mt-2">{t('onboarding.s0_note')}</p>
+                </div>
+            ),
+        },
+        {
+            icon: <Layers size={36} className="text-blue-400" />,
+            title: t('onboarding.s1_title'),
+            subtitle: t('onboarding.s1_sub'),
+            body: (
+                <div className="text-gray-300 text-sm leading-relaxed space-y-3">
+                    <p dangerouslySetInnerHTML={{ __html:
+                        t('onboarding.s1_p1')
+                            .replace(/(Set)/g, '<strong class="text-white">$1</strong>')
+                            .replace(/(3 or 4 cards|3 ou 4 cartas|3 o 4 cartas)/i, '<strong class="text-white">$1</strong>')
+                    }} />
+                    <div className="bg-black/40 rounded-xl p-4 border border-white/10 flex flex-col items-center gap-3">
+                        <div className="flex gap-2">
+                            <Card num={8} color="red" />
+                            <Card num={8} color="blue" />
+                            <Card num={8} color="green" />
+                        </div>
+                        <span className="text-xs text-green-400 font-bold">{t('onboarding.s1_valid')}</span>
+                    </div>
+                    <div className="bg-black/40 rounded-xl p-4 border border-red-500/20 flex flex-col items-center gap-3">
+                        <div className="flex gap-2">
+                            <Card num={5} color="red" />
+                            <Card num={5} color="red" />
+                            <Card num={5} color="blue" />
+                        </div>
+                        <span className="text-xs text-red-400 font-bold">{t('onboarding.s1_invalid')}</span>
+                    </div>
+                </div>
+            ),
+        },
+        {
+            icon: <GitMerge size={36} className="text-green-400" />,
+            title: t('onboarding.s2_title'),
+            subtitle: t('onboarding.s2_sub'),
+            body: (
+                <div className="text-gray-300 text-sm leading-relaxed space-y-3">
+                    <p dangerouslySetInnerHTML={{ __html:
+                        t('onboarding.s2_p1')
+                            .replace(/(Run)/g, '<strong class="text-white">$1</strong>')
+                            .replace(/(3 or more|3 ou mais|3 o más)/i, '<strong class="text-white">$1</strong>')
+                    }} />
+                    <div className="bg-black/40 rounded-xl p-4 border border-white/10 flex flex-col items-center gap-3">
+                        <div className="flex gap-2">
+                            <Card num={4} color="yellow" />
+                            <Card num={5} color="yellow" />
+                            <Card num={6} color="yellow" />
+                            <Card num={7} color="yellow" />
+                        </div>
+                        <span className="text-xs text-green-400 font-bold">{t('onboarding.s2_valid')}</span>
+                    </div>
+                    <div className="bg-black/40 rounded-xl p-4 border border-red-500/20 flex flex-col items-center gap-3">
+                        <div className="flex gap-2">
+                            <Card num={3} color="blue" />
+                            <Card num={4} color="green" />
+                            <Card num={5} color="blue" />
+                        </div>
+                        <span className="text-xs text-red-400 font-bold">{t('onboarding.s2_invalid')}</span>
+                    </div>
+                </div>
+            ),
+        },
+        {
+            icon: <Shuffle size={36} className="text-[#b026ff]" />,
+            title: t('onboarding.s3_title'),
+            subtitle: t('onboarding.s3_sub'),
+            body: (
+                <div className="text-gray-300 text-sm leading-relaxed space-y-3">
+                    <p>{t('onboarding.s3_p1')}</p>
+                    <p dangerouslySetInnerHTML={{ __html:
+                        t('onboarding.s3_p2')
+                            .replace(/(take cards from|pegar cartas de|tomar cartas de)/i, '<strong class="text-[#d47fff]">$1</strong>')
+                    }} />
+                    <div className="bg-[#b026ff]/10 border border-[#b026ff]/30 rounded-xl p-4 text-xs font-mono text-[#d47fff]">
+                        {t('onboarding.s3_warn')}
+                    </div>
+                    <p className="text-xs text-gray-500">{t('onboarding.s3_joker')}</p>
+                </div>
+            ),
+        },
+        {
+            icon: <Trophy size={36} className="text-yellow-400" />,
+            title: t('onboarding.s4_title'),
+            subtitle: t('onboarding.s4_sub'),
+            body: (
+                <div className="text-gray-300 text-sm leading-relaxed space-y-3">
+                    <p dangerouslySetInnerHTML={{ __html:
+                        t('onboarding.s4_p1')
+                            .replace(/(You win|Você vence|Ganas)/i, '<strong class="text-white">$1</strong>')
+                    }} />
+                    <p dangerouslySetInnerHTML={{ __html:
+                        t('onboarding.s4_p2')
+                            .replace(/(20 penalty points|20 pontos de penalidade|20 puntos de penalización)/i, '<strong class="text-red-400">$1</strong>')
+                    }} />
+                    <div className="bg-black/40 rounded-xl p-3 border border-white/10 space-y-2 text-xs">
+                        <div className="flex justify-between"><span>{t('onboarding.s4_r1')}</span><span className="text-green-400">{t('onboarding.s4_r1v')}</span></div>
+                        <div className="flex justify-between"><span>{t('onboarding.s4_r2')}</span><span className="text-red-400">{t('onboarding.s4_r2v')}</span></div>
+                        <div className="flex justify-between"><span>{t('onboarding.s4_r3')}</span><span className="text-blue-400">{t('onboarding.s4_r3v')}</span></div>
+                    </div>
+                </div>
+            ),
+        },
+        {
+            icon: <Combine size={36} className="text-[#b026ff]" />,
+            title: t('onboarding.s5_title'),
+            subtitle: t('onboarding.s5_sub'),
+            body: (
+                <div className="text-gray-300 text-sm leading-relaxed space-y-3">
+                    <p dangerouslySetInnerHTML={{ __html:
+                        t('onboarding.s5_p1')
+                            .replace(/(Multi Plays)/g, '<strong class="text-white">$1</strong>')
+                    }} />
+                    <div className="bg-[#b026ff]/10 border border-[#b026ff]/30 rounded-xl p-4 space-y-2">
+                        <p className="text-xs font-bold text-[#d47fff] uppercase tracking-wider">{t('onboarding.s5_how')}</p>
+                        <ol className="space-y-1.5 text-xs text-gray-300 list-decimal pl-4">
+                            <li dangerouslySetInnerHTML={{ __html: t('onboarding.s5_step1').replace(/(Multi Plays)/g, '<strong class="text-white">$1</strong>') }} />
+                            <li>{t('onboarding.s5_step2')}</li>
+                            <li>{t('onboarding.s5_step3')}</li>
+                            <li dangerouslySetInnerHTML={{ __html: t('onboarding.s5_step4').replace(/(Confirm|Confirmar)/g, '<strong class="text-white">$1</strong>') }} />
+                        </ol>
+                    </div>
+                    <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-xl p-3 text-xs text-yellow-200">
+                        {t('onboarding.s5_tip')}
+                    </div>
+                </div>
+            ),
+        },
+        {
+            icon: <Zap size={36} className="text-yellow-300" />,
+            title: t('onboarding.s6_title'),
+            subtitle: t('onboarding.s6_sub'),
+            body: (
+                <div className="text-gray-300 text-sm leading-relaxed space-y-3">
+                    <ul className="space-y-2">
+                        {[
+                            ['🃏', t('onboarding.s6_tip1')],
+                            ['👀', t('onboarding.s6_tip2')],
+                            ['⚡', t('onboarding.s6_tip3')],
+                            ['🎯', t('onboarding.s6_tip4')],
+                            ['📚', t('onboarding.s6_tip5')],
+                        ].map(([emoji, tip]) => (
+                            <li key={tip as string} className="flex items-start gap-2">
+                                <span>{emoji}</span>
+                                <span>{tip}</span>
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+            ),
+        },
+    ];
+
     const total = slides.length;
     const current = slides[step];
 
@@ -257,7 +285,7 @@ export default function OnboardingModal({ onClose }: Props) {
                     <div className="flex items-center gap-2">
                         {step > 0 && (
                             <button onClick={goPrev} className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm text-gray-400 hover:text-white hover:bg-white/10 transition-colors font-bold">
-                                <ChevronLeft size={16} /> Anterior
+                                <ChevronLeft size={16} /> {t('common.back')}
                             </button>
                         )}
                         <motion.button
@@ -265,7 +293,7 @@ export default function OnboardingModal({ onClose }: Props) {
                             onClick={goNext}
                             className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-sm font-black bg-[#b026ff] hover:bg-[#c95bff] text-white transition-colors shadow-[0_0_15px_rgba(176,38,255,0.35)]"
                         >
-                            {step === total - 1 ? 'Jogar agora!' : 'Próximo'}
+                            {step === total - 1 ? t('onboarding.s6_start') : t('common.next')}
                             {step < total - 1 && <ChevronRight size={16} />}
                         </motion.button>
                     </div>

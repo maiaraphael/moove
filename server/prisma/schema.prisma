@@ -28,6 +28,7 @@ model User {
   lastLogin      DateTime?
   loginStreak    Int       @default(0)
   smurfFlag      Boolean   @default(false)  // flagged for suspicious forfeit-win pattern
+  preferredLanguage String @default("en")   // user's preferred UI language
 
   matchHistory   MatchHistory[] @relation("UserMatches")
   inventory      Inventory[]

@@ -515,8 +515,10 @@ export default function Game() {
     const [toastMessage, setToastMessage] = useState<string | null>(null);
     const toastTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     // slot → secondsLeft for players currently in grace-period disconnect
-    const [disconnectedPlayers, setDisconnectedPlayers] = useState<Record<string, { username: string; secondsLeft: number }>>({});
-
+    const [disconnectedPlayers, setDisconnectedPlayers] = useState<Record<string, { username: string; secondsLeft: number }>>({}); 
+    // Flash banner when it becomes this player's turn
+    const [showMyTurnFlash, setShowMyTurnFlash] = useState(false);
+    const prevActiveIndexRef = useRef<number | null>(null);
     const showToast = (msg: string) => {
         setToastMessage(msg);
         if (toastTimeoutRef.current) clearTimeout(toastTimeoutRef.current);
@@ -1079,8 +1081,8 @@ export default function Game() {
                     newTableSets: [...proposedSets, ...sortedGroups],
                 });
             }
-        } else {
-            showToast('Table organized! Play a card or pass your turn (draw) to finish.');
+        } else if (!hasPlayedThisTurn) {
+            showToast('Mesa reorganizada! Jogue uma carta da mão ou passe o turno (comprar) para finalizar.');
         }
     };
 
@@ -1519,6 +1521,19 @@ export default function Game() {
     const myPlayer = players[0];
     const isMyTurn = myPlayer.isActive;
 
+    // Flash "Sua vez!" whenever the turn switches to the local player
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    useEffect(() => {
+        if (gameOver) return;
+        if (activePlayerIndex === 0 && prevActiveIndexRef.current !== 0) {
+            setShowMyTurnFlash(true);
+            const t = setTimeout(() => setShowMyTurnFlash(false), 2000);
+            prevActiveIndexRef.current = 0;
+            return () => clearTimeout(t);
+        }
+        prevActiveIndexRef.current = activePlayerIndex;
+    }, [activePlayerIndex, gameOver]);
+
     return (
         <div className="fixed inset-0 bg-[#0a050f] text-white font-sans overflow-hidden">
             {/* --- IN-GAME TOAST NOTIFICATION --- */}
@@ -1534,6 +1549,32 @@ export default function Game() {
                             <span className="text-red-400 font-bold">!</span>
                         </div>
                         <p className="text-red-200 text-sm font-bold leading-tight">{toastMessage}</p>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            {/* --- MY TURN FLASH --- */}
+            <AnimatePresence>
+                {showMyTurnFlash && (
+                    <motion.div
+                        key="my-turn-flash"
+                        initial={{ opacity: 0, scale: 0.75, x: '-50%', y: '-50%' }}
+                        animate={{ opacity: 1, scale: 1, x: '-50%', y: '-50%' }}
+                        exit={{ opacity: 0, scale: 1.15, x: '-50%', y: '-50%' }}
+                        transition={{ duration: 0.18, exit: { duration: 0.3 } }}
+                        className="fixed top-1/2 left-1/2 z-[110] pointer-events-none select-none"
+                    >
+                        <div className="px-8 py-4 rounded-2xl font-black text-2xl uppercase tracking-widest text-white"
+                            style={{
+                                background: 'linear-gradient(135deg, rgba(139,92,246,0.92), rgba(79,70,229,0.92))',
+                                boxShadow: '0 0 40px rgba(139,92,246,0.7), 0 0 80px rgba(139,92,246,0.35)',
+                                border: '2px solid rgba(167,139,250,0.6)',
+                                backdropFilter: 'blur(8px)',
+                                textShadow: '0 0 20px rgba(196,181,253,0.9)',
+                            }}
+                        >
+                            Sua vez!
+                        </div>
                     </motion.div>
                 )}
             </AnimatePresence>

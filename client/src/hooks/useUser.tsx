@@ -2,6 +2,7 @@ import { createContext, useContext, useState, useEffect, useCallback, useRef } f
 import type { ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { FrameConfig } from '../utils/frameUtils';
+import i18n from '../i18n';
 
 const AVATAR_STORAGE_KEY = 'moove_user_avatar';
 
@@ -116,6 +117,11 @@ export function UserProvider({ children }: { children: ReactNode }) {
                     stats: userData.stats || null,
                     recentMatches: userData.recentMatches || [],
                 });
+                // Apply the user's saved language preference if it differs from current
+                if (userData.preferredLanguage && userData.preferredLanguage !== i18n.language) {
+                    localStorage.setItem('moove_lang', userData.preferredLanguage);
+                    i18n.changeLanguage(userData.preferredLanguage);
+                }
             } else {
                 localStorage.removeItem('token');
                 if (!isPublicPath) navigate('/login');

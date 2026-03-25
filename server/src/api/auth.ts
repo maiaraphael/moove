@@ -13,7 +13,8 @@ const router = Router();
 const registerSchema = z.object({
     username: z.string().min(3).max(20),
     email: z.string().email(),
-    password: z.string().min(6)
+    password: z.string().min(6),
+    language: z.enum(['en', 'pt', 'es']).optional().default('en'),
 });
 
 router.post('/register', async (req, res) => {
@@ -38,12 +39,13 @@ router.post('/register', async (req, res) => {
                 username: data.username,
                 email: data.email,
                 passwordHash,
+                preferredLanguage: data.language,
             }
         });
 
         const token = jwt.sign({ id: user.id, role: user.role, username: user.username }, process.env.JWT_SECRET || 'secret', { expiresIn: '7d' });
 
-        res.json({ token, user: { id: user.id, username: user.username, email: user.email, role: user.role, xp: user.xp, level: user.level, credits: user.credits, gems: user.gems, rank: user.rank, mmr: user.mmr, vipExpiresAt: user.vipExpiresAt ?? null } });
+        res.json({ token, user: { id: user.id, username: user.username, email: user.email, role: user.role, xp: user.xp, level: user.level, credits: user.credits, gems: user.gems, rank: user.rank, mmr: user.mmr, vipExpiresAt: user.vipExpiresAt ?? null, preferredLanguage: user.preferredLanguage } });
     } catch (err: any) {
         if (err instanceof z.ZodError) {
             res.status(400).json({ error: 'Invalid data', details: err.errors });
@@ -125,7 +127,7 @@ router.post('/login', async (req, res) => {
         res.json({
             token,
             loginBonus,
-            user: { id: user.id, username: user.username, email: user.email, role: user.role, xp: user.xp, level: user.level, credits: user.credits, gems: user.gems, rank: user.rank, mmr: user.mmr, vipExpiresAt: user.vipExpiresAt ?? null },
+            user: { id: user.id, username: user.username, email: user.email, role: user.role, xp: user.xp, level: user.level, credits: user.credits, gems: user.gems, rank: user.rank, mmr: user.mmr, vipExpiresAt: user.vipExpiresAt ?? null, preferredLanguage: user.preferredLanguage },
         });
     } catch (err) {
         console.error('Login error:', err);

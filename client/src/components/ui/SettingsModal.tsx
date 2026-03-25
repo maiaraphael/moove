@@ -87,9 +87,19 @@ export default function SettingsModal({ isOpen, onClose }: Props) {
         }
     }
 
-    function handleLanguageChange(code: string) {
+    async function handleLanguageChange(code: string) {
         localStorage.setItem('moove_lang', code);
         i18n.changeLanguage(code);
+        try {
+            const token = localStorage.getItem('token');
+            if (token) {
+                await fetch(`${import.meta.env.VITE_API_URL}/api/users/me/language`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                    body: JSON.stringify({ language: code }),
+                });
+            }
+        } catch { /* non-critical */ }
     }
 
     return (

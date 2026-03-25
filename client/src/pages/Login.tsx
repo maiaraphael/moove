@@ -12,7 +12,7 @@ export default function Login() {
     const [error, setError] = useState('');
     const navigate = useNavigate();
     const { refreshUser } = useUser();
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -28,6 +28,12 @@ export default function Login() {
                 localStorage.setItem('token', data.token);
                 if (data.loginBonus) {
                     sessionStorage.setItem('loginBonus', JSON.stringify(data.loginBonus));
+                }
+                // Apply user's saved language preference
+                if (data.user?.preferredLanguage) {
+                    const lang = data.user.preferredLanguage;
+                    localStorage.setItem('moove_lang', lang);
+                    i18n.changeLanguage(lang);
                 }
                 // Fetch user data now so the dashboard doesn't spin with user=null
                 await refreshUser();

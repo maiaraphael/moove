@@ -1,7 +1,10 @@
-import { prisma } from './src/db';
-import bcrypt from 'bcrypt';
 import dotenv from 'dotenv';
 dotenv.config();
+
+import { PrismaClient } from '@prisma/client';
+import bcrypt from 'bcrypt';
+
+const prisma = new PrismaClient();
 
 async function main() {
   const hashedPassword = await bcrypt.hash('Gh@r235kIl2p@', 10);
@@ -22,7 +25,6 @@ async function main() {
       mmr: 0,
       rank: 'IRON',
       gems: 10000,
-      coins: 10000,
     },
   });
   console.log('Admin user created/updated successfully!', user.email);

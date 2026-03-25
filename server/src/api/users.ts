@@ -118,6 +118,22 @@ router.get('/me', authenticateToken, async (req: AuthRequest, res) => {
     }
 });
 
+// PATCH /api/users/me/language — update preferred language
+router.patch('/me/language', authenticateToken, async (req: AuthRequest, res) => {
+    try {
+        if (!req.user) { res.status(401).json({ error: 'Unauthorized' }); return; }
+        const { language } = req.body;
+        if (!['en', 'pt', 'es'].includes(language)) {
+            res.status(400).json({ error: 'Invalid language code' }); return;
+        }
+        await prisma.user.update({ where: { id: req.user.id }, data: { preferredLanguage: language } });
+        res.json({ ok: true });
+    } catch (err) {
+        console.error('Language update error:', err);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
 // PUT /api/users/me/password — change own password
 router.put('/me/password', authenticateToken, async (req: AuthRequest, res) => {
     try {
