@@ -974,7 +974,7 @@ export default function Game() {
 
     const partitionIntoValidGroups = (cards: GameCard[]): GameCard[][] | null => {
         if (cards.length === 0) return [];
-        if (cards.length > 15) return null; // Prevent performance issues with naive solver
+        if (cards.length > 20) return null; // Prevent performance issues with naive solver
 
         const memo = new Map<string, GameCard[][] | null>();
 
@@ -1029,8 +1029,8 @@ export default function Game() {
 
         let newGroups = [selectedCards];
         if (!isValidGroup(selectedCards)) {
-            if (selectedCards.length > 15) {
-                showToast('Too many cards selected. Select a maximum of 15 cards at a time to form multiple games.');
+            if (selectedCards.length > 20) {
+                showToast('Too many cards selected. Select a maximum of 20 cards at a time to form multiple plays.');
                 return;
             }
             const partitioned = partitionIntoValidGroups(selectedCards);
