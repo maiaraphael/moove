@@ -8,6 +8,7 @@ import { Link } from 'react-router-dom';
 import TopHeader from '../components/ui/TopHeader';
 import { LeaderboardSkeleton } from '../components/ui/PageLoader';
 import { useUser } from '../hooks/useUser';
+import { useTranslation } from 'react-i18next';
 import PlayerProfileModal from '../components/ui/PlayerProfileModal';
 
 interface LeaderboardEntry {
@@ -59,6 +60,7 @@ const PODIUM_ORDER = [1, 0, 2];
 
 export default function Leaderboard() {
     const { user, isLoading } = useUser();
+    const { t } = useTranslation();
     const [entries, setEntries] = useState<LeaderboardEntry[]>([]);
     const [isFetching, setIsFetching] = useState(true);
     const [search, setSearch] = useState('');
@@ -114,11 +116,11 @@ export default function Leaderboard() {
                         <h1 className="text-3xl font-black italic uppercase tracking-tight">
                             LEADERBOARD <span className="text-yellow-400">GLOBAL</span>
                         </h1>
-                        <p className="text-sm text-gray-400 mt-0.5">Top 1000 jogadores por MMR</p>
+                        <p className="text-sm text-gray-400 mt-0.5">{t('leaderboard.subtitle')}</p>
                     </div>
                     {myEntry && (
                         <div className="ml-auto bg-[#b026ff]/10 border border-[#b026ff]/30 rounded-2xl px-4 py-2 text-center shrink-0">
-                            <p className="text-[10px] font-bold text-[#b026ff] tracking-widest uppercase">Sua posição</p>
+                            <p className="text-[10px] font-bold text-[#b026ff] tracking-widest uppercase">{t('leaderboard.yourPosition')}</p>
                             <p className="text-2xl font-black text-white">#{myEntry.position}</p>
                         </div>
                     )}
@@ -167,14 +169,14 @@ export default function Leaderboard() {
                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" size={16} />
                     <input
                         type="text"
-                        placeholder="Buscar jogador..."
+                        placeholder={t('leaderboard.searchPlaceholder')}
                         value={search}
                         onChange={e => setSearch(e.target.value)}
                         className="w-full bg-[#120a1f]/60 border border-white/10 rounded-xl pl-10 pr-24 py-2.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-[#b026ff]/50"
                     />
                     {!isFetching && (
                         <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] text-gray-500">
-                            {filtered.length} jogadores
+                            {t('leaderboard.playersCount', { count: filtered.length })}
                         </span>
                     )}
                 </div>
@@ -183,7 +185,7 @@ export default function Leaderboard() {
                 <div className="bg-[#120a1f]/60 backdrop-blur-xl border border-white/5 rounded-2xl overflow-hidden shadow-xl">
                     <div className="grid grid-cols-[48px_1fr_auto_auto] gap-x-4 px-4 py-3 border-b border-white/5 text-[10px] font-bold tracking-[0.15em] uppercase text-gray-500">
                         <span>#</span>
-                        <span>Jogador</span>
+                        <span>{t('leaderboard.player')}</span>
                         <span className="text-right">Rank</span>
                         <span className="text-right w-24">MMR</span>
                     </div>
@@ -203,7 +205,7 @@ export default function Leaderboard() {
                     ) : pageEntries.length === 0 ? (
                         <div className="text-center py-12 text-gray-500">
                             <Trophy className="mx-auto mb-3 opacity-20" size={40} />
-                            <p className="font-bold">{search ? 'Nenhum jogador encontrado' : 'Nenhum jogador ranqueado ainda'}</p>
+                            <p className="font-bold">{search ? t('leaderboard.noPlayersFound') : t('leaderboard.noRankedPlayers')}</p>
                         </div>
                     ) : (
                         <AnimatePresence mode="wait">
@@ -230,9 +232,9 @@ export default function Leaderboard() {
                                                 </div>
                                                 <div className="min-w-0">
                                                     <p className={`font-bold text-sm truncate ${isMe ? 'text-[#d685ff]' : 'text-white'}`}>
-                                                        {entry.username}{isMe && <span className="ml-1 text-[9px] text-[#b026ff] font-black uppercase">(você)</span>}
+                                                        {entry.username}{isMe && <span className="ml-1 text-[9px] text-[#b026ff] font-black uppercase">({t('leaderboard.you')})</span>}
                                                     </p>
-                                                    <p className="text-[10px] text-gray-500">Nível {entry.level}</p>
+                                                    <p className="text-[10px] text-gray-500">{t('leaderboard.levelEntry', { level: entry.level })}</p>
                                                 </div>
                                             </div>
                                             <div className="text-right shrink-0">

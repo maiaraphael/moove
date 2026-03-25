@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 import TopHeader from '../components/ui/TopHeader';
 import { TournamentsSkeleton } from '../components/ui/PageLoader';
 import { useUser } from '../hooks/useUser';
+import { useTranslation } from 'react-i18next';
 
 interface Tournament {
     id: string;
@@ -51,6 +52,7 @@ const calculatePayouts = (prizePool: number, playerCount: number) => {
 
 export default function Tournaments() {
     const { user, isLoading, refreshUser } = useUser();
+    const { t } = useTranslation();
     const [tournaments, setTournaments] = useState<Tournament[]>([]);
     const [tournamentsLoading, setTournamentsLoading] = useState(true);
     const [selectedTournament, setSelectedTournament] = useState<Tournament | null>(null);
@@ -120,7 +122,7 @@ export default function Tournaments() {
         if (enrolling) return;
         setEnrollError(null);
         if (tournament.entryFee > 0 && (!user || user.gems < tournament.entryFee)) {
-            setEnrollError(`Gems insuficientes. Você precisa de ${tournament.entryFee} 💎 mas tem ${user?.gems ?? 0} 💎`);
+            setEnrollError(t('tournaments.insufficientGems', { needed: tournament.entryFee, have: user?.gems ?? 0 }));
             return;
         }
         setEnrolling(tournament.id);
@@ -131,11 +133,11 @@ export default function Tournaments() {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             const data = await res.json();
-            if (!res.ok) { setEnrollError(data.error || 'Erro ao se inscrever'); return; }
+            if (!res.ok) { setEnrollError(data.error || t('tournaments.enrollError')); return; }
             fetchTournaments();
             if (refreshUser) refreshUser();
         } catch (err) {
-            setEnrollError('Erro de conexão');
+            setEnrollError(t('tournaments.connectionError'));
         } finally {
             setEnrolling(null);
         }
@@ -189,8 +191,8 @@ export default function Tournaments() {
                     ) : tournaments.length === 0 ? (
                         <div className="col-span-3 flex flex-col items-center justify-center py-24 text-center">
                             <Trophy size={48} className="text-[#b026ff]/30 mb-4" />
-                            <p className="text-gray-400 font-bold text-lg uppercase tracking-widest">Nenhum torneio ativo</p>
-                            <p className="text-gray-600 text-sm mt-2">Novos torneios serão anunciados em breve.</p>
+                            <p className="text-gray-400 font-bold text-lg uppercase tracking-widest">{t('tournaments.noActive')}</p>
+                            <p className="text-gray-600 text-sm mt-2">{t('tournaments.noActiveSub')}</p>
                         </div>
                     ) : (
                         tournaments.map((tourney, idx) => (
@@ -221,7 +223,7 @@ export default function Tournaments() {
                                         </span>
                                     </div>
                                     {tourney.entryFee > 0 && (
-                                        <p className="text-xs text-gray-500 mb-3 font-bold">Entrada: {tourney.entryFee} 💎 Gems</p>
+                                        <p className="text-xs text-gray-500 mb-3 font-bold">{t('tournaments.entryFeeLabel', { fee: tourney.entryFee })}</p>
                                     )}
                                     <div className="text-xs text-gray-400 uppercase tracking-widest font-bold mb-6">
                                         {tourney.time}
@@ -300,7 +302,7 @@ export default function Tournaments() {
                                         <span className="font-bold text-sm">{selectedTournament.entryFee > 0 ? `${selectedTournament.entryFee} 💎 Gems` : 'Free'}</span>
                                         {selectedTournament.entryFee > 0 && (
                                             <span className={`text-[9px] font-bold mt-1 ${(user?.gems ?? 0) >= selectedTournament.entryFee ? 'text-green-400' : 'text-red-400'}`}>
-                                                Você tem: {user?.gems ?? 0} 💎
+                                                {t('tournaments.youHave', { gems: user?.gems ?? 0 })}
                                             </span>
                                         )}
                                     </div>
@@ -339,7 +341,7 @@ export default function Tournaments() {
                                         const payouts = getPayouts(totalPrize, currentPlayers);
 
                                         if (currentPlayers === 0) return (
-                                            <div className="text-center text-xs text-gray-500 py-2 uppercase tracking-widest font-bold">Aguardando inscrições. Garantido: {selectedTournament.prizePool.toLocaleString()} 💎 Gems</div>
+                                            <div className="text-center text-xs text-gray-500 py-2 uppercase tracking-widest font-bold">{t('tournaments.awaitingPlayers', { prize: selectedTournament.prizePool.toLocaleString() })}</div>
                                         );
 
                                         return (
@@ -364,10 +366,10 @@ export default function Tournaments() {
                                 </div>
 
                                 {/* Enrolled Players List */}
-                                <h3 className="text-[10px] font-bold text-gray-400 tracking-[0.2em] uppercase mb-4">Inscritos ({selectedTournament.currentPlayers})</h3>
+                                <h3 className="text-[10px] font-bold text-gray-400 tracking-[0.2em] uppercase mb-4">{t('tournaments.enrolledHeader', { count: selectedTournament.currentPlayers })}</h3>
                                 <div className="bg-white/5 border border-white/10 rounded-xl p-4 mb-6">
                                     <p className="text-center text-xs text-gray-500 py-4 uppercase tracking-widest font-bold">
-                                        {selectedTournament.currentPlayers} / {selectedTournament.maxPlayers} jogadores inscritos
+                                        {t('tournaments.enrolledCount', { current: selectedTournament.currentPlayers, max: selectedTournament.maxPlayers })}
                                     </p>
                                 </div>
 
@@ -387,8 +389,8 @@ export default function Tournaments() {
                                                 disabled={enrolling === selectedTournament.id}
                                                 className="w-full sm:w-auto px-8 py-3 rounded-xl border border-red-500/50 bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white text-xs font-black tracking-widest uppercase transition-all disabled:opacity-50"
                                             >
-                                                {enrolling === selectedTournament.id ? 'Cancelando...' : 'Cancel Registration'}
-                                                {selectedTournament.entryFee > 0 && ` (+${selectedTournament.entryFee} 💎 reembolso)`}
+                                                {enrolling === selectedTournament.id ? t('tournaments.canceling') : 'Cancel Registration'}
+                                                {selectedTournament.entryFee > 0 && ` ${t('tournaments.refund', { fee: selectedTournament.entryFee })}`}
                                             </button>
                                         ) : (
                                             <button
@@ -396,14 +398,14 @@ export default function Tournaments() {
                                                 disabled={enrolling === selectedTournament.id}
                                                 className="w-full sm:w-auto px-8 py-3 rounded-xl bg-[#b026ff] text-white hover:bg-[#9d1ce6] shadow-[0_0_20px_rgba(176,38,255,0.4)] text-xs font-black tracking-widest uppercase transition-all disabled:opacity-50 flex items-center justify-center gap-2"
                                             >
-                                                {enrolling === selectedTournament.id ? 'Inscrevendo...' : (
+                                                {enrolling === selectedTournament.id ? t('tournaments.enrolling') : (
                                                     <><CheckCircle2 size={16} /> Enroll Now {selectedTournament.entryFee > 0 ? `— ${selectedTournament.entryFee} 💎` : '(Free)'}</>
                                                 )}
                                             </button>
                                         )
                                     ) : (
                                         <button disabled className="w-full sm:w-auto px-8 py-3 rounded-xl bg-white/5 text-gray-500 cursor-not-allowed border border-white/10 text-xs font-black tracking-widest uppercase">
-                                            {selectedTournament.status === 'ONGOING' ? 'Ongoing' : 'Encerrado'}
+                                            {selectedTournament.status === 'ONGOING' ? 'Ongoing' : t('tournaments.ended')}
                                         </button>
                                     )}
                                 </div>
