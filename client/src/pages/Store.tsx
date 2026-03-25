@@ -79,8 +79,6 @@ export default function Store() {
     const [storeItems, setStoreItems] = useState<StoreItem[]>([]);
     const [isFetching, setIsFetching] = useState(true);
     const [buyStatus, setBuyStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
-    const [gemBuyingPack, setGemBuyingPack] = useState<string | null>(null);
-    const [gemBuyStatus, setGemBuyStatus] = useState<Record<string, 'idle' | 'loading' | 'success'>>({});
     const [vipConfig, setVipConfig] = useState<any | null>(null);
     const [vipBuyStatus, setVipBuyStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
 
@@ -142,27 +140,6 @@ export default function Store() {
     const handlePurchaseClick = (item: StoreItem) => {
         setPurchaseModal(item);
         setBuyStatus('idle');
-    };
-
-    const handleBuyGemPack = async (packId: string) => {
-        if (gemBuyingPack) return;
-        setGemBuyingPack(packId);
-        setGemBuyStatus(prev => ({ ...prev, [packId]: 'loading' }));
-        try {
-            const token = localStorage.getItem('token');
-            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/payment/buy-gems`, {
-                method: 'POST',
-                headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-                body: JSON.stringify({ packId })
-            });
-            if (res.ok) {
-                setGemBuyStatus(prev => ({ ...prev, [packId]: 'success' }));
-                if (refreshUser) refreshUser();
-                setTimeout(() => setGemBuyStatus(prev => ({ ...prev, [packId]: 'idle' })), 3000);
-            }
-        } catch { /* ignore */ } finally {
-            setGemBuyingPack(null);
-        }
     };
 
     const handleBuyVip = async () => {
@@ -417,47 +394,11 @@ export default function Store() {
                         </div>
                     )}
 
-                    {activeCategory === 'Gems' && (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                            {[
-                                { id: 'starter',  amount: 500,   price: "R$ 4,99",  bonus: "0%",  hot: false },
-                                { id: 'standard', amount: 1200,  price: "R$ 9,99",  bonus: "+20%", hot: false },
-                                { id: 'value',    amount: 2500,  price: "R$ 19,99", bonus: "+25%", hot: false },
-                                { id: 'popular',  amount: 6500,  price: "R$ 49,99", bonus: "+30%", hot: true  },
-                                { id: 'mega',     amount: 14000, price: "R$ 99,99", bonus: "+40%", hot: false },
-                            ].map((pack, idx) => {
-                                const status = gemBuyStatus[pack.id] || 'idle';
-                                return (
-                                <motion.div
-                                    key={idx}
-                                    initial={{ opacity: 0, scale: 0.9 }}
-                                    animate={{ opacity: 1, scale: 1 }}
-                                    transition={{ delay: idx * 0.1 }}
-                                    className={`relative bg-[#120a1f]/80 backdrop-blur-md border ${pack.hot ? 'border-[#b026ff] shadow-[0_0_30px_rgba(176,38,255,0.2)]' : 'border-white/10 hover:border-white/30'} rounded-2xl p-6 flex flex-col items-center text-center transition-all group hover:-translate-y-1`}
-                                >
-                                    {pack.hot && (
-                                        <div className="absolute top-0 right-1/2 translate-x-1/2 -translate-y-1/2 bg-[#b026ff] text-white text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full shadow-[0_0_10px_rgba(176,38,255,0.5)]">
-                                            Most Popular
-                                        </div>
-                                    )}
-                                    <div className="absolute inset-0 bg-gradient-to-b from-[#b026ff]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl pointer-events-none" />
-
-                                    <Diamond size={48} className={`mb-4 ${pack.hot ? 'text-[#b026ff] drop-shadow-[0_0_15px_rgba(176,38,255,0.8)]' : 'text-[#d685ff] drop-shadow-md'}`} />
-                                    <h3 className="text-2xl font-black italic tracking-wide mb-1 flex items-center gap-2">
-                                        {pack.amount.toLocaleString()} <span className="text-sm font-bold text-[#b026ff] not-italic uppercase tracking-widest hidden sm:inline">Gems</span>
-                                    </h3>
-                                    <div className="text-[10px] font-bold text-green-400 uppercase tracking-widest mb-6">{pack.bonus} Bonus</div>
-
-                                    <button
-                                        onClick={() => handleBuyGemPack(pack.id)}
-                                        disabled={!!gemBuyingPack || status === 'success'}
-                                        className={`w-full py-3 rounded-xl font-black text-sm tracking-widest transition-all disabled:opacity-60 ${status === 'success' ? 'bg-green-500 text-white' : pack.hot ? 'bg-[#b026ff] text-white hover:bg-[#9d1ce6] shadow-[0_0_15px_rgba(176,38,255,0.4)]' : 'bg-white/10 text-white hover:bg-[#b026ff] hover:text-white border border-white/5 hover:border-[#b026ff]'}`}
-                                    >
-                                        {status === 'loading' ? 'Processando...' : status === 'success' ? '✓ Gems Adicionadas!' : pack.price}
-                                    </button>
-                                </motion.div>
-                            );
-                            })}
+                    {activeCategory === 'Gems' && activeItems.length === 0 && (
+                        <div className="flex flex-col items-center justify-center p-12 lg:p-24 border border-white/5 border-dashed rounded-3xl bg-white/5">
+                            <Diamond className="w-16 h-16 text-gray-600 mb-4 opacity-50" />
+                            <h3 className="text-xl font-bold text-gray-400 mb-2">No Gem Packs Available</h3>
+                            <p className="text-sm text-gray-500 text-center max-w-sm">Gem packs are managed by the admin. Check back later.</p>
                         </div>
                     )}
 
