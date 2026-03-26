@@ -137,6 +137,7 @@ export default function Register() {
                             </button>
                         </div>
                     ) : (
+                        <>
                         <form className="flex flex-col gap-6" onSubmit={(e) => e.preventDefault()}>
 
                         {/* Language Selector */}
@@ -263,6 +264,7 @@ export default function Register() {
                             </Link>
                         </p>
                     </div>
+                        </>
                     )}
                 </motion.div>
             </div>
