@@ -1236,7 +1236,7 @@ export default function Game() {
     };
 
     // Card Component
-    const renderCard = (card: GameCard, isHand = false, isTable = false, compact = false) => {
+    const renderCard = (card: GameCard, isHand = false, isTable = false, compact = false, handRotate = 0) => {
         const isSelected = selectedCards.find(c => c.id === card.id) !== undefined;
 
         const sizeClasses = isTable
@@ -1264,12 +1264,13 @@ export default function Game() {
                     dragMomentum={false}
                     onDragEnd={(e, info) => { if (isHand) handleCardDragEnd(card, info); }}
                     onClick={() => toggleCardSelection(card)}
+                    whileDrag={isHand ? { zIndex: 9999 } : undefined}
                     whileHover={isTable ? { y: -2, scale: 1.04 } : { y: isSelected ? -20 : -12, scale: 1.06 }}
                     animate={{ y: isSelected ? -20 : 0 }}
                     className={`relative ${sizeClasses} rounded-lg sm:rounded-xl cursor-pointer active:cursor-grabbing border z-10 overflow-hidden transition-[box-shadow,border-color,opacity] duration-200
                         ${isSelected ? 'scale-105 z-20 border-white/80 shadow-[0_0_35px_rgba(255,255,255,0.5)]' : 'border-white/20 shadow-[0_0_20px_rgba(99,0,200,0.6)] hover:border-white/40'}
                     `}
-                    style={{ background: 'linear-gradient(135deg, #0a0012 0%, #1a0035 40%, #0d001f 70%, #120028 100%)' }}
+                    style={{ background: 'linear-gradient(135deg, #0a0012 0%, #1a0035 40%, #0d001f 70%, #120028 100%)', ...(handRotate !== 0 ? { rotate: handRotate, transformOrigin: 'bottom center' } : {}) }}
                 >
                     {/* ── Layer 1: Diagonal colour shafts ── */}
                     <div className="absolute inset-0 pointer-events-none overflow-hidden">
@@ -1365,6 +1366,7 @@ export default function Game() {
                 dragMomentum={false}
                 onDragEnd={(e, info) => { if (isHand) handleCardDragEnd(card, info); }}
                 onClick={() => toggleCardSelection(card)}
+                whileDrag={isHand ? { zIndex: 9999 } : undefined}
                 whileHover={isTable ? { y: -3, scale: 1.04 } : { y: isSelected ? -20 : -12, scale: 1.06 }}
                 animate={{ y: isSelected ? -20 : 0 }}
                 className={`relative ${sizeClasses} rounded-lg sm:rounded-xl cursor-pointer active:cursor-grabbing border z-10 overflow-hidden transition-[box-shadow,border-color,opacity] duration-200`}
@@ -1375,6 +1377,7 @@ export default function Game() {
                         ? '0 0 28px rgba(255,255,255,0.5), 0 0 8px rgba(255,255,255,0.3)'
                         : theme.outerShadow,
                     zIndex: isSelected ? 20 : 10,
+                    ...(handRotate !== 0 ? { rotate: handRotate, transformOrigin: 'bottom center' } : {}),
                 }}
             >
                 {/* ── Fine circuit grid ── */}
@@ -2477,7 +2480,7 @@ export default function Game() {
                         }
 
                         return (
-                        <div className="relative overflow-x-auto custom-scrollbar pb-3 pt-2 pointer-events-auto">
+                        <div className="relative pb-3 pt-2 pointer-events-auto overflow-visible">
                             {/* Right-fade scroll hint when compact */}
                             {compact && (
                                 <div className="absolute right-0 top-0 bottom-3 w-10 bg-gradient-to-l from-[#0f0814] to-transparent z-10 pointer-events-none" />
@@ -2493,14 +2496,10 @@ export default function Game() {
                                         return (
                                             <div
                                                 key={card.id}
-                                                style={{
-                                                    transform: `rotate(${rotate}deg)`,
-                                                    transformOrigin: 'bottom center',
-                                                    marginLeft: i === 0 ? 0 : overlap,
-                                                }}
+                                                style={{ marginLeft: i === 0 ? 0 : overlap }}
                                                 onClick={multiCombineActive && isMyTurn ? () => stageHandCard(card) : undefined}
                                             >
-                                                {renderCard(card, !multiCombineActive, false, compact)}
+                                                {renderCard(card, !multiCombineActive, false, compact, rotate)}
                                             </div>
                                         );
                                     })}
