@@ -581,7 +581,7 @@ export default function Dashboard() {
                                             ) : item.type === 'FRAME' && item.frameConfig ? (
                                                 <FramedAvatar
                                                     src=""
-                                                    size={80}
+                                                    size={140}
                                                     frameConfig={item.frameConfig}
                                                     previewOnly
                                                 />
@@ -602,11 +602,11 @@ export default function Dashboard() {
                                             } {item.price.toLocaleString()}
                                             </span>
                                         </div>
-                                        {/* BUY button — appears on hover */}
+                                        {/* BUY button — always visible on mobile, hover-only on desktop */}
                                         <button
                                             onPointerDown={e => e.stopPropagation()}
                                             onClick={e => { e.stopPropagation(); e.preventDefault(); setPurchaseModal(item); setBuyStatus('idle'); }}
-                                            className="mt-2 w-full py-1.5 rounded-xl bg-[#b026ff]/80 hover:bg-[#b026ff] text-white text-[10px] font-black uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity duration-150 flex items-center justify-center gap-1"
+                                            className="mt-2 w-full py-1.5 rounded-xl bg-[#b026ff]/80 hover:bg-[#b026ff] text-white text-[10px] font-black uppercase tracking-widest opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-150 flex items-center justify-center gap-1"
                                         >
                                             <ShoppingCart size={10} /> Buy
                                         </button>
