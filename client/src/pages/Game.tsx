@@ -2194,6 +2194,9 @@ export default function Game() {
                                         <Layers size={12} className="text-[#b026ff]" />
                                         <span className="text-xs font-black">{myHand.length + stagingCards.filter(s => s.origin === 'hand').length} {t('game.cards')}</span>
                                     </div>
+                                    <div className="flex items-center gap-1 mt-0.5">
+                                        <span className="text-[10px] font-bold text-[#b026ff]">{calculateHandScore(myHand)} pts</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
