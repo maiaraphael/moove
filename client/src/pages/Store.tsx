@@ -78,49 +78,72 @@ export default function Store() {
     const [purchaseModal, setPurchaseModal] = useState<StoreItem | null>(null);
     const [storeItems, setStoreItems] = useState<StoreItem[]>([]);
     const [isFetching, setIsFetching] = useState(true);
+    const [fetchError, setFetchError] = useState(false);
     const [buyStatus, setBuyStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
     const [vipConfig, setVipConfig] = useState<any | null>(null);
     const [vipBuyStatus, setVipBuyStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
 
+    // Fetch store items immediately on mount — no need to wait for user context
     useEffect(() => {
+        let cancelled = false;
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 15000);
+
         const fetchStore = async () => {
             try {
                 const token = localStorage.getItem('token');
                 const res = await fetch(`${import.meta.env.VITE_API_URL}/api/store`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
+                    headers: { 'Authorization': `Bearer ${token}` },
+                    signal: controller.signal,
                 });
-                
-                if (res.ok) {
+
+                if (res.ok && !cancelled) {
                     const data = await res.json();
-                    
                     const mappedItems = data
                         .filter((item: any) => item.isActive !== false)
                         .map((item: any) => ({
-                        ...item,
-                        image: item.imageUrl,
-                        frameConfig: item.type === 'FRAME' ? parseFrameConfig(item.frameConfig) : null,
-                        petConfig: item.type === 'PET' ? (() => { try { return typeof item.petConfig === 'string' ? JSON.parse(item.petConfig) : item.petConfig; } catch { return null; } })() : null,
-                        isFeatured: item.isFeatured || false,
-                        category: item.type === 'CARD_BACK' ? 'Card Sleeves' :
-                                  item.type === 'FRAME' ? 'Profile Frames' :
-                                  item.type === 'EMOTE' ? 'Emoticons' :
-                                  item.type === 'AVATAR' ? 'Avatars' :
-                                  item.type === 'PET' ? 'Pets' : 'Avatars',
-                        isOwned: user?.inventory?.some((inv: any) => inv.itemId === item.id) || false
-                    }));
-                    setStoreItems(mappedItems);
+                            ...item,
+                            image: item.imageUrl,
+                            frameConfig: item.type === 'FRAME' ? parseFrameConfig(item.frameConfig) : null,
+                            petConfig: item.type === 'PET' ? (() => { try { return typeof item.petConfig === 'string' ? JSON.parse(item.petConfig) : item.petConfig; } catch { return null; } })() : null,
+                            isFeatured: item.isFeatured || false,
+                            category: item.type === 'CARD_BACK' ? 'Card Sleeves' :
+                                      item.type === 'FRAME' ? 'Profile Frames' :
+                                      item.type === 'EMOTE' ? 'Emoticons' :
+                                      item.type === 'AVATAR' ? 'Avatars' :
+                                      item.type === 'PET' ? 'Pets' : 'Avatars',
+                            isOwned: false, // will be recomputed once user inventory loads
+                        }));
+                    if (!cancelled) setStoreItems(mappedItems);
+                } else if (!cancelled) {
+                    setFetchError(true);
                 }
-            } catch (err) {
-                console.error("Store Items fetch failed", err);
+            } catch (err: any) {
+                if (!cancelled && err?.name !== 'AbortError') {
+                    console.error('Store Items fetch failed', err);
+                    setFetchError(true);
+                }
             } finally {
-                setIsFetching(false);
+                clearTimeout(timeout);
+                if (!cancelled) setIsFetching(false);
             }
         };
 
-        if (user && !isLoading) {
-            fetchStore();
+        fetchStore();
+        return () => { cancelled = true; controller.abort(); clearTimeout(timeout); };
+    }, []);
+
+    // Re-compute isOwned whenever user inventory becomes available
+    useEffect(() => {
+        if (user?.inventory && storeItems.length > 0) {
+            setStoreItems(items =>
+                items.map(item => ({
+                    ...item,
+                    isOwned: user.inventory!.some((inv: any) => inv.itemId === item.id),
+                }))
+            );
         }
-    }, [user, isLoading]);
+    }, [user?.inventory]);
 
     useEffect(() => {
         fetch(`${import.meta.env.VITE_API_URL}/api/vip/active`)
@@ -129,7 +152,8 @@ export default function Store() {
             .catch(() => setVipConfig(null));
     }, []);
 
-    if (isLoading || !user || isFetching) return <CardGridSkeleton />;
+    if (isLoading || !user) return <CardGridSkeleton />;
+    if (isFetching) return <CardGridSkeleton label="LOADING STORE..." />;
 
     const activeItems = storeItems.filter(i =>
         activeCategory === 'Featured'
@@ -250,13 +274,23 @@ export default function Store() {
                 {/* Right Content: Category View */}
                 <div className="flex-1 flex flex-col min-w-0">
 
+                    {/* Fetch error banner */}
+                    {fetchError && (
+                        <div className="flex flex-col items-center justify-center p-12 border border-red-500/20 border-dashed rounded-2xl bg-red-500/5 mb-4">
+                            <span className="text-2xl mb-3">⚠️</span>
+                            <h3 className="text-base font-bold text-red-400 mb-1">Falha ao carregar a loja</h3>
+                            <p className="text-xs text-gray-500 text-center mb-4">Verifique sua conexão e tente novamente.</p>
+                            <button onClick={() => window.location.reload()} className="px-4 py-2 rounded-xl bg-red-500/20 border border-red-500/40 text-red-400 text-xs font-bold hover:bg-red-500/30 transition-colors">Recarregar</button>
+                        </div>
+                    )}
+
                     {/* Items Grid */}
                     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-5">
                         <AnimatePresence mode="popLayout">
                             {activeItems.map((item, idx) => {
                                 const originalPrice = item.discount ? Math.floor(item.price / (1 - item.discount / 100)) : item.price;
                                 const canAfford = item.currency === 'Gems' ? user.gems >= item.price : user.credits >= item.price;
-                                const glowColor = RARITY_GLOW[item.rarity];
+                                const glowColor = RARITY_GLOW[item.rarity] ?? 'rgba(176,38,255,0.35)';
 
                                 return (
                                     <motion.div
@@ -386,11 +420,17 @@ export default function Store() {
                         </AnimatePresence>
                     </div>
 
-                    {activeItems.length === 0 && activeCategory !== 'Gems' && activeCategory !== 'VIP' && (
+                    {activeItems.length === 0 && activeCategory !== 'Gems' && activeCategory !== 'VIP' && !fetchError && (
                         <div className="flex flex-col items-center justify-center p-12 lg:p-24 border border-white/5 border-dashed rounded-3xl bg-white/5">
                             <Tag className="w-16 h-16 text-gray-600 mb-4 opacity-50" />
-                            <h3 className="text-xl font-bold text-gray-400 mb-2">No Items Available</h3>
-                            <p className="text-sm text-gray-500 text-center max-w-sm">Check back later for new {activeCategory.toLowerCase()} in the store.</p>
+                            <h3 className="text-xl font-bold text-gray-400 mb-2">
+                                {activeCategory === 'Featured' ? 'Nenhum item em destaque' : 'Nenhum item disponível'}
+                            </h3>
+                            <p className="text-sm text-gray-500 text-center max-w-sm">
+                                {activeCategory === 'Featured'
+                                    ? 'O admin ainda não marcou itens como destaque. Navegue pelas categorias ao lado.'
+                                    : `Volte mais tarde para novos itens em ${activeCategory.toLowerCase()}.`}
+                            </p>
                         </div>
                     )}
 

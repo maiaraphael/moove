@@ -76,6 +76,9 @@ export default function TopHeader({ user }: { user: UserProfile | null }) {
 
                 <div className="flex flex-col">
                     <div className="flex items-center gap-2">
+                        {user.clanTag && (
+                            <span className="px-1.5 py-0.5 rounded text-[10px] font-black bg-cyan-500/20 text-cyan-400 border border-cyan-500/40 tracking-wider flex-shrink-0">[{user.clanTag}]</span>
+                        )}
                         <h2 className="font-bold text-base md:text-lg tracking-wide text-white">{user.name}</h2>
                         {isVip && (
                             <span title="VIP Ativo" className="flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[9px] font-black bg-yellow-500/20 text-yellow-400 border border-yellow-500/40 uppercase tracking-wider">

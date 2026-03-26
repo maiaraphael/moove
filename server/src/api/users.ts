@@ -42,7 +42,8 @@ router.get('/me', authenticateToken, async (req: AuthRequest, res) => {
                     take: 10,
                     include: { players: { select: { id: true, username: true } } },
                 },
-                inventory: true
+                inventory: true,
+                clanMember: { include: { clan: { select: { tag: true } } } },
             }
         });
 
@@ -121,7 +122,8 @@ router.get('/me', authenticateToken, async (req: AuthRequest, res) => {
             createdAt: m.createdAt,
         }));
         
-        res.json({ ...safeUser, achievements, equippedFrameConfig, equippedSleeveUrl, rankConfig: rankConfig ?? null, stats, recentMatches });
+        const clanTag = (user as any).clanMember?.clan?.tag ?? null;
+        res.json({ ...safeUser, clanTag, achievements, equippedFrameConfig, equippedSleeveUrl, rankConfig: rankConfig ?? null, stats, recentMatches });
     } catch (err) {
         console.error('Profile fetch error:', err);
         res.status(500).json({ error: 'Internal server error' });

@@ -52,6 +52,7 @@ export default function Play() {
                 userId: user.id,
                 username: user.name,
                 avatar: user.avatar,
+                clanTag: user.clanTag ?? null,
             });
         });
         skt.on('lobby:authenticated', () => skt.emit('lobby:list'));
@@ -424,6 +425,7 @@ export default function Play() {
                                                                                         <img src={player.avatar} alt={player.username} className="w-10 h-10 rounded-full object-cover border-2 border-white/10" />
                                                                                         <div className="flex-1">
                                                                                             <div className="flex items-center gap-2">
+                                                                                                {(player as any).clanTag && <span className="text-[9px] font-black text-cyan-400 bg-cyan-500/10 border border-cyan-500/30 px-1 py-0.5 rounded tracking-wider flex-shrink-0">[{(player as any).clanTag}]</span>}
                                                                                                 <span className="font-black text-white text-sm">{player.username}</span>
                                                                                                 {isHost && <span className="flex items-center gap-1 text-[9px] font-black text-yellow-400 bg-yellow-400/10 border border-yellow-400/30 px-1.5 py-0.5 rounded-full uppercase tracking-widest"><Crown size={10} /> Host</span>}
                                                                                                 {isMe && <span className="text-[9px] font-black text-[#3b82f6] bg-[#3b82f6]/10 border border-[#3b82f6]/30 px-1.5 py-0.5 rounded-full uppercase tracking-widest">You</span>}

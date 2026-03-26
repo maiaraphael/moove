@@ -3,6 +3,7 @@ import { User, AtSign, Lock, ShieldCheck, Zap, ArrowLeft } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
 import MouseGlow from '../components/ui/MouseGlow';
+import { useUser } from '../hooks/useUser';
 import { useTranslation } from 'react-i18next';
 
 const LANGUAGES = [
@@ -21,6 +22,7 @@ export default function Register() {
         (localStorage.getItem('moove_lang') as 'en' | 'pt' | 'es') || 'en'
     );
     const navigate = useNavigate();
+    const { refreshUser } = useUser();
     const { t, i18n } = useTranslation();
 
     const handleLangChange = (code: 'en' | 'pt' | 'es') => {
@@ -47,6 +49,7 @@ export default function Register() {
             const data = await res.json();
             if (res.ok && data.token) {
                 localStorage.setItem('token', data.token);
+                await refreshUser();
                 navigate('/dashboard');
             } else {
                 setError(data.error || t('register.error.network'));

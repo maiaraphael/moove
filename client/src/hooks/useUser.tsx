@@ -43,6 +43,7 @@ export interface UserProfile {
     inventory?: { itemId: string; itemType: string; isEquipped: boolean }[];
     isPremium?: boolean;
     vipExpiresAt?: string | null;
+    clanTag?: string | null;
     equippedFrame?: FrameConfig | null;
     equippedSleeveUrl?: string | null;
     rankConfig?: RankConfig | null;
@@ -67,6 +68,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
     const hasFetched = useRef(false);
 
     const fetchUserData = useCallback(async () => {
+        setIsLoading(true);
         try {
             const token = localStorage.getItem('token');
             // Don't redirect on public pages
@@ -113,6 +115,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
                     inventory: userData.inventory || [],
                     isPremium: userData.isPremium || false,
                     vipExpiresAt: userData.vipExpiresAt || null,
+                    clanTag: userData.clanTag || null,
                     equippedFrame: userData.equippedFrameConfig || null,
                     equippedSleeveUrl: userData.equippedSleeveUrl || null,
                     rankConfig: userData.rankConfig || null,
@@ -130,6 +133,10 @@ export function UserProvider({ children }: { children: ReactNode }) {
             }
         } catch (error) {
             console.error('Failed to load user data:', error);
+            // If network error on a private page and we have no user, redirect to login
+            const publicPaths = ['/', '/login', '/register', '/forgot-password'];
+            const isPublicPath = publicPaths.some(p => window.location.pathname === p || window.location.pathname.startsWith(p + '?'));
+            if (!isPublicPath) navigate('/login');
         } finally {
             setIsLoading(false);
         }

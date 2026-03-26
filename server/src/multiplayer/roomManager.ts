@@ -10,7 +10,7 @@ function ranksCompatible(r1: string, r2: string) { return Math.abs(getRankIndex(
 
 interface RankedQueueEntry {
     socketId: string; userId: string; username: string; avatar: string;
-    rank: string; mmr: number; level: number; rankConfig: any; playerCount: 2 | 4;
+    rank: string; mmr: number; level: number; rankConfig: any; playerCount: 2 | 4; clanTag?: string | null;
 }
 const rankedQueue2 : RankedQueueEntry[] = [];
 const rankedQueue4 : RankedQueueEntry[] = [];
@@ -28,6 +28,7 @@ interface RoomPlayer {
     frame?: string; // serialized FrameConfig JSON
     pet?: string;   // serialized PetConfig JSON
     slot: string; // 'p0', 'p1', 'p2', 'p3'
+    clanTag?: string | null;
 }
 
 interface Room {
@@ -67,6 +68,7 @@ interface SocketUser {
     username: string;
     avatar: string;
     currentRoomId?: string;
+    clanTag?: string | null;
 }
 
 // ─────────────────────── In-Memory Store ────────────────────
@@ -190,7 +192,7 @@ function getRoomState(room: Room) {
         isPrivate: room.isPrivate,
         status: room.status,
         players: room.players.map(p => ({
-            socketId: p.socketId, userId: p.userId, username: p.username, avatar: p.avatar, slot: p.slot,
+            socketId: p.socketId, userId: p.userId, username: p.username, avatar: p.avatar, slot: p.slot, clanTag: p.clanTag ?? null,
         })),
     };
 }
@@ -213,7 +215,7 @@ function broadcastGameState(io: Server, room: Room) {
             hand: gs.hands[player.slot] || [],
             players: room.players.map(p => ({
                 slot: p.slot, username: p.username, avatar: p.avatar, sleeve: p.sleeve, frame: p.frame, pet: p.pet,
-                cardCount: (gs.hands[p.slot] || []).length,
+                cardCount: (gs.hands[p.slot] || []).length, clanTag: p.clanTag ?? null,
             })),
             deckCount: gs.deck.length,
             tableSets: gs.tableSets,
@@ -229,7 +231,7 @@ function broadcastGameState(io: Server, room: Room) {
             hand: [],
             players: room.players.map(p => ({
                 slot: p.slot, username: p.username, avatar: p.avatar, sleeve: p.sleeve, frame: p.frame, pet: p.pet,
-                cardCount: (gs.hands[p.slot] || []).length,
+                cardCount: (gs.hands[p.slot] || []).length, clanTag: p.clanTag ?? null,
             })),
             deckCount: gs.deck.length,
             tableSets: gs.tableSets,
@@ -700,7 +702,7 @@ async function startRankedMatch(io: Server, entries: RankedQueueEntry[]) {
 
     const roomPlayers: RoomPlayer[] = entries.map((e, i) => ({
         socketId: e.socketId, userId: e.userId, username: e.username,
-        avatar: e.avatar, sleeve: '', slot: `p${i}`,
+        avatar: e.avatar, sleeve: '', slot: `p${i}`, clanTag: e.clanTag ?? null,
     }));
 
     const { deck: remDeck, hands } = dealCards(generateDeck(playerCount), playerCount);
@@ -755,7 +757,7 @@ async function startRankedMatch(io: Server, entries: RankedQueueEntry[]) {
         slot: `p${i}`, username: e.username, avatar: e.avatar,
         level: e.level, rank: e.rank, mmr: e.mmr, rankConfig: e.rankConfig,
         frame: roomPlayers[i].frame, pet: roomPlayers[i].pet,
-        cardCount: 7, sleeve: '',
+        cardCount: 7, sleeve: '', clanTag: e.clanTag ?? null,
     }));
 
     // Emit match_found to each player
@@ -865,12 +867,12 @@ export const setupMultiplayer = (io: Server) => {
         };
 
         // ── AUTHENTICATE ──
-        socket.on('lobby:authenticate', (data: { token?: string; userId: string; username: string; avatar: string }) => {
+        socket.on('lobby:authenticate', (data: { token?: string; userId: string; username: string; avatar: string; clanTag?: string | null }) => {
             if (data.token) {
                 try { jwt.verify(data.token, process.env.JWT_SECRET || 'secret'); }
                 catch { socket.emit('lobby:error', { message: 'Invalid token' }); return; }
             }
-            socketUsers.set(socket.id, { userId: data.userId, username: data.username, avatar: data.avatar });
+            socketUsers.set(socket.id, { userId: data.userId, username: data.username, avatar: data.avatar, clanTag: data.clanTag ?? null });
             userSockets.set(data.userId, socket.id);
             socket.emit('lobby:authenticated', { ok: true });
             socket.emit('lobby:rooms', Array.from(rooms.values()).filter(r => r.status === 'waiting').map(getRoomPublic));
@@ -896,7 +898,7 @@ export const setupMultiplayer = (io: Server) => {
                 id: roomId,
                 name: (data.name?.trim() || `${user.username}'s Room`).slice(0, 40),
                 hostSocketId: socket.id,
-                players: [{ socketId: socket.id, userId: user.userId, username: user.username, avatar: user.avatar, sleeve: '', slot: 'p0' }],
+                players: [{ socketId: socket.id, userId: user.userId, username: user.username, avatar: user.avatar, sleeve: '', slot: 'p0', clanTag: user.clanTag ?? null }],
                 maxPlayers: data.maxPlayers,
                 turnTime: data.turnTime,
                 isPrivate: data.isPrivate,
@@ -923,7 +925,7 @@ export const setupMultiplayer = (io: Server) => {
             if (room.players.find(p => p.socketId === socket.id)) { socket.emit('lobby:error', { message: 'Already in this room' }); return; }
             leaveCurrentRoom();
             const slot = `p${room.players.length}`;
-            room.players.push({ socketId: socket.id, userId: user.userId, username: user.username, avatar: user.avatar, sleeve: '', slot });
+            room.players.push({ socketId: socket.id, userId: user.userId, username: user.username, avatar: user.avatar, sleeve: '', slot, clanTag: user.clanTag ?? null });
             socketUsers.set(socket.id, { ...user, currentRoomId: room.id });
             socket.join(room.id);
             socket.emit('lobby:room_joined', getRoomState(room));
@@ -995,7 +997,7 @@ export const setupMultiplayer = (io: Server) => {
                 const pSkt = io.sockets.sockets.get(player.socketId);
                 if (pSkt) pSkt.emit('game:start', {
                     roomId: room.id, slot: player.slot, hand: hands[player.slot],
-                    players: room.players.map(p => ({ slot: p.slot, username: p.username, avatar: p.avatar, sleeve: p.sleeve, frame: p.frame, pet: p.pet, cardCount: 7 })),
+                    players: room.players.map(p => ({ slot: p.slot, username: p.username, avatar: p.avatar, sleeve: p.sleeve, frame: p.frame, pet: p.pet, cardCount: 7, clanTag: p.clanTag ?? null })),
                     deckCount: remDeck.length, tableSets: [], activeSlot: firstSlot, turnTime: room.turnTime, slotTimers, slotTurnTime,
                 });
             }
@@ -1067,7 +1069,7 @@ export const setupMultiplayer = (io: Server) => {
             const gs = room.gameState;
             socket.emit('game:rejoined', {
                 roomId: room.id, slot: player.slot, hand: gs.hands[player.slot] || [],
-                players: room.players.map(p => ({ slot: p.slot, username: p.username, avatar: p.avatar, sleeve: p.sleeve, frame: p.frame, pet: p.pet, cardCount: (gs.hands[p.slot] || []).length })),
+                players: room.players.map(p => ({ slot: p.slot, username: p.username, avatar: p.avatar, sleeve: p.sleeve, frame: p.frame, pet: p.pet, cardCount: (gs.hands[p.slot] || []).length, clanTag: p.clanTag ?? null })),
                 deckCount: gs.deck.length, tableSets: gs.tableSets, activeSlot: gs.activeSlot,
                 hasPlayedThisTurn: gs.hasPlayedThisTurn, slotTimers: gs.slotTimers, turnTime: room.turnTime,
                 slotTurnTime: gs.slotTurnTime,
@@ -1199,7 +1201,7 @@ export const setupMultiplayer = (io: Server) => {
                 socketId: socket.id, userId: user.userId, username: user.username,
                 avatar: user.avatar, rank: dbUser.rank, mmr: dbUser.mmr,
                 level: dbUser.level, rankConfig: rankConfig ?? null,
-                playerCount: data.playerCount,
+                playerCount: data.playerCount, clanTag: user.clanTag ?? null,
             };
 
             // Remove any existing entries for this user from both queues
@@ -1238,7 +1240,7 @@ export const setupMultiplayer = (io: Server) => {
                 roomId: room.id,
                 players: room.players.map(p => ({
                     slot: p.slot, username: p.username, avatar: p.avatar, sleeve: p.sleeve, frame: p.frame, pet: p.pet,
-                    cardCount: (gs.hands[p.slot] || []).length,
+                    cardCount: (gs.hands[p.slot] || []).length, clanTag: p.clanTag ?? null,
                 })),
                 deckCount: gs.deck.length,
                 tableSets: gs.tableSets,
