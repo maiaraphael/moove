@@ -61,9 +61,9 @@ const RARITY_STYLES: Record<string, { label: string; color: string; bg: string; 
 };
 
 const PODIUM_STYLES = [
-    { badge: '??', border: 'border-gray-400/40', label: 'text-gray-300', offset: 'translate-y-3' },
-    { badge: '??', border: 'border-yellow-400/50', label: 'text-yellow-300', offset: '' },
-    { badge: '??', border: 'border-amber-600/40', label: 'text-amber-500', offset: 'translate-y-5' },
+    { badge: '🥈', border: 'border-gray-400/40', label: 'text-gray-300', offset: 'translate-y-3' },
+    { badge: '🥇', border: 'border-yellow-400/50', label: 'text-yellow-300', offset: '' },
+    { badge: '🥉', border: 'border-amber-600/40', label: 'text-amber-500', offset: 'translate-y-5' },
 ];
 const PODIUM_ORDER = [1, 0, 2]; // silver center-left, gold center, bronze center-right
 
