@@ -439,7 +439,7 @@ export default function Game() {
             if (opponentEmoteTimeoutsRef.current[key]) clearTimeout(opponentEmoteTimeoutsRef.current[key]);
             opponentEmoteTimeoutsRef.current[key] = setTimeout(() => {
                 setOpponentEmotes(prev => ({ ...prev, [key]: null }));
-            }, 4000);
+            }, 2000);
         });
 
         skt.on('game:card_played', (data: { slot: string; username: string; cardsCount: number }) => {
@@ -576,7 +576,7 @@ export default function Game() {
         if (emoteTimeoutRef.current) clearTimeout(emoteTimeoutRef.current);
         emoteTimeoutRef.current = setTimeout(() => {
             setActiveEmote(null);
-        }, 5000);
+        }, 2500);
         setEmoteCooldown(true);
         setTimeout(() => setEmoteCooldown(false), 5000);
         if (isMultiplayer) mpSocketRef.current?.emit('game:emote', { emoji });
@@ -2169,14 +2169,12 @@ export default function Game() {
                                         <motion.div
                                             key={activeEmote + Date.now()}
                                             initial={{ opacity: 0, scale: 0, y: 10 }}
-                                            animate={{ opacity: 1, scale: 2, y: -55 }}
+                                            animate={{ opacity: 1, scale: 2.2, y: -55 }}
                                             exit={{ opacity: 0, scale: 0.5, y: -65 }}
                                             transition={{ type: 'spring', stiffness: 400, damping: 14 }}
                                             className="absolute top-0 left-1/2 -translate-x-1/2 -mt-2 z-50 pointer-events-none flex items-center justify-center"
                                         >
-                                            <div className="p-2 bg-black/70 backdrop-blur-sm rounded-2xl border border-white/20 shadow-[0_0_25px_rgba(176,38,255,0.4)]">
-                                                <span className="text-3xl drop-shadow-[0_0_15px_rgba(255,255,255,0.9)]">{activeEmote}</span>
-                                            </div>
+                                            <span className="text-4xl drop-shadow-[0_0_18px_rgba(255,255,255,0.95)]">{activeEmote}</span>
                                         </motion.div>
                                     )}
                                 </AnimatePresence>
