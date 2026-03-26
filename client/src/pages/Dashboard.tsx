@@ -565,7 +565,7 @@ export default function Dashboard() {
                                         transition={{ delay: 0.45 + idx * 0.07 }}
                                         whileHover={{ y: -4, scale: 1.02 }}
                                         onClick={() => navigate('/store')}
-                                        className={`group relative bg-[#120a1f]/80 border ${rs.bg} rounded-2xl p-3 cursor-pointer transition-all ${rs.glow} overflow-hidden`}
+                                        className={`group relative bg-[#120a1f]/80 border ${rs.bg} rounded-2xl p-3 cursor-pointer transition-all ${rs.glow}`}
                                     >
                                         {/* Rarity glow bg */}
                                         {item.rarity === 'Legendary' && (
@@ -575,14 +575,15 @@ export default function Dashboard() {
                                             <div className="absolute inset-0 bg-gradient-to-b from-purple-500/10 to-transparent pointer-events-none" />
                                         )}
 
-                                        <div className="w-full aspect-square rounded-xl overflow-hidden mb-3 bg-white/5 flex items-center justify-center relative">
+                                        <div className={`w-full aspect-square rounded-xl mb-3 bg-white/5 flex items-center justify-center relative ${item.type === 'FRAME' ? '' : 'overflow-hidden'}`}>
                                             {item.type === 'PET' && item.petConfig ? (
                                                 <PetViewer petConfig={item.petConfig} size={80} withBackground={false} />
                                             ) : item.type === 'FRAME' && item.frameConfig ? (
                                                 <FramedAvatar
-                                                    src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${item.id}`}
+                                                    src=""
                                                     size={80}
                                                     frameConfig={item.frameConfig}
+                                                    previewOnly
                                                 />
                                             ) : item.imageUrl ? (
                                                 <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover" />
@@ -603,7 +604,8 @@ export default function Dashboard() {
                                         </div>
                                         {/* BUY button — appears on hover */}
                                         <button
-                                            onClick={e => { e.stopPropagation(); setPurchaseModal(item); setBuyStatus('idle'); }}
+                                            onPointerDown={e => e.stopPropagation()}
+                                            onClick={e => { e.stopPropagation(); e.preventDefault(); setPurchaseModal(item); setBuyStatus('idle'); }}
                                             className="mt-2 w-full py-1.5 rounded-xl bg-[#b026ff]/80 hover:bg-[#b026ff] text-white text-[10px] font-black uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity duration-150 flex items-center justify-center gap-1"
                                         >
                                             <ShoppingCart size={10} /> Buy
