@@ -1100,8 +1100,6 @@ export default function Game() {
                     newTableSets: [...proposedSets, ...sortedGroups],
                 });
             }
-        } else if (!hasPlayedThisTurn) {
-            showToast('Mesa reorganizada! Jogue uma carta da mão ou passe o turno (comprar) para finalizar.');
         }
     };
 
