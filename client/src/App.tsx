@@ -23,6 +23,7 @@ import TermsOfService from './pages/TermsOfService';
 import Leaderboard from './pages/Leaderboard';
 import Missions from './pages/Missions';
 import ResetPassword from './pages/ResetPassword';
+import VerifyEmail from './pages/VerifyEmail';
 import Friends from './pages/Friends';
 import Clan from './pages/Clan';
 import { NotificationProvider } from './components/ui/NotificationProvider';
@@ -47,6 +48,7 @@ function AppRoutes() {
         <Route path="/login" element={<Login />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/verify-email" element={<VerifyEmail />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/play" element={<Play />} />
         <Route path="/tournaments" element={<Tournaments />} />

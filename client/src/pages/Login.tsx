@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { AtSign, Lock, ChevronRight, ArrowLeft } from 'lucide-react';
+import { AtSign, Lock, ChevronRight, ArrowLeft, Mail, RefreshCcw } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
 import MouseGlow from '../components/ui/MouseGlow';
@@ -10,6 +10,9 @@ export default function Login() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
+    const [unverified, setUnverified] = useState(false);
+    const [resending, setResending] = useState(false);
+    const [resendSent, setResendSent] = useState(false);
     const navigate = useNavigate();
     const { refreshUser } = useUser();
     const { t, i18n } = useTranslation();
@@ -39,7 +42,11 @@ export default function Login() {
                 await refreshUser();
                 navigate('/dashboard');
             } else {
-                setError(data.error || t('login.error.invalid'));
+                if (data.error === 'EMAIL_NOT_VERIFIED') {
+                    setUnverified(true);
+                } else {
+                    setError(data.error || t('login.error.invalid'));
+                }
             }
         } catch (err) {
             console.error(err);
@@ -135,6 +142,32 @@ export default function Login() {
                         </div>
 
                         {error && <div className="text-red-500 text-xs font-bold uppercase tracking-widest text-center">{error}</div>}
+
+                        {unverified && (
+                            <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-xl p-4 flex flex-col gap-3 text-center">
+                                <div className="flex items-center justify-center gap-2 text-yellow-300 font-black text-sm">
+                                    <Mail size={16} /> Email not confirmed
+                                </div>
+                                <p className="text-gray-400 text-xs">Check your inbox and click the confirmation link before logging in.</p>
+                                <button
+                                    disabled={resending || resendSent}
+                                    onClick={async () => {
+                                        setResending(true);
+                                        await fetch(`${import.meta.env.VITE_API_URL}/api/auth/resend-verification`, {
+                                            method: 'POST',
+                                            headers: { 'Content-Type': 'application/json' },
+                                            body: JSON.stringify({ email }),
+                                        });
+                                        setResending(false);
+                                        setResendSent(true);
+                                    }}
+                                    className="flex items-center justify-center gap-2 text-xs font-black uppercase tracking-widest text-[#b026ff] hover:text-[#d685ff] disabled:opacity-50 transition-colors"
+                                >
+                                    <RefreshCcw size={12} className={resending ? 'animate-spin' : ''} />
+                                    {resendSent ? 'Email sent!' : 'Resend confirmation email'}
+                                </button>
+                            </div>
+                        )}
 
                         {/* Submit */}
                         <button onClick={handleLogin} className="w-full mt-4 py-4 rounded-xl bg-gradient-to-r from-[#b026ff] to-[#d685ff] hover:from-[#9d1ce6] hover:to-[#c461f0] text-white text-sm font-bold tracking-[0.15em] uppercase flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(176,38,255,0.4)] transition-all group overflow-hidden relative">

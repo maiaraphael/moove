@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { User, AtSign, Lock, ShieldCheck, Zap, ArrowLeft } from 'lucide-react';
+import { User, AtSign, Lock, ShieldCheck, Zap, ArrowLeft, Mail, RefreshCcw } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
 import MouseGlow from '../components/ui/MouseGlow';
@@ -18,6 +18,10 @@ export default function Register() {
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [error, setError] = useState('');
+    const [emailSent, setEmailSent] = useState(false);
+    const [registeredEmail, setRegisteredEmail] = useState('');
+    const [resending, setResending] = useState(false);
+    const [resendSent, setResendSent] = useState(false);
     const [selectedLang, setSelectedLang] = useState<'en' | 'pt' | 'es'>(
         (localStorage.getItem('moove_lang') as 'en' | 'pt' | 'es') || 'en'
     );
@@ -47,10 +51,9 @@ export default function Register() {
                 body: JSON.stringify({ username, email, password, language: selectedLang })
             });
             const data = await res.json();
-            if (res.ok && data.token) {
-                localStorage.setItem('token', data.token);
-                await refreshUser();
-                navigate('/dashboard');
+            if (res.ok && data.pending) {
+                setRegisteredEmail(email);
+                setEmailSent(true);
             } else {
                 setError(data.error || t('register.error.network'));
             }
@@ -103,7 +106,38 @@ export default function Register() {
                     {/* subtle interior glow */}
                     <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[80%] h-[1px] bg-gradient-to-r from-transparent via-[#b026ff]/50 to-transparent" />
 
-                    <form className="flex flex-col gap-6" onSubmit={(e) => e.preventDefault()}>
+                    {emailSent ? (
+                        <div className="flex flex-col items-center text-center gap-6 py-4">
+                            <div className="w-16 h-16 rounded-full bg-[#b026ff]/10 border border-[#b026ff]/30 flex items-center justify-center">
+                                <Mail size={28} className="text-[#b026ff]" />
+                            </div>
+                            <div>
+                                <h2 className="text-2xl font-black uppercase tracking-tighter text-white mb-2">Check your email!</h2>
+                                <p className="text-gray-400 text-sm">We sent a confirmation link to <strong className="text-white">{registeredEmail}</strong>. Click the link to activate your account.</p>
+                            </div>
+                            <div className="w-full bg-white/5 border border-white/10 rounded-xl p-4 text-xs text-gray-400">
+                                Didn't receive it? Check your spam folder, or
+                            </div>
+                            <button
+                                disabled={resending || resendSent}
+                                onClick={async () => {
+                                    setResending(true);
+                                    await fetch(`${import.meta.env.VITE_API_URL}/api/auth/resend-verification`, {
+                                        method: 'POST',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify({ email: registeredEmail }),
+                                    });
+                                    setResending(false);
+                                    setResendSent(true);
+                                }}
+                                className="flex items-center gap-2 text-sm font-black uppercase tracking-widest text-[#b026ff] hover:text-[#d685ff] disabled:opacity-50 transition-colors"
+                            >
+                                <RefreshCcw size={14} className={resending ? 'animate-spin' : ''} />
+                                {resendSent ? 'Email resent!' : 'Resend confirmation email'}
+                            </button>
+                        </div>
+                    ) : (
+                        <form className="flex flex-col gap-6" onSubmit={(e) => e.preventDefault()}>
 
                         {/* Language Selector */}
                         <div className="flex flex-col gap-2">
@@ -218,7 +252,7 @@ export default function Register() {
                             <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 pointer-events-none" />
                         </button>
 
-                    </form>
+                        </form>
 
                     {/* Login Link */}
                     <div className="mt-8 text-center">
@@ -229,6 +263,7 @@ export default function Register() {
                             </Link>
                         </p>
                     </div>
+                    )}
                 </motion.div>
             </div>
         </div>

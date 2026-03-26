@@ -34,18 +34,48 @@ router.post('/register', async (req, res) => {
         const salt = await bcrypt.genSalt(10);
         const passwordHash = await bcrypt.hash(data.password, salt);
 
+        const verifyToken = crypto.randomBytes(32).toString('hex');
+        const verifyExpires = new Date(Date.now() + 1000 * 60 * 60 * 24); // 24 hours
+
         const user = await prisma.user.create({
             data: {
                 username: data.username,
                 email: data.email,
                 passwordHash,
                 preferredLanguage: data.language,
+                emailVerified: false,
+                emailVerifyToken: verifyToken,
+                emailVerifyExpires: verifyExpires,
             }
         });
 
-        const token = jwt.sign({ id: user.id, role: user.role, username: user.username }, process.env.JWT_SECRET || 'secret', { expiresIn: '7d' });
+        const verifyUrl = `${process.env.CLIENT_URL || 'http://localhost:5173'}/verify-email?token=${verifyToken}`;
 
-        res.json({ token, user: { id: user.id, username: user.username, email: user.email, role: user.role, xp: user.xp, level: user.level, credits: user.credits, gems: user.gems, rank: user.rank, mmr: user.mmr, vipExpiresAt: user.vipExpiresAt ?? null, preferredLanguage: user.preferredLanguage } });
+        if (process.env.SMTP_HOST) {
+            const transporter = nodemailer.createTransport({
+                host: process.env.SMTP_HOST,
+                port: Number(process.env.SMTP_PORT || 587),
+                secure: process.env.SMTP_SECURE === 'true',
+                auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
+            });
+            await transporter.sendMail({
+                from: process.env.SMTP_FROM || 'noreply@moove.gg',
+                to: user.email,
+                subject: 'Moove — Confirm your email',
+                html: `
+                    <div style="font-family:sans-serif;max-width:480px;margin:0 auto;background:#0f0814;color:#fff;padding:32px;border-radius:16px">
+                        <h1 style="color:#b026ff;margin-bottom:8px">Welcome to Moove! 🎴</h1>
+                        <p style="color:#ccc">Hi <strong>${user.username}</strong>, click below to confirm your email and activate your account.</p>
+                        <a href="${verifyUrl}" style="display:inline-block;margin:24px 0;padding:14px 28px;background:#b026ff;color:#fff;border-radius:10px;font-weight:900;text-decoration:none;letter-spacing:2px;text-transform:uppercase">Confirm Email</a>
+                        <p style="color:#666;font-size:12px">Link expires in 24 hours. If you didn't create an account, ignore this email.</p>
+                    </div>
+                `,
+            });
+        } else {
+            console.log(`\n[DEV] Email verification link for ${user.email}:\n${verifyUrl}\n`);
+        }
+
+        res.json({ pending: true, message: 'Check your email to confirm your account.' });
     } catch (err: any) {
         if (err instanceof z.ZodError) {
             res.status(400).json({ error: 'Invalid data', details: err.errors });
@@ -79,6 +109,12 @@ router.post('/login', async (req, res) => {
         const valid = await bcrypt.compare(password, user.passwordHash);
         if (!valid) {
             res.status(401).json({ error: 'Invalid credentials' });
+            return;
+        }
+
+        // Block login if email not verified
+        if (!user.emailVerified) {
+            res.status(403).json({ error: 'EMAIL_NOT_VERIFIED' });
             return;
         }
 
@@ -212,6 +248,95 @@ router.post('/reset-password', async (req, res) => {
         res.json({ ok: true });
     } catch (err) {
         console.error('Reset password error:', err);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+// ── VERIFY EMAIL ──────────────────────────────────────────────
+router.get('/verify-email', async (req, res) => {
+    try {
+        const { token } = req.query;
+        if (!token || typeof token !== 'string') {
+            res.status(400).json({ error: 'Invalid token' });
+            return;
+        }
+
+        const user = await prisma.user.findFirst({
+            where: { emailVerifyToken: token }
+        });
+
+        if (!user || !user.emailVerifyExpires || user.emailVerifyExpires < new Date()) {
+            res.status(400).json({ error: 'TOKEN_INVALID_OR_EXPIRED' });
+            return;
+        }
+
+        await prisma.user.update({
+            where: { id: user.id },
+            data: { emailVerified: true, emailVerifyToken: null, emailVerifyExpires: null }
+        });
+
+        const jwt_token = jwt.sign({ id: user.id, role: user.role, username: user.username }, process.env.JWT_SECRET || 'secret', { expiresIn: '7d' });
+
+        res.json({ token: jwt_token, user: { id: user.id, username: user.username, email: user.email, role: user.role, xp: user.xp, level: user.level, credits: user.credits, gems: user.gems, rank: user.rank, mmr: user.mmr, vipExpiresAt: user.vipExpiresAt ?? null, preferredLanguage: user.preferredLanguage } });
+    } catch (err) {
+        console.error('Verify email error:', err);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+// ── RESEND VERIFICATION ────────────────────────────────────────
+router.post('/resend-verification', async (req, res) => {
+    try {
+        const { email } = req.body;
+        if (!email || typeof email !== 'string') {
+            res.status(400).json({ error: 'Email required' });
+            return;
+        }
+
+        const user = await prisma.user.findUnique({ where: { email } });
+        if (!user || user.emailVerified) {
+            // Always respond OK to prevent enumeration
+            res.json({ ok: true });
+            return;
+        }
+
+        const verifyToken = crypto.randomBytes(32).toString('hex');
+        const verifyExpires = new Date(Date.now() + 1000 * 60 * 60 * 24);
+
+        await prisma.user.update({
+            where: { id: user.id },
+            data: { emailVerifyToken: verifyToken, emailVerifyExpires: verifyExpires }
+        });
+
+        const verifyUrl = `${process.env.CLIENT_URL || 'http://localhost:5173'}/verify-email?token=${verifyToken}`;
+
+        if (process.env.SMTP_HOST) {
+            const transporter = nodemailer.createTransport({
+                host: process.env.SMTP_HOST,
+                port: Number(process.env.SMTP_PORT || 587),
+                secure: process.env.SMTP_SECURE === 'true',
+                auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
+            });
+            await transporter.sendMail({
+                from: process.env.SMTP_FROM || 'noreply@moove.gg',
+                to: user.email,
+                subject: 'Moove — Confirm your email',
+                html: `
+                    <div style="font-family:sans-serif;max-width:480px;margin:0 auto;background:#0f0814;color:#fff;padding:32px;border-radius:16px">
+                        <h1 style="color:#b026ff;margin-bottom:8px">Moove — Email Confirmation 🎴</h1>
+                        <p style="color:#ccc">Hi <strong>${user.username}</strong>, here's your new confirmation link.</p>
+                        <a href="${verifyUrl}" style="display:inline-block;margin:24px 0;padding:14px 28px;background:#b026ff;color:#fff;border-radius:10px;font-weight:900;text-decoration:none;letter-spacing:2px;text-transform:uppercase">Confirm Email</a>
+                        <p style="color:#666;font-size:12px">Link expires in 24 hours.</p>
+                    </div>
+                `,
+            });
+        } else {
+            console.log(`\n[DEV] Resend verification link for ${user.email}:\n${verifyUrl}\n`);
+        }
+
+        res.json({ ok: true });
+    } catch (err) {
+        console.error('Resend verification error:', err);
         res.status(500).json({ error: 'Internal server error' });
     }
 });

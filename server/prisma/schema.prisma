@@ -29,6 +29,9 @@ model User {
   loginStreak    Int       @default(0)
   smurfFlag      Boolean   @default(false)  // flagged for suspicious forfeit-win pattern
   preferredLanguage String @default("en")   // user's preferred UI language
+  emailVerified     Boolean  @default(true)  // true for existing users; new registrations set to false
+  emailVerifyToken  String?  @unique
+  emailVerifyExpires DateTime?
 
   matchHistory   MatchHistory[] @relation("UserMatches")
   inventory      Inventory[]
