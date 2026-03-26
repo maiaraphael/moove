@@ -575,10 +575,10 @@ export default function Game() {
     // Mock opponents — p0 uses real user data, AI players use static data
     const [players, setPlayers] = useState<Player[]>([
         { id: 'p0', name: user?.name || 'You', avatar: user?.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=you`, sleeve: DEFAULT_SLEEVE, cardCount: 7, isActive: true, timeLeft: 45, bankTime: 30, maxTurnTime: 45 },
-        { id: 'p1', name: 'NeonRider', avatar: 'https://i.pravatar.cc/150?u=1', sleeve: 'https://images.unsplash.com/photo-1550684848-fac1c5b4e853?q=80&w=200&auto=format&fit=crop', cardCount: 7, isActive: false, timeLeft: 45, bankTime: 30, maxTurnTime: 45 },
+        { id: 'p1', name: 'NeonRider', avatar: 'https://api.dicebear.com/7.x/bottts/svg?seed=NeonRider', sleeve: 'https://images.unsplash.com/photo-1550684848-fac1c5b4e853?q=80&w=200&auto=format&fit=crop', cardCount: 7, isActive: false, timeLeft: 45, bankTime: 30, maxTurnTime: 45 },
         ...(playersCount === 4 ? [
-            { id: 'p2', name: 'Glitch', avatar: 'https://i.pravatar.cc/150?u=3', sleeve: 'https://images.unsplash.com/photo-1577401239170-897942555fb3?q=80&w=200&auto=format&fit=crop', cardCount: 7, isActive: false, timeLeft: 45, bankTime: 30, maxTurnTime: 45 },
-            { id: 'p3', name: 'CyberSamurai', avatar: 'https://i.pravatar.cc/150?u=4', sleeve: 'https://images.unsplash.com/photo-1557683316-973673baf926?q=80&w=200&auto=format&fit=crop', cardCount: 7, isActive: false, timeLeft: 45, bankTime: 30, maxTurnTime: 45 }
+            { id: 'p2', name: 'Glitch', avatar: 'https://api.dicebear.com/7.x/bottts/svg?seed=Glitch', sleeve: 'https://images.unsplash.com/photo-1577401239170-897942555fb3?q=80&w=200&auto=format&fit=crop', cardCount: 7, isActive: false, timeLeft: 45, bankTime: 30, maxTurnTime: 45 },
+            { id: 'p3', name: 'CyberSamurai', avatar: 'https://api.dicebear.com/7.x/bottts/svg?seed=CyberSamurai', sleeve: 'https://images.unsplash.com/photo-1557683316-973673baf926?q=80&w=200&auto=format&fit=crop', cardCount: 7, isActive: false, timeLeft: 45, bankTime: 30, maxTurnTime: 45 }
         ] : [])
     ]);
 
