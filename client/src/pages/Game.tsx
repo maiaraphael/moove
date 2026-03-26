@@ -37,6 +37,7 @@ interface GameCard {
 interface Player {
     id: string;
     name: string;
+    clanTag?: string | null;
     avatar: string;
     sleeve: string;
     frameConfig?: FrameConfig | null;
@@ -266,6 +267,7 @@ export default function Game() {
                 return {
                     id: `p${i}`,
                     name: i === 0 ? (currentUser?.name || p.username) : p.username,
+                    clanTag: i === 0 ? (currentUser?.clanTag ?? null) : (p.clanTag ?? null),
                     avatar: i === 0 ? (currentUser?.avatar || p.avatar) : p.avatar,
                     // Use server-broadcast sleeve for all players (including opponents)
                     sleeve: i === 0 ? currentSleeve : (p.sleeve || DEFAULT_SLEEVE),
@@ -303,6 +305,7 @@ export default function Game() {
                 return {
                     id: `p${i}`,
                     name: p.username,
+                    clanTag: p.clanTag ?? null,
                     avatar: p.avatar,
                     sleeve: p.sleeve || DEFAULT_SLEEVE,
                     frameConfig: parseFrameConfig(p.frame ?? null),
@@ -1496,7 +1499,9 @@ export default function Game() {
                             {player.cardCount}
                         </div>
                     </div>
-                    <span className="text-[8px] font-bold text-gray-300 max-w-[44px] truncate leading-tight">{player.name}</span>
+                    <span className="text-[8px] font-bold text-gray-300 max-w-[44px] truncate leading-tight">
+                        {player.clanTag ? `[${player.clanTag}] ${player.name}` : player.name}
+                    </span>
                 </div>
 
                 {/* ── DESKTOP: full layout ── */}
@@ -1505,7 +1510,9 @@ export default function Game() {
                     <div className="flex flex-col gap-1 items-start">
                         <div className="flex items-center gap-2">
                             <div className="bg-black/60 backdrop-blur-md px-3 py-1.5 rounded-xl border border-white/5 flex flex-col min-w-[90px]">
-                                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none mb-1">{player.name}</span>
+                                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none mb-1">
+                                                {player.clanTag ? `[${player.clanTag}] ${player.name}` : player.name}
+                                            </span>
                                 <div className="flex items-center gap-2">
                                     <Layers size={12} className="text-[#b026ff]" />
                                     <span className="text-xs font-black text-white">{player.cardCount} cards</span>

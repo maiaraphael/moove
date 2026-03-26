@@ -110,7 +110,14 @@ export default function Profile() {
 
                     {/* User Info */}
                     <div className="flex-1 text-center md:text-left z-10 w-full">
-                        <h1 className="text-4xl font-black italic tracking-tighter uppercase drop-shadow-lg mb-2">{displayUser.name}</h1>
+                        <div className="flex flex-wrap items-center justify-center md:justify-start gap-2 mb-2">
+                            {user.clanTag && (
+                                <span className="text-lg font-black text-cyan-400 bg-cyan-500/10 border border-cyan-500/30 px-2.5 py-1 rounded-lg tracking-widest">
+                                    [{user.clanTag}]
+                                </span>
+                            )}
+                            <h1 className="text-4xl font-black italic tracking-tighter uppercase drop-shadow-lg">{displayUser.name}</h1>
+                        </div>
                         <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 md:gap-4 text-xs md:text-sm text-gray-400 font-bold uppercase tracking-widest mb-6">
                             <span className="flex items-center gap-1.5"><CalendarDays size={16} /> Joined {displayUser.joinDate}</span>
                             <span className="w-1.5 h-1.5 rounded-full bg-white/20" />

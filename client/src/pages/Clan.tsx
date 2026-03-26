@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
     Home, Gamepad2, Trophy, User, Layers, ShoppingBag, Medal, Users,
     Shield, Plus, LogOut, Crown, ChevronRight, Send, Hash, X, Loader2,
-    TrendingUp, MessageSquare, Swords
+    TrendingUp, MessageSquare, Swords, Lock, Globe, Settings, Eye, EyeOff
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import TopHeader from '../components/ui/TopHeader';
@@ -15,7 +15,7 @@ const API = `${import.meta.env.VITE_API_URL}/api/clans`;
 
 interface ClanSummary {
     id: string; name: string; tag: string; description?: string | null;
-    totalMmr: number; memberCount: number; avgMmr: number;
+    totalMmr: number; memberCount: number; avgMmr: number; isPrivate: boolean;
 }
 
 interface ClanMemberData {
@@ -26,6 +26,7 @@ interface ClanMemberData {
 interface MyClan extends ClanSummary {
     members: ClanMemberData[];
     myRole: 'LEADER' | 'OFFICER' | 'MEMBER';
+    isPrivate: boolean;
 }
 
 async function apiFetch(path: string, method = 'GET', body?: object) {
@@ -58,8 +59,26 @@ export default function Clan() {
     const [createName, setCreateName] = useState('');
     const [createTag, setCreateTag] = useState('');
     const [createDesc, setCreateDesc] = useState('');
+    const [createIsPrivate, setCreateIsPrivate] = useState(false);
+    const [createPassword, setCreatePassword] = useState('');
+    const [createShowPwd, setCreateShowPwd] = useState(false);
     const [createLoading, setCreateLoading] = useState(false);
     const [createError, setCreateError] = useState('');
+
+    // Join private clan
+    const [joinTarget, setJoinTarget] = useState<ClanSummary | null>(null);
+    const [joinPassword, setJoinPassword] = useState('');
+    const [joinShowPwd, setJoinShowPwd] = useState(false);
+    const [joinLoading, setJoinLoading] = useState(false);
+    const [joinError, setJoinError] = useState('');
+
+    // Edit clan settings (leader)
+    const [showEditSettings, setShowEditSettings] = useState(false);
+    const [editIsPrivate, setEditIsPrivate] = useState(false);
+    const [editPassword, setEditPassword] = useState('');
+    const [editShowPwd, setEditShowPwd] = useState(false);
+    const [editLoading, setEditLoading] = useState(false);
+    const [editError, setEditError] = useState('');
 
     // Chat
     const [chatInput, setChatInput] = useState('');
@@ -89,18 +108,71 @@ export default function Clan() {
         e.preventDefault();
         setCreateLoading(true); setCreateError('');
         try {
-            await apiFetch('/', 'POST', { name: createName, tag: createTag, description: createDesc });
+            await apiFetch('/', 'POST', {
+                name: createName, tag: createTag, description: createDesc,
+                isPrivate: createIsPrivate,
+                joinPassword: createIsPrivate ? createPassword : undefined,
+            });
             setShowCreate(false);
             setCreateName(''); setCreateTag(''); setCreateDesc('');
+            setCreateIsPrivate(false); setCreatePassword('');
             await load();
             setTab('my_clan');
         } catch (err: any) { setCreateError(err.message); }
         setCreateLoading(false);
     }
 
-    async function handleJoin(clanId: string) {
-        try { await apiFetch(`/${clanId}/join`, 'POST'); await load(); setTab('my_clan'); }
-        catch (err: any) { alert(err.message || 'Could not join clan'); }
+    function handleJoinClick(clan: ClanSummary) {
+        if (clan.isPrivate) {
+            setJoinTarget(clan);
+            setJoinPassword('');
+            setJoinShowPwd(false);
+            setJoinError('');
+        } else {
+            handleJoin(clan.id);
+        }
+    }
+
+    async function handleJoin(clanId: string, password?: string) {
+        try {
+            await apiFetch(`/${clanId}/join`, 'POST', password ? { password } : undefined);
+            await load(); setTab('my_clan');
+        } catch (err: any) { alert(err.message || 'Could not join clan'); }
+    }
+
+    async function handleJoinWithPassword(e: React.FormEvent) {
+        e.preventDefault();
+        if (!joinTarget) return;
+        setJoinLoading(true); setJoinError('');
+        try {
+            await apiFetch(`/${joinTarget.id}/join`, 'POST', { password: joinPassword });
+            setJoinTarget(null);
+            await load(); setTab('my_clan');
+        } catch (err: any) { setJoinError(err.message); }
+        setJoinLoading(false);
+    }
+
+    function openEditSettings() {
+        if (!myClan) return;
+        setEditIsPrivate(myClan.isPrivate);
+        setEditPassword('');
+        setEditShowPwd(false);
+        setEditError('');
+        setShowEditSettings(true);
+    }
+
+    async function handleEditSettings(e: React.FormEvent) {
+        e.preventDefault();
+        setEditLoading(true); setEditError('');
+        try {
+            await apiFetch(`/${myClan!.id}/settings`, 'PUT', {
+                isPrivate: editIsPrivate,
+                joinPassword: editIsPrivate ? editPassword : undefined,
+            });
+            setShowEditSettings(false);
+            await load();
+        } catch (err: any) { setEditError(err.message); }
+        setEditLoading(false);
     }
 
     async function handleLeave() {
@@ -182,12 +254,129 @@ export default function Clan() {
                                     <input value={createDesc} onChange={e => setCreateDesc(e.target.value)} placeholder="Brief description of your clan..." maxLength={200}
                                         className="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-sm text-white focus:border-[#b026ff]/50 outline-none" />
                                 </div>
+                                {/* Privacy toggle */}
+                                <div>
+                                    <label className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mb-1.5 block">Visibility</label>
+                                    <div className="flex gap-2">
+                                        <button type="button" onClick={() => setCreateIsPrivate(false)}
+                                            className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl border text-xs font-black transition-all ${!createIsPrivate ? 'bg-green-500/15 border-green-500/40 text-green-400' : 'border-white/10 text-gray-500 hover:text-gray-300'}`}>
+                                            <Globe size={12} /> Public
+                                        </button>
+                                        <button type="button" onClick={() => setCreateIsPrivate(true)}
+                                            className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl border text-xs font-black transition-all ${createIsPrivate ? 'bg-amber-500/15 border-amber-500/40 text-amber-400' : 'border-white/10 text-gray-500 hover:text-gray-300'}`}>
+                                            <Lock size={12} /> Private
+                                        </button>
+                                    </div>
+                                </div>
+                                {createIsPrivate && (
+                                    <div>
+                                        <label className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mb-1 block">Join Password *</label>
+                                        <div className="relative">
+                                            <input type={createShowPwd ? 'text' : 'password'} value={createPassword} onChange={e => setCreatePassword(e.target.value)} placeholder="Password to join this clan" maxLength={64}
+                                                className="w-full bg-black/40 border border-amber-500/30 rounded-xl px-3 py-2 pr-9 text-sm text-white focus:border-amber-500/60 outline-none" />
+                                            <button type="button" onClick={() => setCreateShowPwd(v => !v)} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white">
+                                                {createShowPwd ? <EyeOff size={14} /> : <Eye size={14} />}
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
                                 {createError && <p className="text-xs text-red-400 font-bold">{createError}</p>}
                                 <div className="flex justify-end gap-2 pt-1">
                                     <button type="button" onClick={() => setShowCreate(false)} className="px-4 py-2 text-xs font-bold text-gray-400 hover:text-white transition-colors">Cancel</button>
-                                    <button type="submit" disabled={createLoading || !createName.trim() || createTag.length < 2}
+                                    <button type="submit" disabled={createLoading || !createName.trim() || createTag.length < 2 || (createIsPrivate && !createPassword.trim())}
                                         className="px-5 py-2 bg-[#b026ff] hover:bg-[#9010e0] disabled:opacity-50 text-white font-black text-xs rounded-xl transition-colors flex items-center gap-2">
                                         {createLoading ? <Loader2 size={13} className="animate-spin" /> : <Plus size={13} />} Create
+                                    </button>
+                                </div>
+                            </form>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+
+                {/* Join Private Clan Modal */}
+                <AnimatePresence>
+                    {joinTarget && (
+                        <motion.div initial={{ opacity: 0, y: -12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }}
+                            className="bg-[#120a1f]/90 border border-amber-500/30 rounded-2xl p-6 shadow-[0_0_30px_rgba(251,191,36,0.1)]"
+                        >
+                            <div className="flex items-center justify-between mb-4">
+                                <div className="flex items-center gap-2">
+                                    <Lock size={14} className="text-amber-400" />
+                                    <p className="font-black text-white uppercase tracking-widest text-sm">Private Clan</p>
+                                </div>
+                                <button onClick={() => setJoinTarget(null)} className="text-gray-500 hover:text-white"><X size={16} /></button>
+                            </div>
+                            <p className="text-xs text-gray-400 mb-4">Enter the password to join <span className="text-white font-bold">{joinTarget.name}</span>.</p>
+                            <form onSubmit={handleJoinWithPassword} className="space-y-3">
+                                <div className="relative">
+                                    <input type={joinShowPwd ? 'text' : 'password'} value={joinPassword} onChange={e => setJoinPassword(e.target.value)}
+                                        placeholder="Clan password" autoFocus
+                                        className="w-full bg-black/40 border border-amber-500/30 rounded-xl px-3 py-2 pr-9 text-sm text-white focus:border-amber-500/60 outline-none" />
+                                    <button type="button" onClick={() => setJoinShowPwd(v => !v)} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white">
+                                        {joinShowPwd ? <EyeOff size={14} /> : <Eye size={14} />}
+                                    </button>
+                                </div>
+                                {joinError && <p className="text-xs text-red-400 font-bold">{joinError}</p>}
+                                <div className="flex justify-end gap-2">
+                                    <button type="button" onClick={() => setJoinTarget(null)} className="px-4 py-2 text-xs font-bold text-gray-400 hover:text-white transition-colors">Cancel</button>
+                                    <button type="submit" disabled={joinLoading || !joinPassword.trim()}
+                                        className="px-5 py-2 bg-amber-500/80 hover:bg-amber-500 disabled:opacity-50 text-black font-black text-xs rounded-xl transition-colors flex items-center gap-2">
+                                        {joinLoading ? <Loader2 size={13} className="animate-spin" /> : <ChevronRight size={13} />} Join
+                                    </button>
+                                </div>
+                            </form>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+
+                {/* Edit Clan Settings Modal */}
+                <AnimatePresence>
+                    {showEditSettings && myClan && (
+                        <motion.div initial={{ opacity: 0, y: -12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }}
+                            className="bg-[#120a1f]/90 border border-[#b026ff]/30 rounded-2xl p-6 shadow-[0_0_30px_rgba(176,38,255,0.15)]"
+                        >
+                            <div className="flex items-center justify-between mb-4">
+                                <div className="flex items-center gap-2">
+                                    <Settings size={14} className="text-[#b026ff]" />
+                                    <p className="font-black text-white uppercase tracking-widest text-sm">Clan Settings</p>
+                                </div>
+                                <button onClick={() => setShowEditSettings(false)} className="text-gray-500 hover:text-white"><X size={16} /></button>
+                            </div>
+                            <form onSubmit={handleEditSettings} className="space-y-4">
+                                <div>
+                                    <label className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mb-1.5 block">Visibility</label>
+                                    <div className="flex gap-2">
+                                        <button type="button" onClick={() => setEditIsPrivate(false)}
+                                            className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl border text-xs font-black transition-all ${!editIsPrivate ? 'bg-green-500/15 border-green-500/40 text-green-400' : 'border-white/10 text-gray-500 hover:text-gray-300'}`}>
+                                            <Globe size={12} /> Public
+                                        </button>
+                                        <button type="button" onClick={() => setEditIsPrivate(true)}
+                                            className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl border text-xs font-black transition-all ${editIsPrivate ? 'bg-amber-500/15 border-amber-500/40 text-amber-400' : 'border-white/10 text-gray-500 hover:text-gray-300'}`}>
+                                            <Lock size={12} /> Private
+                                        </button>
+                                    </div>
+                                </div>
+                                {editIsPrivate && (
+                                    <div>
+                                        <label className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mb-1 block">
+                                            {myClan.isPrivate ? 'New Password (leave blank to keep current)' : 'Join Password *'}
+                                        </label>
+                                        <div className="relative">
+                                            <input type={editShowPwd ? 'text' : 'password'} value={editPassword} onChange={e => setEditPassword(e.target.value)}
+                                                placeholder={myClan.isPrivate ? '••••••• (unchanged)' : 'Set a password'} maxLength={64}
+                                                className="w-full bg-black/40 border border-amber-500/30 rounded-xl px-3 py-2 pr-9 text-sm text-white focus:border-amber-500/60 outline-none" />
+                                            <button type="button" onClick={() => setEditShowPwd(v => !v)} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white">
+                                                {editShowPwd ? <EyeOff size={14} /> : <Eye size={14} />}
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
+                                {editError && <p className="text-xs text-red-400 font-bold">{editError}</p>}
+                                <div className="flex justify-end gap-2">
+                                    <button type="button" onClick={() => setShowEditSettings(false)} className="px-4 py-2 text-xs font-bold text-gray-400 hover:text-white transition-colors">Cancel</button>
+                                    <button type="submit" disabled={editLoading || (editIsPrivate && !myClan.isPrivate && !editPassword.trim())}
+                                        className="px-5 py-2 bg-[#b026ff] hover:bg-[#9010e0] disabled:opacity-50 text-white font-black text-xs rounded-xl transition-colors flex items-center gap-2">
+                                        {editLoading ? <Loader2 size={13} className="animate-spin" /> : <Settings size={13} />} Save
                                     </button>
                                 </div>
                             </form>
@@ -218,7 +407,10 @@ export default function Clan() {
                                             <span className="text-xs font-black text-[#b026ff]">{c.tag}</span>
                                         </div>
                                         <div className="flex-1 min-w-0">
-                                            <p className="font-bold text-sm text-white truncate">{c.name}</p>
+                                            <p className="font-bold text-sm text-white truncate flex items-center gap-1.5">
+                                                {c.name}
+                                                {c.isPrivate && <Lock size={10} className="text-amber-400 shrink-0" />}
+                                            </p>
                                             <p className="text-[10px] text-gray-500">{c.memberCount} members · avg {c.avgMmr.toLocaleString()} MMR</p>
                                         </div>
                                         <div className="text-right shrink-0">
@@ -226,9 +418,9 @@ export default function Clan() {
                                             <p className="text-[9px] text-gray-500 uppercase tracking-widest">Total MMR</p>
                                         </div>
                                         {!myClan && (
-                                            <button onClick={() => handleJoin(c.id)}
+                                            <button onClick={() => handleJoinClick(c)}
                                                 className="ml-2 px-3 py-1.5 bg-[#b026ff]/10 hover:bg-[#b026ff]/25 border border-[#b026ff]/30 text-[#b026ff] text-[10px] font-black uppercase tracking-wider rounded-lg transition-colors flex items-center gap-1">
-                                                Join <ChevronRight size={11} />
+                                                {c.isPrivate ? <Lock size={10} /> : <ChevronRight size={11} />} Join
                                             </button>
                                         )}
                                         {myClan?.id === c.id && (
@@ -268,16 +460,31 @@ export default function Clan() {
                                                         <p className="text-[10px] text-gray-500">{myClan.memberCount} members · {myClan.totalMmr.toLocaleString()} total MMR</p>
                                                     </div>
                                                 </div>
-                                                <div className="flex items-center gap-2">
-                                                    <span className={`text-[10px] font-black uppercase px-2 py-1 rounded-lg border ${ROLE_BADGE[myClan.myRole]}`}>
-                                                        {myClan.myRole === 'LEADER' && <Crown size={10} className="inline mr-1" />}
-                                                        {myClan.myRole}
+                                            <div className="flex items-center gap-2">
+                                                <span className={`text-[10px] font-black uppercase px-2 py-1 rounded-lg border ${ROLE_BADGE[myClan.myRole]}`}>
+                                                    {myClan.myRole === 'LEADER' && <Crown size={10} className="inline mr-1" />}
+                                                    {myClan.myRole}
+                                                </span>
+                                                {myClan.isPrivate ? (
+                                                    <span className="text-[9px] font-black uppercase px-2 py-1 rounded-lg border bg-amber-500/10 text-amber-400 border-amber-500/30 flex items-center gap-1">
+                                                        <Lock size={9} /> Private
                                                     </span>
-                                                    <button onClick={handleLeave}
-                                                        className="p-2 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 transition-colors" title="Leave clan">
-                                                        <LogOut size={15} />
+                                                ) : (
+                                                    <span className="text-[9px] font-black uppercase px-2 py-1 rounded-lg border bg-green-500/10 text-green-400 border-green-500/30 flex items-center gap-1">
+                                                        <Globe size={9} /> Public
+                                                    </span>
+                                                )}
+                                                {myClan.myRole === 'LEADER' && (
+                                                    <button onClick={openEditSettings}
+                                                        className="p-2 rounded-lg bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white transition-colors" title="Clan settings">
+                                                        <Settings size={15} />
                                                     </button>
-                                                </div>
+                                                )}
+                                                <button onClick={handleLeave}
+                                                    className="p-2 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 transition-colors" title="Leave clan">
+                                                    <LogOut size={15} />
+                                                </button>
+                                            </div>
                                             </div>
                                             {myClan.description && (
                                                 <p className="text-xs text-gray-400 border-t border-white/5 pt-3">{myClan.description}</p>
