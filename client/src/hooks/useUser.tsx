@@ -97,8 +97,14 @@ export function UserProvider({ children }: { children: ReactNode }) {
                 const xpNeed = displayLevel * 100;
                 const xpProgress = Math.round((displayXp / xpNeed) * 100);
 
-                // Use DB avatarUrl, fallback to localStorage (set when user equips avatar)
-                const savedAvatar = localStorage.getItem(AVATAR_STORAGE_KEY);
+                // Use DB avatarUrl; fallback to localStorage only if the saved avatar belongs
+                // to the same user (keyed by user id to avoid bleed-over between accounts).
+                const savedAvatarRaw = localStorage.getItem(AVATAR_STORAGE_KEY);
+                let savedAvatar: string | null = null;
+                try {
+                    const parsed = savedAvatarRaw ? JSON.parse(savedAvatarRaw) : null;
+                    if (parsed && parsed.userId === userData.id) savedAvatar = parsed.url;
+                } catch { savedAvatar = null; }
                 const avatarToUse = userData.avatarUrl || savedAvatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${userData.username}`;
 
                 setUser({
@@ -142,10 +148,13 @@ export function UserProvider({ children }: { children: ReactNode }) {
         }
     }, [navigate]);
 
-    // Instantly update avatar in UI + persist to localStorage
+    // Instantly update avatar in UI + persist to localStorage (keyed by user id)
     const setUserAvatar = useCallback((avatarUrl: string) => {
-        localStorage.setItem(AVATAR_STORAGE_KEY, avatarUrl);
-        setUser(prev => prev ? { ...prev, avatar: avatarUrl } : prev);
+        setUser(prev => {
+            if (!prev) return prev;
+            localStorage.setItem(AVATAR_STORAGE_KEY, JSON.stringify({ userId: prev.id, url: avatarUrl }));
+            return { ...prev, avatar: avatarUrl };
+        });
     }, []);
 
     useEffect(() => {

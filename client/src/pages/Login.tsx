@@ -28,6 +28,7 @@ export default function Login() {
             });
             const data = await res.json();
             if (res.ok && data.token) {
+                localStorage.removeItem('moove_user_avatar');
                 localStorage.setItem('token', data.token);
                 if (data.loginBonus) {
                     sessionStorage.setItem('loginBonus', JSON.stringify(data.loginBonus));
