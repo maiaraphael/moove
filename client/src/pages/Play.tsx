@@ -55,7 +55,17 @@ export default function Play() {
                 clanTag: user.clanTag ?? null,
             });
         });
-        skt.on('lobby:authenticated', () => skt.emit('lobby:list'));
+        skt.on('lobby:authenticated', () => {
+            skt.emit('lobby:list');
+            const autoJoin = sessionStorage.getItem('challenge_autoJoin');
+            if (autoJoin) {
+                try {
+                    const { roomId, password } = JSON.parse(autoJoin);
+                    sessionStorage.removeItem('challenge_autoJoin');
+                    skt.emit('lobby:join', { roomId, password });
+                } catch {}
+            }
+        });
         skt.on('lobby:rooms', (rooms: LobbyEntry[]) => setLobbies(rooms));
         skt.on('lobby:room_joined', (room: RoomState) => { setCurrentRoom(room); setShowCreateModal(false); });
         skt.on('lobby:room_updated', (room: RoomState) => setCurrentRoom(room));

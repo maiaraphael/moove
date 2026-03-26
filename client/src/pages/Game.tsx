@@ -442,6 +442,12 @@ export default function Game() {
             }, 4000);
         });
 
+        skt.on('game:card_played', (data: { slot: string; username: string; cardsCount: number }) => {
+            const localIdx = slotToLocalRef.current[data.slot];
+            if (localIdx === 0) return; // own plays tracked separately
+            playHistoryRef.current = [...playHistoryRef.current.slice(-4), { name: data.username, n: data.cardsCount, mine: false }];
+        });
+
         skt.on('game:error', (data: { message: string }) => {
             showToast(`Error: ${data.message}`);
         });
@@ -518,6 +524,8 @@ export default function Game() {
     const [showSurrenderModal, setShowSurrenderModal] = useState(false);
     const [isEmoteOpen, setIsEmoteOpen] = useState(false);
     const [activeEmote, setActiveEmote] = useState<string | null>(null);
+    const [emoteCooldown, setEmoteCooldown] = useState(false);
+    const playHistoryRef = useRef<{ name: string; n: number; mine: boolean }[]>([]);
     const emoteTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     // ── Mobile detection for compact card hand ──
@@ -569,6 +577,8 @@ export default function Game() {
         emoteTimeoutRef.current = setTimeout(() => {
             setActiveEmote(null);
         }, 5000);
+        setEmoteCooldown(true);
+        setTimeout(() => setEmoteCooldown(false), 5000);
         if (isMultiplayer) mpSocketRef.current?.emit('game:emote', { emoji });
     };
 
@@ -737,6 +747,7 @@ export default function Game() {
                 const sortedGroup = sortGroupWithJoker(playedGroup);
                 setTableSets(prev => [...prev, sortedGroup]);
                 setPlayers(prev => prev.map(p => p.id === aiId ? { ...p, cardCount: p.cardCount - playedGroup!.length } : p));
+                playHistoryRef.current = [...playHistoryRef.current.slice(-4), { name: players.find(p => p.id === aiId)?.name || aiId, n: playedGroup.length, mine: false }];
             } else if (playedToTable) {
                 // Play single card to existing table set
                 setAllHands(prev => ({
@@ -1093,6 +1104,7 @@ export default function Game() {
 
         if (cardsToRemove.length > 0) {
             setHasPlayedThisTurn(true);
+            playHistoryRef.current = [...playHistoryRef.current.slice(-4), { name: user?.name || 'You', n: cardsToRemove.length, mine: true }];
             // In multiplayer, also send to server
             if (isMultiplayer && mpSocketRef.current) {
                 mpSocketRef.current.emit('game:play_cards', {
@@ -1837,6 +1849,37 @@ export default function Game() {
 
                                         {/* Buttons */}
                                         <div className="flex gap-3 mt-1">
+                                            {playHistoryRef.current.length > 0 && (
+                                                <motion.div
+                                                    initial={{ opacity: 0, y: 8 }}
+                                                    animate={{ opacity: 1, y: 0 }}
+                                                    transition={{ delay: 0.5 }}
+                                                    className="w-full mb-3"
+                                                >
+                                                    <div className="flex items-center justify-between mb-1.5">
+                                                        <p className="text-[9px] font-black tracking-[0.2em] uppercase text-white/30">Últimas jogadas</p>
+                                                        <button
+                                                            onClick={() => {
+                                                                const lines = playHistoryRef.current.map((p, i) =>
+                                                                    `${i + 1}. ${p.name}: ${p.n} carta${p.n !== 1 ? 's' : ''}`
+                                                                ).join('\n');
+                                                                navigator.clipboard.writeText(`Moove — Últimas jogadas:\n${lines}`);
+                                                            }}
+                                                            className="text-[9px] font-bold text-white/30 hover:text-[#b026ff] transition-colors uppercase tracking-widest px-2 py-0.5 rounded border border-white/10 hover:border-[#b026ff]/40"
+                                                        >Copiar</button>
+                                                    </div>
+                                                    <div className="space-y-1">
+                                                        {playHistoryRef.current.slice().reverse().map((p, i) => (
+                                                            <div key={i} className={`flex justify-between items-center px-3 py-1.5 rounded-lg text-xs ${
+                                                                p.mine ? 'bg-[#b026ff]/10 border border-[#b026ff]/20' : 'bg-white/5 border border-white/5'
+                                                            }`}>
+                                                                <span className={p.mine ? 'text-[#d685ff] font-bold' : 'text-gray-300'}>{p.name}</span>
+                                                                <span className="text-white/50 font-black">{p.n} carta{p.n !== 1 ? 's' : ''}</span>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </motion.div>
+                                            )}
                                             <motion.button
                                                 whileHover={{ scale: 1.02 }}
                                                 whileTap={{ scale: 0.97 }}
@@ -2116,16 +2159,19 @@ export default function Game() {
                                         <img src={myPlayer.avatar} alt="You" className="w-full h-full rounded-full object-cover" />
                                     </div>
                                 )}
-                                {/* Active Emote render */}
                                 <AnimatePresence>
                                     {activeEmote && (
                                         <motion.div
-                                            initial={{ opacity: 0, scale: 0.5, y: 10 }}
-                                            animate={{ opacity: 1, scale: 1.5, y: -45 }}
-                                            exit={{ opacity: 0, scale: 0.5, y: 0 }}
-                                            className="absolute top-0 left-1/2 -translate-x-1/2 -mt-2 z-50 text-4xl drop-shadow-[0_0_15px_rgba(255,255,255,0.8)] pointer-events-none"
+                                            key={activeEmote + Date.now()}
+                                            initial={{ opacity: 0, scale: 0, y: 10 }}
+                                            animate={{ opacity: 1, scale: 2, y: -55 }}
+                                            exit={{ opacity: 0, scale: 0.5, y: -65 }}
+                                            transition={{ type: 'spring', stiffness: 400, damping: 14 }}
+                                            className="absolute top-0 left-1/2 -translate-x-1/2 -mt-2 z-50 pointer-events-none flex items-center justify-center"
                                         >
-                                            {activeEmote}
+                                            <div className="p-2 bg-black/70 backdrop-blur-sm rounded-2xl border border-white/20 shadow-[0_0_25px_rgba(176,38,255,0.4)]">
+                                                <span className="text-3xl drop-shadow-[0_0_15px_rgba(255,255,255,0.9)]">{activeEmote}</span>
+                                            </div>
                                         </motion.div>
                                     )}
                                 </AnimatePresence>
@@ -2170,13 +2216,13 @@ export default function Game() {
                                 </button>
                             )}
                             <div className="relative">
-                                <button onClick={() => setIsEmoteOpen(!isEmoteOpen)} className="w-10 h-10 bg-[#120a1f] hover:bg-white/10 rounded-full border border-white/10 transition-colors flex items-center justify-center cursor-pointer group shadow-xl">
+                                <button onClick={() => !emoteCooldown && setIsEmoteOpen(!isEmoteOpen)} className={`w-10 h-10 bg-[#120a1f] rounded-full border transition-colors flex items-center justify-center cursor-pointer group shadow-xl ${emoteCooldown ? 'border-white/5 opacity-50 cursor-not-allowed' : 'hover:bg-white/10 border-white/10'}`}>
                                     <Smile className="text-gray-400 group-hover:text-white transition-colors" size={20} />
                                 </button>
                                 <AnimatePresence>
                                     {isEmoteOpen && (
-                                        <motion.div initial={{ opacity: 0, scale: 0.8, y: 10 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.8, y: 10 }} className="absolute bottom-full left-0 mb-3 bg-[#120a1f]/90 backdrop-blur-xl border border-white/10 rounded-2xl p-3 shadow-[0_0_30px_rgba(0,0,0,0.8)] grid grid-cols-3 gap-3 z-50 w-[148px]">
-                                            {['😎', '😡', '😭', '💀', '🔥', '🤡'].map(emoji => (
+                                        <motion.div initial={{ opacity: 0, scale: 0.8, y: 10 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.8, y: 10 }} className="absolute bottom-full left-0 mb-3 bg-[#120a1f]/90 backdrop-blur-xl border border-white/10 rounded-2xl p-3 shadow-[0_0_30px_rgba(0,0,0,0.8)] grid grid-cols-4 gap-2 z-50 w-[188px]">
+                                            {['😎', '😡', '😭', '💀', '🔥', '🤡', '🫡', '👑', '⚡', '🤝', '🎉', '😂'].map(emoji => (
                                                 <button key={emoji} onClick={() => playEmote(emoji)} className="w-10 h-10 flex items-center justify-center text-2xl hover:bg-white/10 rounded-xl transition-colors">
                                                     {emoji}
                                                 </button>

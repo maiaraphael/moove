@@ -1,7 +1,8 @@
 import { createContext, useContext, useEffect, useRef, useState, useCallback } from 'react';
 import { io as createSocket, Socket } from 'socket.io-client';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Trophy, CheckCircle, X, Star, UserPlus, Users } from 'lucide-react';
+import { Trophy, CheckCircle, X, Star, UserPlus, Users, Swords } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 // ─── Toast types (auto-dismiss) ───────────────────────────────────────────────
 interface ToastNotif {
@@ -67,6 +68,46 @@ const NotificationContext = createContext<NotificationContextValue>({
 
 export function useNotify() {
     return useContext(NotificationContext);
+}
+
+// ─── Challenge toast component ───────────────────────────────────────────────
+function ChallengeToast({ from, onAccept, onDecline }: { from: string; onAccept: () => void; onDecline: () => void }) {
+    useEffect(() => {
+        const t = setTimeout(onDecline, 30000);
+        return () => clearTimeout(t);
+    }, [onDecline]);
+    return (
+        <motion.div
+            initial={{ opacity: 0, x: 80, scale: 0.9 }}
+            animate={{ opacity: 1, x: 0, scale: 1 }}
+            exit={{ opacity: 0, x: 80, scale: 0.9 }}
+            transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+            className="relative flex flex-col gap-3 w-80 rounded-xl border border-orange-500/40 bg-gradient-to-r from-orange-500/15 to-[#0f0814] px-4 py-3 shadow-2xl backdrop-blur-md select-none"
+        >
+            <button className="absolute top-2 right-2 text-white/30 hover:text-white/70 transition-colors" onClick={onDecline}>
+                <X size={14} />
+            </button>
+            <div className="flex items-center gap-3">
+                <div className="shrink-0 w-9 h-9 rounded-full bg-orange-500/20 border border-orange-500/40 flex items-center justify-center text-orange-400">
+                    <Swords size={17} />
+                </div>
+                <div className="flex flex-col gap-0.5 min-w-0">
+                    <span className="text-[10px] font-black tracking-[0.15em] uppercase text-white/50">Desafio recebido</span>
+                    <span className="text-sm font-bold text-white leading-tight truncate">
+                        <span className="text-orange-400">{from}</span> desafia você!
+                    </span>
+                </div>
+            </div>
+            <div className="flex gap-2">
+                <button onClick={onAccept} className="flex-1 py-1.5 rounded-lg bg-orange-500/20 hover:bg-orange-500/35 border border-orange-500/50 text-orange-300 text-xs font-black uppercase tracking-widest transition-all">
+                    Aceitar
+                </button>
+                <button onClick={onDecline} className="flex-1 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-gray-400 text-xs font-black uppercase tracking-widest transition-all">
+                    Recusar
+                </button>
+            </div>
+        </motion.div>
+    );
 }
 
 // ─── Toast component ──────────────────────────────────────────────────────────
@@ -161,7 +202,7 @@ function FriendToast({ from, type, onDismiss }: { from: string; type: 'friend_re
     );
 }
 
-interface FriendToastItem { id: string; from: string; type: 'friend_request' | 'friend_accepted' }
+interface FriendToastItem { id: string; from: string; fromId: string; type: 'friend_request' | 'friend_accepted' | 'friend_challenge'; challengeId?: string }
 
 export function NotificationProvider({ children, userId, token }: { children: React.ReactNode; userId?: string; token?: string }) {
     const [toasts, setToasts] = useState<ToastNotif[]>([]);
@@ -172,6 +213,9 @@ export function NotificationProvider({ children, userId, token }: { children: Re
     const [clanMessages, setClanMessages] = useState<DmMessage[]>([]);
     const socketRef = useRef<Socket | null>(null);
     const userIdRef = useRef<string | undefined>(userId);
+    const navigate = useNavigate();
+    const navigateRef = useRef(navigate);
+    useEffect(() => { navigateRef.current = navigate; }, [navigate]);
 
     const notify = useCallback((n: Omit<ToastNotif, 'id'>) => {
         const id = Math.random().toString(36).slice(2);
@@ -249,19 +293,28 @@ export function NotificationProvider({ children, userId, token }: { children: Re
         skt.on('notification:friend_request', (data: { fromId: string; from: string }) => {
             const id = Math.random().toString(36).slice(2);
             setBellItems(prev => [{ id, type: 'friend_request', from: data.from, fromId: data.fromId, read: false, timestamp: Date.now() }, ...prev.slice(0, 49)]);
-            setFriendToasts(prev => [...prev.slice(-3), { id: id + '_toast', from: data.from, type: 'friend_request' }]);
+            setFriendToasts(prev => [...prev.slice(-3), { id: id + '_toast', from: data.from, fromId: data.fromId, type: 'friend_request' }]);
         });
 
         skt.on('notification:friend_accepted', (data: { fromId: string; from: string }) => {
             const id = Math.random().toString(36).slice(2);
             setBellItems(prev => [{ id, type: 'friend_accepted', from: data.from, fromId: data.fromId, read: false, timestamp: Date.now() }, ...prev.slice(0, 49)]);
-            setFriendToasts(prev => [...prev.slice(-3), { id: id + '_toast', from: data.from, type: 'friend_accepted' }]);
+            setFriendToasts(prev => [...prev.slice(-3), { id: id + '_toast', from: data.from, fromId: data.fromId, type: 'friend_accepted' }]);
         });
 
         skt.on('notification:friend_challenge', (data: { fromId: string; from: string; challengeId: string }) => {
             const id = Math.random().toString(36).slice(2);
             setBellItems(prev => [{ id, type: 'friend_challenge', from: data.from, fromId: data.fromId, challengeId: data.challengeId, read: false, timestamp: Date.now() }, ...prev.slice(0, 49)]);
-            setFriendToasts(prev => [...prev.slice(-3), { id: id + '_toast', from: data.from, type: 'friend_challenge' as any }]);
+            setFriendToasts(prev => [...prev.slice(-3), { id: id + '_toast', from: data.from, fromId: data.fromId, type: 'friend_challenge', challengeId: data.challengeId }]);
+        });
+
+        skt.on('challenge:room_ready', (data: { roomId: string; password: string }) => {
+            sessionStorage.setItem('challenge_autoJoin', JSON.stringify(data));
+            navigateRef.current('/play');
+        });
+
+        skt.on('challenge:declined', (data: { from: string }) => {
+            notify({ type: 'mission', title: `${data.from} recusou o desafio` });
         });
 
         skt.on('dm:receive', (data: { fromId: string; from: string; avatar: string; message: string; timestamp: string }) => {
@@ -296,7 +349,21 @@ export function NotificationProvider({ children, userId, token }: { children: Re
                 <AnimatePresence mode="popLayout">
                     {friendToasts.map(t => (
                         <div key={t.id} className="pointer-events-auto">
-                            <FriendToast from={t.from} type={t.type} onDismiss={() => dismissFriendToast(t.id)} />
+                            {t.type === 'friend_challenge' && t.fromId ? (
+                                <ChallengeToast
+                                    from={t.from}
+                                    onAccept={() => {
+                                        socketRef.current?.emit('challenge:create_room', { challengerId: t.fromId });
+                                        dismissFriendToast(t.id);
+                                    }}
+                                    onDecline={() => {
+                                        if (t.fromId) socketRef.current?.emit('challenge:declined', { toId: t.fromId });
+                                        dismissFriendToast(t.id);
+                                    }}
+                                />
+                            ) : (
+                                <FriendToast from={t.from} type={t.type as 'friend_request' | 'friend_accepted'} onDismiss={() => dismissFriendToast(t.id)} />
+                            )}
                         </div>
                     ))}
                 </AnimatePresence>

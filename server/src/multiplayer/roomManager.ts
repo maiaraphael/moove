@@ -924,6 +924,7 @@ export const setupMultiplayer = (io: Server) => {
             if (room.isPrivate && room.password && room.password !== data.password) { socket.emit('lobby:error', { message: 'Incorrect password' }); return; }
             if (room.players.find(p => p.socketId === socket.id)) { socket.emit('lobby:error', { message: 'Already in this room' }); return; }
             leaveCurrentRoom();
+            if (room.players.length === 0) room.hostSocketId = socket.id; // challenge room: first joiner becomes host
             const slot = `p${room.players.length}`;
             room.players.push({ socketId: socket.id, userId: user.userId, username: user.username, avatar: user.avatar, sleeve: '', slot, clanTag: user.clanTag ?? null });
             socketUsers.set(socket.id, { ...user, currentRoomId: room.id });
@@ -1140,6 +1141,7 @@ export const setupMultiplayer = (io: Server) => {
             gs.tableSets = data.newTableSets;
             gs.hasPlayedThisTurn = true;
             gs.afkStrikes[myPlayer.slot] = 0; // reset AFK counter on manual action
+            io.to(room.id).emit('game:card_played', { slot: myPlayer.slot, username: myPlayer.username, cardsCount: playedCards.length });
             if (gs.hands[myPlayer.slot].length === 0) { endGame(io, room, myPlayer.slot); return; }
             broadcastGameState(io, room);
         });
@@ -1170,6 +1172,36 @@ export const setupMultiplayer = (io: Server) => {
             const myPlayer = room.players.find(p => p.socketId === socket.id);
             if (!myPlayer) return;
             socket.to(room.id).emit('game:emote_received', { slot: myPlayer.slot, username: myPlayer.username, emoji: data.emoji });
+        });
+
+        // ── CHALLENGE: CREATE ROOM ──
+        socket.on('challenge:create_room', (data: { challengerId: string }) => {
+            const user = getUser();
+            if (!user) return;
+            const roomId = crypto.randomUUID();
+            const password = Math.random().toString(36).slice(2, 8).toUpperCase();
+            const room: Room = {
+                id: roomId,
+                name: `Desafio: ${user.username}`,
+                hostSocketId: '',
+                players: [],
+                maxPlayers: 2,
+                turnTime: 45,
+                isPrivate: true,
+                password,
+                status: 'waiting',
+                createdAt: Date.now(),
+            };
+            rooms.set(roomId, room);
+            socket.emit('challenge:room_ready', { roomId, password });
+            emitToUser(data.challengerId, 'challenge:room_ready', { roomId, password });
+        });
+
+        // ── CHALLENGE: DECLINED ──
+        socket.on('challenge:declined', (data: { toId: string }) => {
+            const user = getUser();
+            if (!user) return;
+            emitToUser(data.toId, 'challenge:declined', { from: user.username });
         });
 
         // ── GAME: SURRENDER ──

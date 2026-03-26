@@ -106,9 +106,13 @@ export default function Friends() {
         try { await apiFetch(`/${userId}`, 'DELETE'); await load(); } catch {}
     }
 
-    async function handleChallenge(userId: string) {
+    const [challengeSent, setChallengeSent] = useState<string | null>(null);
+
+    async function handleChallenge(userId: string, username: string) {
         try {
             await apiFetch(`/challenge/${userId}`, 'POST');
+            setChallengeSent(userId);
+            setTimeout(() => setChallengeSent(null), 3000);
         } catch (err: any) {
             alert(err.message || 'Could not send challenge');
         }
@@ -212,11 +216,12 @@ export default function Friends() {
                                                             </span>
                                                         )}
                                                     </button>
-                                                    <button onClick={() => handleChallenge(f.id)}
-                                                        className="p-2 rounded-lg bg-[#b026ff]/10 hover:bg-[#b026ff]/25 hover:text-[#d685ff] text-[#b026ff] transition-colors"
+                                                    <button onClick={() => handleChallenge(f.id, f.username)}
+                                                        className={`p-2 rounded-lg transition-colors ${challengeSent === f.id ? 'bg-green-500/20 text-green-400 border border-green-500/30' : 'bg-[#b026ff]/10 hover:bg-[#b026ff]/25 hover:text-[#d685ff] text-[#b026ff]'}`}
                                                         title="Challenge to a match"
+                                                        disabled={challengeSent === f.id}
                                                     >
-                                                        <Swords size={15} />
+                                                        {challengeSent === f.id ? <Check size={15} /> : <Swords size={15} />}
                                                     </button>
                                                     <button onClick={() => handleRemove(f.id)}
                                                         className="p-2 rounded-lg bg-white/5 hover:bg-red-500/20 hover:text-red-400 text-gray-500 transition-colors"
