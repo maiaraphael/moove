@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
     Home, Gamepad2, Trophy, User, Layers, ShoppingBag, Medal, Target, ArrowRight,
     CheckCircle2, Users, Shield, Swords, Zap, TrendingUp, Star, Crown,
-    ChevronRight, Flame, Clock, Sparkles, Play, Diamond, CreditCard
+    ChevronRight, Flame, Clock, Sparkles, Play, Diamond, CreditCard, X, ShoppingCart
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import TopHeader from '../components/ui/TopHeader';
@@ -76,7 +76,7 @@ function getGreeting(t: (key: string) => string) {
 
 export default function Dashboard() {
     const navigate = useNavigate();
-    const { user, isLoading: isUserLoading } = useUser();
+    const { user, isLoading: isUserLoading, refreshUser } = useUser();
     const { t } = useTranslation();
     const [tournaments, setTournaments] = useState<Tournament[]>([]);
     const [missions, setMissions] = useState<any[]>([]);
@@ -86,6 +86,31 @@ export default function Dashboard() {
     const [top3, setTop3] = useState<LeaderboardEntry[]>([]);
     const [featuredItems, setFeaturedItems] = useState<StoreItem[]>([]);
     const [currentFeaturedIdx, setCurrentFeaturedIdx] = useState(0);
+    const [purchaseModal, setPurchaseModal] = useState<StoreItem | null>(null);
+    const [buyStatus, setBuyStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+
+    const confirmPurchase = async () => {
+        if (!purchaseModal) return;
+        setBuyStatus('loading');
+        try {
+            const token = localStorage.getItem('token');
+            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/store/buy`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ itemId: purchaseModal.id })
+            });
+            if (res.ok) {
+                setBuyStatus('success');
+                setTimeout(() => { setPurchaseModal(null); setBuyStatus('idle'); refreshUser(); }, 1500);
+            } else {
+                setBuyStatus('error');
+                setTimeout(() => setBuyStatus('idle'), 3000);
+            }
+        } catch {
+            setBuyStatus('error');
+            setTimeout(() => setBuyStatus('idle'), 3000);
+        }
+    };
 
     useEffect(() => {
         if (!localStorage.getItem('tutorialSeen')) setShowOnboarding(true);
@@ -188,6 +213,79 @@ export default function Dashboard() {
             <TopHeader user={user} />
             <LoginBonusModal bonus={loginBonus} onClose={() => setLoginBonus(null)} />
             <AnimatePresence>{showOnboarding && <OnboardingModal onClose={() => { localStorage.setItem('tutorialSeen', '1'); setShowOnboarding(false); }} />}</AnimatePresence>
+
+            {/* ── QUICK BUY MODAL ── */}
+            <AnimatePresence>
+                {purchaseModal && (
+                    <motion.div
+                        initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                        className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
+                        onClick={() => setPurchaseModal(null)}
+                    >
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.9, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                            onClick={e => e.stopPropagation()}
+                            className="relative w-full max-w-xs bg-[#120a1f] border border-white/10 rounded-3xl overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.8)] flex flex-col"
+                        >
+                            {/* Header image */}
+                            <div className={`h-40 relative overflow-hidden flex items-center justify-center bg-gradient-to-b ${purchaseModal.rarity === 'Legendary' ? 'from-yellow-500/20' : purchaseModal.rarity === 'Epic' ? 'from-purple-500/20' : purchaseModal.rarity === 'Rare' ? 'from-blue-500/20' : 'from-gray-500/20'} to-[#120a1f]`}>
+                                <div className="absolute top-0 w-full h-1 bg-gradient-to-r from-transparent via-[#b026ff] to-transparent opacity-50" />
+                                {purchaseModal.type === 'PET' && purchaseModal.petConfig ? (
+                                    <PetViewer petConfig={purchaseModal.petConfig} size={110} withBackground={false} />
+                                ) : purchaseModal.type === 'FRAME' && purchaseModal.frameConfig ? (
+                                    <FramedAvatar src="" size={90} frameConfig={purchaseModal.frameConfig} previewOnly />
+                                ) : purchaseModal.imageUrl ? (
+                                    <img src={purchaseModal.imageUrl} alt={purchaseModal.name} className="w-28 h-28 object-contain drop-shadow-2xl" />
+                                ) : (
+                                    <Star size={36} className={(RARITY_STYLES[purchaseModal.rarity] || RARITY_STYLES.Common).color} />
+                                )}
+                            </div>
+                            {/* Close button */}
+                            <button onClick={() => setPurchaseModal(null)} className="absolute top-3 right-3 w-7 h-7 rounded-full bg-black/50 flex items-center justify-center hover:bg-black/80 transition-colors">
+                                <X size={14} className="text-white/60" />
+                            </button>
+
+                            {/* Content */}
+                            <div className="p-5 flex flex-col items-center text-center">
+                                <span className={`text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded mb-2 ${(RARITY_STYLES[purchaseModal.rarity] || RARITY_STYLES.Common).color} bg-white/5`}>
+                                    {purchaseModal.rarity}
+                                </span>
+                                <h2 className="text-lg font-black uppercase tracking-tighter mb-4">{purchaseModal.name}</h2>
+
+                                <div className="w-full bg-black/40 rounded-xl p-3 border border-white/5 flex items-center justify-between mb-4">
+                                    <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Price</span>
+                                    <div className="flex items-center gap-2">
+                                        {purchaseModal.currency === 'Gems'
+                                            ? <Diamond size={16} className="text-[#b026ff]" />
+                                            : <CreditCard size={16} className="text-yellow-400" />}
+                                        <span className="text-xl font-black">{purchaseModal.price.toLocaleString()}</span>
+                                    </div>
+                                </div>
+
+                                {buyStatus === 'success' ? (
+                                    <div className="flex items-center gap-2 text-green-400 font-black text-sm py-3">
+                                        <CheckCircle2 size={18} /> Purchase successful!
+                                    </div>
+                                ) : buyStatus === 'error' ? (
+                                    <div className="text-red-400 font-bold text-xs py-3">Purchase failed. Check your balance.</div>
+                                ) : (
+                                    <button
+                                        onClick={confirmPurchase}
+                                        disabled={buyStatus === 'loading'}
+                                        className="w-full py-3 rounded-2xl bg-[#b026ff] hover:bg-[#c040ff] disabled:opacity-60 font-black uppercase tracking-widest text-white transition-all shadow-[0_0_20px_rgba(176,38,255,0.4)] flex items-center justify-center gap-2"
+                                    >
+                                        {buyStatus === 'loading' ? (
+                                            <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                        ) : (
+                                            <><ShoppingCart size={14} /> Confirm Purchase</>
+                                        )}
+                                    </button>
+                                )}
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
 
             <main className="max-w-7xl mx-auto px-4 sm:px-6 pt-6 pb-12 relative z-10 space-y-10">
 
@@ -467,7 +565,7 @@ export default function Dashboard() {
                                         transition={{ delay: 0.45 + idx * 0.07 }}
                                         whileHover={{ y: -4, scale: 1.02 }}
                                         onClick={() => navigate('/store')}
-                                        className={`relative bg-[#120a1f]/80 border ${rs.bg} rounded-2xl p-3 cursor-pointer transition-all ${rs.glow} overflow-hidden`}
+                                        className={`group relative bg-[#120a1f]/80 border ${rs.bg} rounded-2xl p-3 cursor-pointer transition-all ${rs.glow} overflow-hidden`}
                                     >
                                         {/* Rarity glow bg */}
                                         {item.rarity === 'Legendary' && (
@@ -503,6 +601,13 @@ export default function Dashboard() {
                                             } {item.price.toLocaleString()}
                                             </span>
                                         </div>
+                                        {/* BUY button — appears on hover */}
+                                        <button
+                                            onClick={e => { e.stopPropagation(); setPurchaseModal(item); setBuyStatus('idle'); }}
+                                            className="mt-2 w-full py-1.5 rounded-xl bg-[#b026ff]/80 hover:bg-[#b026ff] text-white text-[10px] font-black uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity duration-150 flex items-center justify-center gap-1"
+                                        >
+                                            <ShoppingCart size={10} /> Buy
+                                        </button>
                                     </motion.div>
                                 );
                             })}
