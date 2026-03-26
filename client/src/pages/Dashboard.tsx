@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
     Home, Gamepad2, Trophy, User, Layers, ShoppingBag, Medal, Target, ArrowRight,
     CheckCircle2, Users, Shield, Swords, Zap, TrendingUp, Star, Crown,
-    ChevronRight, Flame, Clock, Sparkles, Play
+    ChevronRight, Flame, Clock, Sparkles, Play, Diamond, CreditCard
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import TopHeader from '../components/ui/TopHeader';
@@ -496,8 +496,11 @@ export default function Dashboard() {
                                         <p className="text-xs font-bold text-white truncate">{item.name}</p>
                                         <div className="flex items-center justify-between mt-1.5">
                                             <span className={`text-[9px] font-black uppercase tracking-wider ${rs.color}`}>{rs.label}</span>
-                                            <span className="text-xs font-black text-white">
-                                            {item.currency === 'Gems' ? '??' : '??'} {item.price.toLocaleString()}
+                                            <span className="text-xs font-black text-white flex items-center gap-1">
+                                            {item.currency === 'Gems'
+                                                ? <Diamond size={11} className="text-[#b026ff] fill-[#b026ff]/30 shrink-0" />
+                                                : <CreditCard size={11} className="text-yellow-400 shrink-0" />
+                                            } {item.price.toLocaleString()}
                                             </span>
                                         </div>
                                     </motion.div>
