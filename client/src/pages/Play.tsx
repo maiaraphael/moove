@@ -44,7 +44,7 @@ export default function Play() {
     // Connect socket when user loads
     useEffect(() => {
         if (!user) return;
-        const skt = createSocket(import.meta.env.VITE_API_URL, { transports: ['websocket'], reconnection: true });
+        const skt = createSocket(import.meta.env.VITE_API_URL, { transports: ['websocket', 'polling'], reconnection: true });
         socketRef.current = skt;
         skt.on('connect', () => {
             skt.emit('lobby:authenticate', {
