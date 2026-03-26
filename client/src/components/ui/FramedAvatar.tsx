@@ -108,6 +108,7 @@ export default function FramedAvatar({
     frameConfig,
     rounded = 'full',
     className = '',
+    previewOnly = false,
 }: {
     src: string;
     alt?: string;
@@ -115,12 +116,17 @@ export default function FramedAvatar({
     frameConfig?: FrameConfig | null;
     rounded?: 'full' | 'xl';
     className?: string;
+    previewOnly?: boolean;
 }) {
     useEffect(() => { injectKeyframes(); }, []);
 
     const rFull = rounded === 'full' ? '50%' : '0.75rem';
     const rInner = rounded === 'full' ? '50%' : '0.65rem';
     const sizeStyle: React.CSSProperties = { width: size, height: size, minWidth: size, minHeight: size };
+
+    const avatarInner = previewOnly
+        ? <div style={{ width: '100%', height: '100%', background: 'radial-gradient(circle at 35% 35%, #1e0a35, #0a0516)' }} />
+        : <img src={src} alt={alt} className="w-full h-full object-cover" />;
 
     /* ── No frame: default purple border ── */
     if (!frameConfig) {
@@ -129,7 +135,7 @@ export default function FramedAvatar({
                 className={`overflow-hidden flex-shrink-0 ${className}`}
                 style={{ ...sizeStyle, borderRadius: rFull, border: '2px solid #b026ff', boxShadow: '0 0 15px rgba(176,38,255,0.4)' }}
             >
-                <img src={src} alt={alt} className="w-full h-full object-cover" />
+                {avatarInner}
             </div>
         );
     }
@@ -211,7 +217,7 @@ export default function FramedAvatar({
                     overflow: 'hidden',
                     zIndex: 1,
                 }}>
-                    <img src={src} alt={alt} className="w-full h-full object-cover" />
+                    {avatarInner}
                 </div>
             </div>
         );
@@ -229,7 +235,7 @@ export default function FramedAvatar({
                     border: `${bw}px solid transparent`,
                 }}
             >
-                <img src={src} alt={alt} className="w-full h-full object-cover" />
+                {avatarInner}
             </div>
         );
     }
@@ -259,7 +265,7 @@ export default function FramedAvatar({
                 animation: ANIMS[effect],
             }}
         >
-            <img src={src} alt={alt} className="w-full h-full object-cover" />
+            {avatarInner}
         </div>
     );
 }

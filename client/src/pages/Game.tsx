@@ -1256,16 +1256,17 @@ export default function Game() {
             return (
                 <motion.div
                     key={card.id}
-                    layoutId={card.id}
+                    layoutId={isHand ? undefined : card.id}
                     drag={isHand}
                     dragConstraints={isHand ? undefined : { left: 0, right: 0, top: 0, bottom: 0 }}
                     dragSnapToOrigin={isHand ? true : undefined}
-                    dragElastic={0.2}
+                    dragElastic={0}
+                    dragMomentum={false}
                     onDragEnd={(e, info) => { if (isHand) handleCardDragEnd(card, info); }}
                     onClick={() => toggleCardSelection(card)}
                     whileHover={isTable ? { y: -2, scale: 1.04 } : { y: isSelected ? -20 : -12, scale: 1.06 }}
                     animate={{ y: isSelected ? -20 : 0 }}
-                    className={`relative ${sizeClasses} rounded-lg sm:rounded-xl cursor-pointer active:cursor-grabbing border z-10 overflow-hidden transition-all duration-300
+                    className={`relative ${sizeClasses} rounded-lg sm:rounded-xl cursor-pointer active:cursor-grabbing border z-10 overflow-hidden transition-[box-shadow,border-color,opacity] duration-200
                         ${isSelected ? 'scale-105 z-20 border-white/80 shadow-[0_0_35px_rgba(255,255,255,0.5)]' : 'border-white/20 shadow-[0_0_20px_rgba(99,0,200,0.6)] hover:border-white/40'}
                     `}
                     style={{ background: 'linear-gradient(135deg, #0a0012 0%, #1a0035 40%, #0d001f 70%, #120028 100%)' }}
@@ -1356,16 +1357,17 @@ export default function Game() {
         return (
             <motion.div
                 key={card.id}
-                layoutId={card.id}
+                layoutId={isHand ? undefined : card.id}
                 drag={isHand}
                 dragConstraints={isHand ? undefined : { left: 0, right: 0, top: 0, bottom: 0 }}
                 dragSnapToOrigin={isHand ? true : undefined}
-                dragElastic={0.2}
+                dragElastic={0}
+                dragMomentum={false}
                 onDragEnd={(e, info) => { if (isHand) handleCardDragEnd(card, info); }}
                 onClick={() => toggleCardSelection(card)}
                 whileHover={isTable ? { y: -3, scale: 1.04 } : { y: isSelected ? -20 : -12, scale: 1.06 }}
                 animate={{ y: isSelected ? -20 : 0 }}
-                className={`relative ${sizeClasses} rounded-lg sm:rounded-xl cursor-pointer active:cursor-grabbing border z-10 overflow-hidden transition-all duration-200`}
+                className={`relative ${sizeClasses} rounded-lg sm:rounded-xl cursor-pointer active:cursor-grabbing border z-10 overflow-hidden transition-[box-shadow,border-color,opacity] duration-200`}
                 style={{
                     background: theme.bg,
                     borderColor: isSelected ? 'rgba(255,255,255,0.9)' : theme.border,

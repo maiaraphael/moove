@@ -344,9 +344,10 @@ export default function Store() {
                                             ) : item.category === 'Profile Frames' && item.frameConfig ? (
                                                 <div className="relative z-10 flex items-center justify-center w-full h-full py-5">
                                                     <FramedAvatar
-                                                        src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${item.id}`}
+                                                        src=""
                                                         size={110}
                                                         frameConfig={item.frameConfig}
+                                                        previewOnly
                                                     />
                                                 </div>
                                             ) : (
@@ -546,9 +547,10 @@ export default function Store() {
                                     <PetViewer petConfig={purchaseModal.petConfig} size={140} withBackground={false} />
                                 ) : purchaseModal.category === 'Profile Frames' && purchaseModal.frameConfig ? (
                                     <FramedAvatar
-                                        src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${purchaseModal.id}`}
+                                        src=""
                                         size={96}
                                         frameConfig={purchaseModal.frameConfig}
+                                        previewOnly
                                     />
                                 ) : (
                                     <img src={purchaseModal.image} alt={purchaseModal.name} className="w-32 h-32 object-contain drop-shadow-2xl" />
