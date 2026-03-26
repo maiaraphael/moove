@@ -296,7 +296,7 @@ export default function Friends() {
                         { id: 'clan', icon: Shield, link: '/clan' },
                         { id: 'profile', icon: User, link: '/profile' },
                         { id: 'cards', icon: Layers, link: '/collection' },
-                        { id: 'shop', icon: ShoppingBag, link: '/shop' },
+                        { id: 'shop', icon: ShoppingBag, link: '/store' },
                     ].map((item) => {
                         const Icon = item.icon;
                         const isActive = location.pathname === item.link;

@@ -52,7 +52,8 @@ function AppRoutes() {
         <Route path="/tournaments" element={<Tournaments />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/collection" element={<Collection />} />
-        <Route path="/shop" element={<Store />} />
+        <Route path="/shop" element={<Navigate to="/store" replace />} />
+        <Route path="/store" element={<Store />} />
         <Route path="/game" element={<Game />} />
         <Route path="/nexus-command" element={<ProtectedAdminRoute><AdminDashboard /></ProtectedAdminRoute>} />
         <Route path="/battlepass" element={<BattlePass />} />

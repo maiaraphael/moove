@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     Home, Gamepad2, Trophy, User, Layers, ShoppingBag, Medal, Target, ArrowRight,
@@ -61,9 +61,9 @@ const RARITY_STYLES: Record<string, { label: string; color: string; bg: string; 
 };
 
 const PODIUM_STYLES = [
-    { badge: '🥈', border: 'border-gray-400/40', label: 'text-gray-300', offset: 'translate-y-3' },
-    { badge: '👑', border: 'border-yellow-400/50', label: 'text-yellow-300', offset: '' },
-    { badge: '🥉', border: 'border-amber-600/40', label: 'text-amber-500', offset: 'translate-y-5' },
+    { badge: '??', border: 'border-gray-400/40', label: 'text-gray-300', offset: 'translate-y-3' },
+    { badge: '??', border: 'border-yellow-400/50', label: 'text-yellow-300', offset: '' },
+    { badge: '??', border: 'border-amber-600/40', label: 'text-amber-500', offset: 'translate-y-5' },
 ];
 const PODIUM_ORDER = [1, 0, 2]; // silver center-left, gold center, bronze center-right
 
@@ -191,9 +191,9 @@ export default function Dashboard() {
 
             <main className="max-w-7xl mx-auto px-4 sm:px-6 pt-6 pb-12 relative z-10 space-y-10">
 
-                {/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
-                {/* HERO â€” Player Card + Play CTA                       */}
-                {/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
+                {/* ═══════════════════════════════════════════════════ */}
+                {/* HERO — Player Card + Play CTA                       */}
+                {/* ═══════════════════════════════════════════════════ */}
                 <motion.section
                     initial={{ opacity: 0, y: 24 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -290,9 +290,9 @@ export default function Dashboard() {
                     </div>
                 </motion.section>
 
-                {/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
+                {/* ═══════════════════════════════════════════════════ */}
                 {/* TOP 3 DO RANKING                                    */}
-                {/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
+                {/* ═══════════════════════════════════════════════════ */}
                 {top3.length === 3 && (
                     <motion.section
                         initial={{ opacity: 0, y: 20 }}
@@ -347,9 +347,9 @@ export default function Dashboard() {
                     </motion.section>
                 )}
 
-                {/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
-                {/* MISSÃ•ES + TORNEIOS (grid 2-col)                     */}
-                {/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
+                {/* ═══════════════════════════════════════════════════ */}
+                {/* MISSÕES + TORNEIOS (grid 2-col)                     */}
+                {/* ═══════════════════════════════════════════════════ */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     {/* DAILY MISSIONS */}
                     <motion.section initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.25 }}>
@@ -441,9 +441,9 @@ export default function Dashboard() {
                     </motion.section>
                 </div>
 
-                {/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
+                {/* ═══════════════════════════════════════════════════ */}
                 {/* ITENS EM DESTAQUE DA LOJA                           */}
-                {/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
+                {/* ═══════════════════════════════════════════════════ */}
                 {featuredItems.length > 0 && (
                     <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
                         <div className="flex items-center justify-between mb-4">
@@ -497,7 +497,7 @@ export default function Dashboard() {
                                         <div className="flex items-center justify-between mt-1.5">
                                             <span className={`text-[9px] font-black uppercase tracking-wider ${rs.color}`}>{rs.label}</span>
                                             <span className="text-xs font-black text-white">
-                                            {item.currency === 'Gems' ? '💎' : '🪙'} {item.price.toLocaleString()}
+                                            {item.currency === 'Gems' ? '??' : '??'} {item.price.toLocaleString()}
                                             </span>
                                         </div>
                                     </motion.div>
@@ -507,9 +507,9 @@ export default function Dashboard() {
                     </motion.section>
                 )}
 
-                {/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
-                {/* ATALHOS RÃPIDOS                                     */}
-                {/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
+                {/* ═══════════════════════════════════════════════════ */}
+                {/* ATALHOS RÁPIDOS                                     */}
+                {/* ═══════════════════════════════════════════════════ */}
                 <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}>
                     <h3 className="text-xs font-bold text-gray-400 tracking-[0.2em] uppercase mb-4">{t('dashboard.quickAccess')}</h3>
                     <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">

@@ -254,7 +254,7 @@ export default function Missions() {
                         { id: 'battlepass', icon: Medal, link: '/battlepass' },
                         { id: 'profile', icon: User, link: '/profile' },
                         { id: 'cards', icon: Layers, link: '/collection' },
-                        { id: 'shop', icon: ShoppingBag, link: '/shop' },
+                        { id: 'shop', icon: ShoppingBag, link: '/store' },
                     ].map((item) => {
                         const Icon = item.icon;
                         const isActive = item.id === 'missions';
