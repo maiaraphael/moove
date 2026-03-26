@@ -216,6 +216,14 @@ export default function Game() {
 
     // ── Multiplayer ready flag — set once game:rejoined is received ──
     const [mpReady, setMpReady] = useState(!isMultiplayer);
+    const [mpConnectError, setMpConnectError] = useState(false);
+
+    // If game:rejoined hasn't arrived after 15s, show an error with a back button
+    useEffect(() => {
+        if (!isMultiplayer || mpReady) return;
+        const timeout = setTimeout(() => setMpConnectError(true), 15000);
+        return () => clearTimeout(timeout);
+    }, [isMultiplayer, mpReady]);
 
     // ── Multiplayer Socket ──
     useEffect(() => {
@@ -1627,10 +1635,25 @@ export default function Game() {
             {/* --- MULTIPLAYER CONNECTING OVERLAY --- */}
             {isMultiplayer && !mpReady && (
                 <div className="absolute inset-0 z-[300] flex flex-col items-center justify-center gap-4 bg-[#0a050f]">
-                    <div className="w-14 h-14 border-4 border-[#b026ff]/20 border-t-[#b026ff] rounded-full animate-spin" />
-                    <p className="text-[#b026ff] text-xs font-bold tracking-[0.25em] uppercase animate-pulse">
-                        {t('game.loading')}
-                    </p>
+                    {mpConnectError ? (
+                        <>
+                            <p className="text-red-400 text-sm font-bold tracking-widest uppercase">Connection failed</p>
+                            <p className="text-gray-500 text-xs">Could not join the game session.</p>
+                            <button
+                                onClick={() => navigate('/play')}
+                                className="mt-2 px-6 py-2 bg-[#b026ff] hover:bg-[#9d1ce6] text-white rounded-xl font-black text-sm uppercase tracking-widest"
+                            >
+                                Back to Lobby
+                            </button>
+                        </>
+                    ) : (
+                        <>
+                            <div className="w-14 h-14 border-4 border-[#b026ff]/20 border-t-[#b026ff] rounded-full animate-spin" />
+                            <p className="text-[#b026ff] text-xs font-bold tracking-[0.25em] uppercase animate-pulse">
+                                {t('game.loading')}
+                            </p>
+                        </>
+                    )}
                 </div>
             )}
             {/* --- IN-GAME TOAST NOTIFICATION --- */}

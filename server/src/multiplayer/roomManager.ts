@@ -700,6 +700,17 @@ async function startRankedMatch(io: Server, entries: RankedQueueEntry[]) {
     const turnTime = 45 as const;
     const roomId = crypto.randomUUID();
 
+    // Resolve current socket IDs — a player's socket may have reconnected
+    // (new socket ID) between entering the queue and the match being formed.
+    // Using the stale ID would cause ranked:match_found to never be delivered.
+    for (const e of entries) {
+        const currentSocketId = userSockets.get(e.userId);
+        if (currentSocketId && currentSocketId !== e.socketId) {
+            console.log(`[startRankedMatch] Updating stale socketId for ${e.username}: ${e.socketId} → ${currentSocketId}`);
+            e.socketId = currentSocketId;
+        }
+    }
+
     const roomPlayers: RoomPlayer[] = entries.map((e, i) => ({
         socketId: e.socketId, userId: e.userId, username: e.username,
         avatar: e.avatar, sleeve: '', slot: `p${i}`, clanTag: e.clanTag ?? null,
@@ -742,9 +753,14 @@ async function startRankedMatch(io: Server, entries: RankedQueueEntry[]) {
     // Join socket rooms & mark transitioning
     for (let i = 0; i < entries.length; i++) {
         const e = entries[i];
-        const skt = io.sockets.sockets.get(e.socketId);
-        if (skt) { skt.join(roomId); transitioning.add(e.socketId); }
-        socketUsers.set(e.socketId, { userId: e.userId, username: e.username, avatar: e.avatar, currentRoomId: roomId });
+        // Always look up the freshest socket for this user
+        const freshSocketId = userSockets.get(e.userId) ?? e.socketId;
+        const skt = io.sockets.sockets.get(freshSocketId);
+        if (skt) { skt.join(roomId); transitioning.add(freshSocketId); }
+        // Also mark the stored socketId as transitioning in case it differs
+        if (freshSocketId !== e.socketId) transitioning.add(e.socketId);
+        socketUsers.set(freshSocketId, { userId: e.userId, username: e.username, avatar: e.avatar, currentRoomId: roomId });
+        if (freshSocketId !== e.socketId) socketUsers.set(e.socketId, { userId: e.userId, username: e.username, avatar: e.avatar, currentRoomId: roomId });
     }
 
     // Fetch frames and pets from DB
@@ -762,12 +778,21 @@ async function startRankedMatch(io: Server, entries: RankedQueueEntry[]) {
 
     // Emit match_found to each player
     for (let i = 0; i < entries.length; i++) {
-        const skt = io.sockets.sockets.get(entries[i].socketId);
-        if (skt) skt.emit('ranked:match_found', {
-            roomId, slot: `p${i}`, hand: hands[`p${i}`],
-            players: playerProfiles, deckCount: remDeck.length, tableSets: [],
-            activeSlot: firstSlot, turnTime, slotTimers, slotTurnTime,
-        });
+        // Try the entry's socket ID first; fall back to the latest socket for that user
+        const socketId = entries[i].socketId;
+        const skt = io.sockets.sockets.get(socketId)
+            ?? io.sockets.sockets.get(userSockets.get(entries[i].userId) ?? '');
+        if (skt) {
+            // Keep roomPlayers in sync with whichever socket we actually found
+            if (skt.id !== roomPlayers[i].socketId) roomPlayers[i].socketId = skt.id;
+            skt.emit('ranked:match_found', {
+                roomId, slot: `p${i}`, hand: hands[`p${i}`],
+                players: playerProfiles, deckCount: remDeck.length, tableSets: [],
+                activeSlot: firstSlot, turnTime, slotTimers, slotTurnTime,
+            });
+        } else {
+            console.warn(`[startRankedMatch] Could not find socket for ${entries[i].username} — match_found not delivered`);
+        }
     }
 
     // Start timer after 9s (pre-game screen 5s + nav + rejoin buffer)
