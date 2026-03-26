@@ -537,6 +537,7 @@ export default function Game() {
     // Flash banner when it becomes this player's turn
     const [showMyTurnFlash, setShowMyTurnFlash] = useState(false);
     const prevActiveIndexRef = useRef<number | null>(null);
+    const myTurnFlashTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const showToast = (msg: string) => {
         setToastMessage(msg);
         if (toastTimeoutRef.current) clearTimeout(toastTimeoutRef.current);
@@ -1557,6 +1558,16 @@ export default function Game() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(() => {
         if (gameOver) return;
+
+        // Turn moved AWAY from local player — cancel flash immediately
+        if (activePlayerIndex !== 0 && showMyTurnFlash) {
+            if (myTurnFlashTimerRef.current) {
+                clearTimeout(myTurnFlashTimerRef.current);
+                myTurnFlashTimerRef.current = null;
+            }
+            setShowMyTurnFlash(false);
+        }
+
         if (
             activePlayerIndex === 0 &&
             prevActiveIndexRef.current !== null &&
@@ -1566,10 +1577,16 @@ export default function Game() {
                 // Language not ready yet — defer until profile loads.
                 pendingTurnFlashRef.current = true;
             } else {
+                if (myTurnFlashTimerRef.current) clearTimeout(myTurnFlashTimerRef.current);
                 setShowMyTurnFlash(true);
-                const t = setTimeout(() => setShowMyTurnFlash(false), 2000);
+                myTurnFlashTimerRef.current = setTimeout(() => {
+                    setShowMyTurnFlash(false);
+                    myTurnFlashTimerRef.current = null;
+                }, 2000);
                 prevActiveIndexRef.current = 0;
-                return () => clearTimeout(t);
+                return () => {
+                    if (myTurnFlashTimerRef.current) clearTimeout(myTurnFlashTimerRef.current);
+                };
             }
         }
         prevActiveIndexRef.current = activePlayerIndex;
@@ -1579,9 +1596,15 @@ export default function Game() {
     useEffect(() => {
         if (userLoading || !pendingTurnFlashRef.current) return;
         pendingTurnFlashRef.current = false;
+        if (myTurnFlashTimerRef.current) clearTimeout(myTurnFlashTimerRef.current);
         setShowMyTurnFlash(true);
-        const timer = setTimeout(() => setShowMyTurnFlash(false), 2000);
-        return () => clearTimeout(timer);
+        myTurnFlashTimerRef.current = setTimeout(() => {
+            setShowMyTurnFlash(false);
+            myTurnFlashTimerRef.current = null;
+        }, 2000);
+        return () => {
+            if (myTurnFlashTimerRef.current) clearTimeout(myTurnFlashTimerRef.current);
+        };
     }, [userLoading]);
 
     return (
