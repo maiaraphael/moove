@@ -2264,8 +2264,8 @@ export default function Game() {
 
                         {/* RIGHT: Settings + Surrender + Deck + Turn actions */}
                         <div className="flex items-center gap-2 shrink-0">
-                            <button onClick={() => { localStorage.removeItem('token'); localStorage.removeItem('moove_user_avatar'); window.location.href = '/login'; }} className="p-2.5 bg-[#120a1f]/80 hover:bg-white/10 rounded-xl border border-white/10 transition-colors flex items-center justify-center text-gray-400 hover:text-white" title="Logout">
-                                <LogOut size={16} />
+                            <button onClick={() => { }} className="p-2.5 bg-[#120a1f]/80 hover:bg-white/10 rounded-xl border border-white/10 transition-colors flex items-center justify-center text-gray-400 hover:text-white" title="Settings">
+                                <Settings size={16} />
                             </button>
                             <button onClick={() => setShowSurrenderModal(true)} className="p-2.5 bg-red-900/20 hover:bg-red-500 rounded-xl border border-red-500/30 transition-colors flex items-center justify-center text-red-500 hover:text-white" title="Surrender">
                                 <Flag size={16} />
